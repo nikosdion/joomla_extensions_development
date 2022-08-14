@@ -333,7 +333,197 @@
     <section xml:id="concepts-namespaces">
       <title>Namespaces</title>
 
-      <para/>
+      <para>The single most defining change in Joomla 4 is that Joomla
+      embraces <link
+      xlink:href="https://www.php.net/manual/en/language.namespaces.php">PHP
+      namespaces</link> everywhere: core, core extensions, third party
+      extensions and everything in between.</para>
+
+      <bridgehead>The core</bridgehead>
+
+      <para>The work on namespacing core Joomla API classes had started since
+      Joomla 3.3. If you have not updated your code the last few years you may
+      have found that it no longer works on Joomla 4. Do not despair! The vast
+      majority of issues comes from your using outdated, non-namespaced
+      versions of core classes in your code. Replacing them with their
+      namespaced versions will let most Joomla 3–only extensions to run well
+      enough in Joomla 4 for a migration to be practical.</para>
+
+      <para>I have collected the old, non-namespaced core classes and the new,
+      namespaced names of them along with the Joomla version the namespaced
+      versions appeared and the Joomla version the non-namespaced versions are
+      or will be removed in <link
+      xlink:href="https://github.com/nikosdion/joomlatypehints/blob/main/JoomlaObsoleteClasses.md">my
+      Joomla Type Hints</link> repository. The repository also includes <link
+      xlink:href="https://getrector.org">Rector</link> configurations which
+      allow you to do most of the heavy lifting using an automated tool. For
+      everything else you need some good old search and replace across your
+      source trees.</para>
+
+      <bridgehead>The extensions</bridgehead>
+
+      <para>The story of Joomla 4 began on the last day of May 2015 in Prague,
+      Czech Republic at a round table discussion about the future of Joomla. A
+      dozen or so leadership members, core contributors and third party
+      developers sat down to figure out why Joomla “sucks” and how to improve
+      it.</para>
+
+      <para>Beyond the user-facing issues, we found out that the core MVC and
+      architecture were extremely dated. The core MVC started being developed
+      in 2005 and made its first appearance in 2007, with Joomla 1.5. It had
+      not changed much, despite some moderate improvements in Joomla 1.6 which
+      was released in 2010 (e.g. XML Forms) and a few disparate things added
+      here and there (e.g. Tags in 3.2, Layouts in 3.4 and so on). You could
+      not reference frontend code from the backend or vice-versa. For third
+      party extensions this was an annoyance which led to duplicated code and
+      bugs. For using core code, like creating articles <emphasis>the right
+      way</emphasis> using <code>com_content</code>'s Article model, it was
+      nearly impossible: if you tried doing that on a page which had already
+      loaded the front-end ContentModelArticle class you could no longer load
+      the same–named but entirely differently operating backend class.</para>
+
+      <para>The way to solve that would be to <emphasis>namespace</emphasis>
+      the extensions' code. A com_example extension could have the namespace
+      prefix \MyCompany\Example\Administrator for its backend classes and
+      \MyCompany\Example\Site for its frontend classes. This way you could
+      have something like:</para>
+
+      <programlisting>namespace \MyCompany\Example\Site\Model;
+
+class Item extends \MyCompany\Example\Administrator\Model\Item
+{
+   // ...
+}</programlisting>
+
+      <para>By being able to extend classes across application sides you would
+      finally be able to get rid of duplicate code and obliterate bugs coming
+      from that bad practice. </para>
+
+      <para>By following the <link
+      xlink:href="https://www.php-fig.org/psr/psr-4/">PSR-4</link> standard we
+      could also have a very efficient autoloader which allows us to load any
+      extension's classes from anywhere, without having to know where on the
+      filesystem the class file lives and without having to use the ugly
+      static methods of the core MVC classes (which, by the way, would NOT
+      work predictably across extensions because of their dependence on the
+      <code>JPATH_COMPONENT_ADMINISTRATOR</code> and
+      <code>JPATH_COMPONENT</code> constants which cannot, of course, be
+      redefined).</para>
+
+      <para>Each extension's namespace is declared in the XML manifest of the
+      extension using a new XML element under the
+      <code>&lt;extension&gt;</code> root element:</para>
+
+      <programlisting>&lt;namespace path="src"&gt;My\Namespace\Prefix&lt;/namespace&gt;</programlisting>
+
+      <para>The <code>path</code> attribute tells Joomla which subdirectory of
+      your extension holds the PSR-4 of your extension's PHP files. It is best
+      practice to name it <filename>src</filename> but <emphasis>you don't
+      have to</emphasis>. In the rest of this section I assume you are using
+      <filename>src</filename>.</para>
+
+      <para>The text inside the XML element, <code>My\Namespace\Prefix</code>
+      in our example, is the namespace prefix you will be using.</para>
+
+      <para>Here is how namespace prefixes work across different types of
+      extensions:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">Component, frontend</emphasis>. Each
+          component can register its own namespace prefix without any
+          restrictions. It is <emphasis>recommended</emphasis> to use the
+          convention <code>\Company\Something</code> where
+          <code>Company</code> is your company name (or a shortened version
+          thereof) and <code>Something</code> corresponds to the
+          <code>com_something</code> extension name of your component. For
+          example, the component <code>com_example</code> by Acme, Inc could
+          have a namespace prefix of <code>\Acme\Example</code> set up in its
+          XML manifest. In this case its frontend classes MUST be under the
+          namespace <code>\Acme\Example\Site</code>. The folder
+          <filename>components/com_example/src</filename> is the root of the
+          <code>\Acme\Example\Site</code> namespace.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Component, backend</emphasis>. Let's say
+          we have the component <code>com_example</code> by Acme, Inc which
+          has a namespace prefix of <code>\Acme\Example</code>. In this case
+          its backend classes MUST be under the namespace
+          <code>\Acme\Example\Administrator</code>. The folder
+          <filename>administrator/components/com_example/src</filename> is the
+          root of the <code>\Acme\Example\Administrator</code>
+          namespace.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Component, API application</emphasis>.
+          The API application is the third Joomla application (the other two
+          being Site the frontend, and Administrator the backend). We'll talk
+          about it <link linkend="com-api">later in this book</link>. Let's
+          say we have the component <code>com_example</code> by Acme, Inc
+          which has a namespace prefix of <code>\Acme\Example</code>. In this
+          case its API application classes MUST be under the namespace
+          <code>\Acme\Example\Api</code>. The folder
+          <filename>api/components/com_example/src</filename> is the root of
+          the <code>\Acme\Example\Api</code> namespace.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Module, frontend</emphasis>. A frontend
+          module mod_example MUST have its classes under the namespace
+          <code>Joomla\Module\Example\Site</code>. The namespace you MUST
+          declare in the XML manifest is <code>Joomla\Module\Example</code>.
+          Even though you are severely restricted in the namespace prefix you
+          can use, you MUST provide it in your XML manifest or your module
+          won't work! The folder <filename>modules/mod_example/src</filename>
+          is the root of the <code>Joomla\Module\Example\Site</code>
+          namespace.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Module, backend</emphasis>. A backend
+          module mod_example MUST have its classes under the namespace
+          <code>Joomla\Module\Example\Administrator</code>. The namespace you
+          MUST declare in the XML manifest is
+          <code>Joomla\Module\Example</code>. Even though you are severely
+          restricted in the namespace prefix you can use, you MUST provide it
+          in your XML manifest or your module won't work! The folder
+          <filename>administrator/modules/mod_example/src</filename> is the
+          root of the <code>Joomla\Module\Example\Administrator</code>
+          namespace.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Plugin</emphasis>. The plugin
+          <code>plg_system_example</code> MUST have its classes under the
+          namespace <code>Joomla\Plugin\System\Example</code>. The namespace
+          you MUST declare in the XML manifest is
+          <code>Joomla\Plugin\System\Example</code>. Even though you are
+          severely restricted in the namespace prefix you can use, you MUST
+          provide it in your XML manifest or your plugin won't work! The
+          folder <filename>plugins/system/example/src</filename> is the root
+          of the <code>Joomla\Plugin\System\Example</code> namespace.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Template</emphasis>. Well, Joomla does
+          NOT register a namespace for templates. You are encouraged to use
+          namespaces for any template–specific code (you certainly have some
+          helpers, don't you?) BUT Joomla won't facilitate you with any
+          autoloading. You will have to register your template's namespace
+          directly with the <code>JLoader::registerPrefix</code> method. It is
+          a good practice putting your namespaced PHP files in the
+          <filename>src</filename> directory and use the namespace
+          <code>\Joomla\Template\Site\Something</code> for frontend templates
+          and <code>\Joomla\Template\Administrator\Something</code> for
+          backend templates. Please note that there is no real guidance for
+          the template names BUT we can infer what any future change adding
+          namespace support to templates will most likely be based on how
+          modules are namespaced and Joomla trying to have a modicum of
+          consistency.</para>
+        </listitem>
+      </itemizedlist>
     </section>
 
     <section xml:id="concepts-container">
