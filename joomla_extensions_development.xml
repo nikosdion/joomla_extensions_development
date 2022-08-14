@@ -529,7 +529,104 @@ class Item extends \MyCompany\Example\Administrator\Model\Item
     <section xml:id="concepts-container">
       <title>Dependency Injection Container / Service Locator</title>
 
-      <para/>
+      <para>Joomla had historically been quite a mess, architecturally
+      speaking. Its saving grace was that it was a far smaller mess than
+      WordPress and much more approachable to non–expert coders than Drupal.
+      This let it carve a niche for itself: people who wanted a very powerful
+      site without having to first acquire a PhD in Computer Science and/or
+      have a team of dozens of developers under them. In short, Joomla's
+      bad–but–not–too–bad architecture let it be used by small web design
+      firms, freelance site integrators and small but serious software
+      development firms.</para>
+
+      <para>That said, Joomla 1.x to 3.x inclusive had a <link
+      xlink:href="https://en.wikipedia.org/wiki/God_object">God Object</link>
+      called the Joomla Factory (<code>JFactory</code> or
+      <code>\Joomla\CMS\Factory</code>) with a very opinionated approach on
+      instantiating all sorts of globally used services, from the application
+      itself, to the database, to the user objects, to the mailer object.
+      </para>
+
+      <para>While this is a better approach to using global variables (like
+      WordPress' infamous <code>$wpdb</code> for accessing the database), this
+      architecture caused a lot of pain when you wanted to write Unit Tests
+      for your code. Your code gets user instances? You need to create a mock
+      for the entire Factory object returning mock user objects. Your code
+      uses the database? You need to create a mock database object and inject
+      it to an uninitialised Factory instance using static class variables.
+      Your code sends email? Not only you need a mock mailer object, you need
+      to mock the Factory too. Want to write tests which mock different things
+      in different tests? You can either forget about running your tests as a
+      suite OR you need to create an extremely over-reaching and hard to
+      configure mock Factory. Your tests must run in a different order? Good
+      luck figuring out the bugs in your Factory mock object and why running
+      tests in one order works but fails when run in a different order, or on
+      their lonesome. Been there, done that, still paying for therapy…</para>
+
+      <para>In Joomla 4 we no longer have a God Object. Well, to be fair, the
+      Factory is still there but it is no longer a God Object; it is an
+      interface to a <link
+      xlink:href="https://en.wikipedia.org/wiki/Dependency_injection">Dependency
+      Injection Container</link> (<acronym>DIC</acronym> for short, pronounced
+      like Dee Eye See, not the nickname for a Richard, thank you very much).
+      So, Factory is still a God Object but with lesser powers. A minor deity
+      object, perhaps? In any case, the Container is initialised before
+      Factory is used and it can also be replaced. Therefore you only need to
+      get a copy of the DIC and replace one or more of its services with a
+      mock object when writing Unit Tests. Much easier, much more robust, no
+      more therapy necessary after writing Unit Tests.</para>
+
+      <para>The Container is not the preferred way to get access to several
+      services previously available only through the Factory (they are still
+      available through the Factory in Joomla 4 but will very likely disappear
+      in Joomla 5). Let's see a few practical examples:</para>
+
+      <programlisting>use \Joomla\CMS\Factory;
+
+// Instead of Factory::getDbo();
+$db = Factory::getContainer()-&gt;get('DatabaseDriver');
+
+// Instead of Factory::getLanguage(); WARNING! STILL DOES NOT WORK EXACTLY AS INTENDED!
+$language = Factory::getContainer()-&gt;get(LanguageFactoryInterface::class)-&gt;createLanguage(
+  Factory::getApplication()-&gt;get('language'),
+  Factory::getApplication()-&gt;get('debug_lang'),
+);
+
+// Instead of Factory::getUser($id)
+$user = Factory::getContainer()-&gt;get(UserFactoryInterface::class)-&gt;loadUserById($id);
+
+// Instead of Factory::getUser() with no arguments; note that this does NOT go through the DIC!
+$currentUser = Factory::getApplication()-&gt;getIdentity();</programlisting>
+
+      <para>That said, Joomla's DIC is not a real DIC; it is in fact a <link
+      xlink:href="https://en.wikipedia.org/wiki/Service_locator_pattern">Service
+      Locator</link>. That is to say, you don't ask the DIC to construct an
+      object and expect it to inject the appropriate dependencies based on the
+      class type hints of the constructor's arguments. In theory it can (kind
+      of), but in practice this is NOT how the Joomla core API classes are
+      written. If you came here expecting a DIC like what you find in Laravel,
+      sorry, I have to disappoint you.</para>
+
+      <para>Now, you are thinking, does this not make the DIC kinda useless?
+      No, not really. You see, being a Service Locator you get a
+      <emphasis>copy</emphasis> of it when your extension is initialised. In
+      fact, each native Joomla 4 extension needs to have a Service Provider
+      which takes the DIC copy as input and registers services to it. At the
+      very least you will be registering your extension service which is used
+      by Joomla to instantiate your extension's object and run its code. You
+      can also register any number of services you might need, even custom
+      ones only to be used by your extension.</para>
+
+      <para>At some point in the future Joomla will MAYBE remove the Factory,
+      if not altogether then at least insofar it can only return the main
+      application's DIC. In such a future Joomla will VERY PROBABLY make it
+      much easier for an extension's internal classes to have access to its
+      own DIC / Service Locator instead of only ever making it available to
+      the Extension class. In this potential future Joomla extensions will be
+      self-contained and perfectly testable. Even better, they can be sure
+      that whatever happens in an extension stays in the extension, without
+      leaking to the global application scope (and poison other extensions).
+      </para>
     </section>
 
     <section xml:id="concepts-webassetmanager">
