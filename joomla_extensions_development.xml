@@ -390,7 +390,7 @@
 
       <programlisting>namespace \MyCompany\Example\Site\Model;
 
-class Item extends \MyCompany\Example\Administrator\Model\Item
+class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
 {
    // ...
 }</programlisting>
@@ -1142,13 +1142,250 @@ Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
     <section xml:id="com-j3-vs-j4-mvc">
       <title>Joomla 3 MVC vs Joomla 4 MVC</title>
 
-      <para/>
+      <para>As we already said, the basic functionality of Joomla's MVC has
+      remained the same throughout Joomla 3 and 4. If you know how to make a
+      Joomla 3 component you know most of what you need to make a Joomla 4
+      component. The differences are a few minor, but salient, points.</para>
+
+      <para><link linkend="com-namespaces"><emphasis
+      role="bold">Namespaces</emphasis></link>. All native Joomla 4 component
+      use <link
+      xlink:href="https://www.php.net/manual/en/language.namespaces.php">PHP
+      namespaces</link> for their PHP code. This is a very simple change in
+      thinking for models, views and controllers. For example, instead of your
+      frontend model being called <code>ExampleModelItem</code> it will now be
+      the class <code>ItemModel</code> in the namespace <modifier><replaceable>\My\Prefix</replaceable>\Site\Model</modifier>
+      where <code>\My\Prefix</code> is something you can define, and has no
+      restrictions other than it needs to be a valid PHP namespace, unique to
+      your component and should not start with <code>\Joomla</code> (component
+      namespaces starting withIn <code>\Joomla</code> are reserved for core
+      components). This also applies to custom form fields you may need to
+      create in your component — and there <emphasis>is</emphasis> a way to
+      tell Joomla which namespace to look custom form fields in with new
+      attributes in XML forms.</para>
+
+      <para><link linkend="com-services"><emphasis role="bold">Service
+      provider</emphasis></link>. All Joomla components are passed a
+      Dependency Injection Container (DIC) which is, in fact, a Service
+      Locator. This even applies to components written with the Joomla 3 MVC
+      as we'll see in <link linkend="com-lifetime">the lifetime of a
+      component</link>. You can register services specific to your component
+      in your service locator. At the very least, Joomla expects you to set up
+      the <link linkend="com-extension">extension class</link> of your
+      component. Unfortunately, even simple components need to have a service
+      provider as there is no convention–over–configuration in Joomla 4's
+      component DIC.</para>
+
+      <para><link linkend="com-extension"><emphasis role="bold">Extension
+      class</emphasis></link>. The extension class
+      <emphasis>replaces</emphasis> the entry point file (e.g.
+      <filename>administrator/components/com_example/example.php</filename>)
+      you had in Joomla 3 MVC. All components written with the Joomla 4 MVC
+      have an extension class which extends from
+      <code>Joomla\CMS\Extension\MVCComponent</code>. It is used to register
+      special services used when working with your component such as the
+      <code>MVCFactory</code> service (responsible for creating model, view
+      and controller object instances), an <link linkend="com-html">HTML
+      helper service</link> which extends Joomla's HTMLHelper, a <link
+      linkend="com-router">Router service</link> for frontend search engine
+      friendly (SEF) URL routing, and a <link
+      linkend="com-categories">Category service</link> if your component uses
+      core Categories. It also returns your component's <link
+      linkend="com-dispatcher">Dispatcher</link> which is where the execution
+      of your component starts. For very simple components you can even use
+      the core MVCComponent class as your extension class, without
+      sub–classing. See, for example, what the core
+      <code>com_actionlogs</code> component does.</para>
+
+      <para><emphasis role="bold"><link
+      linkend="com-dispatcher">Dispatcher</link> instead of a front
+      controller</emphasis>. In the Joomla 3 MVC paradigm you had a
+      <filename>controller.php</filename> file in the root of your component's
+      directory structure. This was a front-controller, supposed to figure out
+      which controller to use to handle the specified view and task in the
+      request. This was a bit gimmicky and error–prone, especially if you had
+      components capable of displaying more than one discrete types of
+      information, e.g. a downloads repository would be able to display
+      categories, releases in a category and files in a release which made for
+      three discrete content types which had to be handled by the same front
+      controller. The new Dispatcher does the same job, it works without
+      sub–classing it for most simple extensions and benefits greatly the more
+      complex extensions which need more involved request processing.</para>
+
+      <para><emphasis role="bold"><link linkend="com-html">HTML helper</link>
+      is a service</emphasis>. If you had ever registered an HTMLHelper class
+      with static calls this is no longer the recommended method. If you need
+      an HTML helper for your extension you need to register it through the
+      extension class and its methods are no longer static. Since it's a real
+      object instantiated by the extension object it has access to the
+      component's DIC, therefore to any service you registered in your service
+      provider or you were given by Joomla in the DIC. This makes helpers
+      testable and means that they can access custom services (e.g. a shipping
+      cost calculation service if you are writing an e-commerce component)
+      without trying to contort your code.</para>
+
+      <para><emphasis role="bold">New format for </emphasis><link
+      linkend="com-router"><emphasis role="bold">Router</emphasis></link>.
+      Joomla 4 comes with a new Router which is instantiated through a
+      service. The new component router superclass allows you to write
+      efficient routers without a lot of boilerplate, duplicated and
+      convoluted code.</para>
     </section>
 
     <section xml:id="com-lifetime">
       <title>The lifetime of a component</title>
 
-      <para/>
+      <para>In the previous section we talked about the new concepts in the
+      Joomla 4 MVC but it's really hard to understand how they all work
+      together. It's best if we talk about the lifetime of a component, i.e.
+      what happens when you try to access a Joomla URL in the form
+      <uri>index.php?option=com_example&amp;view=foo</uri>.</para>
+
+      <para>The lifetime of our component starts in the application object
+      (<code>SiteApplication</code>, <code>AdministratorApplication</code> or
+      <code>ApiApplication</code>), namely its <code>dispatch()</code> method.
+      All these methods do some initialisation and call
+      <code>Joomla\CMS\Component::renderComponent()</code>. This method runs
+      this line where things get interesting for our component:</para>
+
+      <programlisting>$app-&gt;bootComponent($option)-&gt;getDispatcher($app)-&gt;dispatch();</programlisting>
+
+      <para>Let's rewrite it so it's more readable:</para>
+
+      <para><programlisting>$componentExtension = $app-&gt;bootComponent($option)
+$componentDispatcher = $componentExtension-&gt;getDispatcher($app)
+$componentDispatcher-&gt;dispatch();</programlisting>What Joomla does is ask
+      the application object to <emphasis>somehow</emphasis> get a component
+      extension object — even if it is a legacy component using the Joomla 3
+      MVC. Then it asks the component extension object to get it the
+      component's Dispatcher object. Finally, it tells the component's
+      Dispatcher to dispatch (execute) the component.</para>
+
+      <para>These three steps are crucial to understanding the difference
+      between legacy Joomla 3 MVC components, modern Joomla 4 MVC components
+      and how Joomla 4 makes them all work.</para>
+
+      <bridgehead>Booting the component</bridgehead>
+
+      <para>The <code>bootComponent</code> method is implemented by
+      <code>Joomla\CMS\Extension\ExtensionManagerTrait</code>. The first thing
+      it does, by calling its <code>loadExtension</code> method, is to figure
+      out if this is a Joomla 4 MVC or Joomla 3 MVC component. It does that by
+      looking for the <filename>services/provider.php</filename> file under
+      the component's root. As you may have guessed this is our component's
+      <link linkend="com-services">service provider</link> and the reason why
+      all Joomla 4 MVC components, even the simplest ones for which we could
+      infer their service provider, really do need to have a service provider
+      file.</para>
+
+      <para>If the file exists it's loaded and its services are registered
+      into the copy of the Joomla DIC which is used as our component's
+      DIC.</para>
+
+      <note>
+        <para>This means that our component only sees a frozen in time copy of
+        the global application services. You cannot register any services in
+        the component's DIC and expect them to be available in the global
+        application.</para>
+      </note>
+
+      <para>If the file does not exist, Joomla creates an instance of the
+      <code>Joomla\CMS\Extension\LegacyComponent</code>. As you can see, this
+      extension object uses a legacy MVC factory object which "speaks" the
+      Joomla 3 non-namespaced MVC class names and a legacy component
+      dispatcher which looks for the <filename>componentName.php</filename>
+      (in our example: <filename>example.php</filename>) component entry point
+      file and loads it. This is exactly how Joomla 4 can render components
+      using Joomla 3 MVC.</para>
+
+      <para>The rest of this section will talk about a Joomla 4 MVC
+      component.</para>
+
+      <para>Finally, Joomla returns <link linkend="com-extension">the
+      component's extension object</link> as the result of the
+      <code>bootComponent</code> method.</para>
+
+      <tip>
+        <para>You can call
+        <code>\Joomla\CMS\Factory::getApplication()-&gt;bootComponent('com_example')</code>
+        to get the <code>com_example</code> component's extension object
+        anytime, anywhere — <emphasis role="bold">including in modules and
+        plugins</emphasis>. If you subclass the
+        <code>Joomla\CMS\Extension\MVCExtension</code> class in your own
+        component you can create your own methods to return <emphasis>ANY
+        OBJECT KNOWN TO THE COMPONENT AND ITS CONTAINER</emphasis>. </para>
+
+        <para>This is of enormous importance.</para>
+
+        <para>You can instantiate any MVC class of the component. You have
+        access to your HTML helper, categories service and router service. You
+        can get an instance of any of the custom services you created in your
+        component. All of that WITHOUT any static helpers in your extension,
+        WITHOUT worrying that something might break if you call your code
+        outside your component. Your Models can provide a public API for third
+        party developers communicating with your component.</para>
+
+        <para>Joomla core components already do that. For example, you can get
+        the backend <code>ArticleModel</code> of <code>com_content</code> in a
+        frontend component or plugin to create a new Joomla article
+        <emphasis>the right way</emphasis>: </para>
+
+        <programlisting>$articleModel = \Joomla\CMS\Factory::getApplication()
+  -&gt;bootComponent('com_content')
+  -&gt;getMVCFactory()
+  -&gt;createModel('Article', 'Administrator');</programlisting>
+      </tip>
+
+      <para><bridgehead>Getting the Dispatcher</bridgehead></para>
+
+      <para>The extension object is responsible for returning a number of
+      interesting objects through its methods. These objects are meant to be
+      used for interacting with the component. One of these is
+      <code>getDispatcher</code> which lets us retrieve the component's <link
+      linkend="com-dispatcher">Dispatcher</link> object.</para>
+
+      <para>Your extension can have a custom dispatcher class,
+      <code>\My\Prefix\Dispatcher\Dispatcher</code>, where
+      <code>\My\Prefix</code> is your component's prefix. If this class
+      exists, an object instance of it is returned.</para>
+
+      <para>If your extension does not have a dispatcher an instance of the
+      default <code>Joomla\CMS\Dispatcher\ComponentDispatcher</code> (site and
+      administrator applications) or
+      <code>Joomla\CMS\Dispatcher\ApiDispatcher</code> (API application) will
+      be created and returned instead.</para>
+
+      <bridgehead>Dispatching the component</bridgehead>
+
+      <para>The dispatcher object has a <code>dispatch()</code> method. This
+      method looks in the request data to figure out which controller it needs
+      to instantiate and which task it should execute on it. The controller
+      object is instantiated through your component's <code>MVCFactory</code>
+      service and its <code>execute</code> and <code>redirect</code> methods
+      are called on it. So, yes, this is basically what your old Joomla 3 MVC
+      <filename>controller.php</filename> file was doing.</para>
+
+      <tip>
+        <para>Having a custom dispatcher means that you can manipulate the
+        <emphasis>controller and task</emphasis> based on other request
+        variables.</para>
+
+        <para>This is very important when your component is accessed
+        <emphasis>outside of a Joomla menu item (no Itemid in the request
+        variables)</emphasis>. In this case Joomla always uses the default
+        (Home) menu item for the current language. This means that you may be
+        getting a <uri>controller</uri>, <uri>view</uri> or <uri>task</uri>
+        request variable — as well as other variables which might mess with
+        your component, like <uri>id</uri> — from the Home menu item. </para>
+
+        <para>Your Dispatcher is responsible for figuring out if this is the
+        case and fix the input variables to prevent weird bugs / showing the
+        wrong page of your component when it's accessed without a menu item
+        id, e.g. a URL like <uri>/component/example?view=foobar</uri>. This is
+        something which has happened a lot when I converted my own extensions
+        to Joomla 4, including LoginGuard (the extension contributed as
+        Joomla's Multi-factor Authentication feature in Joomla 4.2).</para>
+      </tip>
     </section>
 
     <section xml:id="com-services">
