@@ -1388,10 +1388,551 @@ $componentDispatcher-&gt;dispatch();</programlisting>What Joomla does is ask
       </tip>
     </section>
 
+    <section xml:id="com-dirs">
+      <title>Directory structure</title>
+
+      <para>The directory structure of a typical Joomla 4 MVC component is as
+      follows, assuming it's called <code>com_example</code> and has the
+      namespace prefix <code>\Acme\Example</code>. Directories are suffixed
+      with <filename>/</filename>. Please note that capitalisation matters
+      (directory and file names are case–sensitive).</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><filename>administrator/components/com_example/</filename> The
+          component's backend directory</para>
+
+          <itemizedlist>
+            <listitem>
+              <para><filename>forms/</filename> Optional. List view forms and
+              search tools forms (formerly in models/forms)</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para><filename>items.xml</filename> An example form for the
+                  Items list view.</para>
+                </listitem>
+
+                <listitem>
+                  <para><filename>filter_items.xml</filename> An example
+                  search tools form for the Items list view.</para>
+                </listitem>
+
+                <listitem>
+                  <para><filename>item.xml</filename> An example form for the
+                  Item edit view.</para>
+                </listitem>
+
+                <listitem>
+                  <para>…</para>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+
+            <listitem>
+              <para><filename>language/</filename> Not required but you should
+              always somehow provide language files with your extension. The
+              language files of your component (typically installed in
+              <filename>administrator/languages/en-GB</filename>)</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para><filename>en-GB/</filename> The English (Great
+                  Britain) language files. That's the default Joomla
+                  language.</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>com_example.ini</filename> The main
+                      language file for your component's views. Note that
+                      there is no longer an <filename>en-GB.</filename>
+                      prefix; it's implied by the directory the language file
+                      is in.</para>
+                    </listitem>
+
+                    <listitem>
+                      <para><filename>com_example.sys.ini</filename> The
+                      language file used by Joomla to display backend menu
+                      items, permissions, the component's Options page, core
+                      categories used by your component, select menu item
+                      types in the menu manager, and render each menu item
+                      type's configuration parameters.</para>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+
+            <listitem>
+              <para><filename>layouts/</filename> Optional. Any Joomla Layouts
+              you want to ship with your extension for use in its
+              backend.</para>
+            </listitem>
+
+            <listitem>
+              <para><filename>services/</filename> Required. Here lives the
+              <link linkend="com-services">Service Provider</link> of your
+              component.</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para><filename>provider.php</filename> The service provider
+                  file.</para>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+
+            <listitem>
+              <para><filename>sql/</filename> Optional, unless your extension
+              makes changes to database structure or content.</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para><filename>updates/</filename> Required. Your
+                  component's schema (database) files applied on each
+                  update.</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>mysql/</filename> Optional. Indicates
+                      updates for sites running on the MySQL database. </para>
+
+                      <itemizedlist>
+                        <listitem>
+                          <para><filename>1.0.0-20220815-0000.sql</filename> A
+                          database update file. You should name them
+                          <filename>version-date-time.sql</filename>. The
+                          version part is mandatory.</para>
+                        </listitem>
+                      </itemizedlist>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+
+                <listitem>
+                  <para><filename>install.mysql.utf8.sql</filename> The SQL
+                  executed on your component's first installation. Update
+                  files are not executed in this case.</para>
+                </listitem>
+
+                <listitem>
+                  <para><filename>uninstall.mysql.utf8.sql</filename> The SQL
+                  executed on your component's uninstallation. Remove any
+                  tables or database data you created.</para>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+
+            <listitem>
+              <para>src/ Required. The root of your extension's PHP files and
+              the root of the PSR-4 <code>\Acme\Example\Administrator</code>
+              namespace prefix.</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para><filename>Controller/</filename> Required. Your
+                  component's controllers</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>ItemsController.php</filename> An
+                      example controller for a ListView</para>
+                    </listitem>
+
+                    <listitem>
+                      <para><filename>ItemController.php</filename> An example
+                      controller for an AdminView</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>…</para>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+
+                <listitem>
+                  <para><filename>Dispatcher/</filename> Optional. Holds your
+                  custom component dispatcher.</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>Dispatcher.php</filename> Your custom
+                      component dispatcher.</para>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+
+                <listitem>
+                  <para><filename>Extension/</filename> Optional. Holds your
+                  custom extension class.</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>ExampleExtension.php</filename> Your
+                      custom extension class.</para>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+
+                <listitem>
+                  <para><filename>Field/</filename> Optional. Custom form
+                  fields. Use them in your XML forms using the attribute
+                  <code>addfieldprefix="Acme\Example\Administrator\Field"</code>.</para>
+                </listitem>
+
+                <listitem>
+                  <para><filename>Model/</filename> Required. Your component's
+                  Models.</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>ItemsModel.php</filename> An example
+                      model for the Items list view.</para>
+                    </listitem>
+
+                    <listitem>
+                      <para><filename>ItemModel.php</filename> An example
+                      model for the Item view. Handles editing and adding
+                      records.</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>…</para>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+
+                <listitem>
+                  <para><filename>Provider/</filename> Optional. Custom
+                  service providers.</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>RouterFactory.php</filename> Example of
+                      a RouterFactory provider, if you need a frontend SEF URL
+                      router.</para>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+
+                <listitem>
+                  <para><filename>Router/</filename> Optional. The recommended
+                  place to put your custom RouterFactory, if you need a
+                  frontend SEF URL router.</para>
+                </listitem>
+
+                <listitem>
+                  <para><filename>Service/</filename> Optional. Custom
+                  services.</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>Html/</filename> Optional. Where your
+                      custom HTML services (which are made available through
+                      Joomla's HTMLHelper) live.</para>
+
+                      <itemizedlist>
+                        <listitem>
+                          <para><filename>Example.php</filename> An example
+                          HTML service.</para>
+                        </listitem>
+                      </itemizedlist>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+
+                <listitem>
+                  <para><filename>Table/</filename> Required. Your Table
+                  classes.</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>ItemTable.php</filename> An example
+                      table class for the items of this component (which
+                      should ideally live in the
+                      <database>#__example_items</database> table if you want
+                      to follow Joomla best practices).</para>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+
+                <listitem>
+                  <para><filename>View/</filename> Required. Your view
+                  classes. All subdirectories must be in Uppercasefirst format
+                  and match the controller's name before the
+                  <code>Controller</code> word.</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>Items/</filename> The directory for the
+                      Items list view.</para>
+
+                      <itemizedlist>
+                        <listitem>
+                          <para><filename>Html.php</filename> The HTML view
+                          class for rendering this backend view.</para>
+                        </listitem>
+                      </itemizedlist>
+                    </listitem>
+
+                    <listitem>
+                      <para><filename>Item/</filename> The directory for the
+                      Item add/edit view.</para>
+
+                      <itemizedlist>
+                        <listitem>
+                          <para><filename>Html.php</filename> The HTML view
+                          class for rendering this backend view.</para>
+                        </listitem>
+                      </itemizedlist>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+
+            <listitem>
+              <para><filename>tmpl/</filename> Required. The view templates
+              for your backend views.</para>
+
+              <important>
+                <para>All the sub–directories are in <emphasis role="bold">all
+                lowercase</emphasis>. This is VERY important!</para>
+
+                <para>Be careful if you are developing on Windows or macOS
+                (which use case–insensitive filesystems). You might
+                accidentally use MixedCase or Uppercasefirst folder names.
+                While this will work fine on Windows and macOS it will
+                <emphasis>fail</emphasis> on the Linux servers most sites run
+                on. That's because Linux primarily uses case-sensitive
+                filesystems.</para>
+              </important>
+
+              <itemizedlist>
+                <listitem>
+                  <para><filename>items/</filename></para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>default.php</filename> The view template
+                      for the Items view.</para>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+
+                <listitem>
+                  <para><filename>item/</filename></para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>edit.php</filename> The view template
+                      for the Item view.</para>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+
+            <listitem>
+              <para><filename>access.xml</filename> The component's
+              permissions configuration file</para>
+            </listitem>
+
+            <listitem>
+              <para><filename>config.xml</filename> The component;s Options
+              page form file</para>
+            </listitem>
+
+            <listitem>
+              <para><filename>example.xml</filename> The component's XML
+              manifest</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+
+        <listitem>
+          <para><filename>components/com_example/</filename> The component's
+          frontend directory</para>
+
+          <itemizedlist>
+            <listitem>
+              <para><filename>forms/</filename> Optional. Any forms for
+              frontend views (formerly in models/forms).</para>
+            </listitem>
+
+            <listitem>
+              <para><filename>language/</filename> Not required but you should
+              always somehow provide language files with your extension. The
+              language files of your component (typically installed in
+              <filename>languages/en-GB</filename>)</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para><filename>en-GB/</filename> The English (Great
+                  Britain) language files. That's the default Joomla
+                  language.</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>com_example.ini</filename> The main
+                      language file for your component's frontend
+                      views.</para>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+
+            <listitem>
+              <para><filename>layouts/</filename> Optional. Any Joomla Layouts
+              you want to ship with your extension for use in its
+              frontend.</para>
+            </listitem>
+
+            <listitem>
+              <para>src/ Required. The root of your extension's PHP files and
+              the root of the PSR-4 <code>\Acme\Example\Site</code> namespace
+              prefix.</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para><filename>Controller/</filename> Required. Your
+                  component's controllers</para>
+                </listitem>
+
+                <listitem>
+                  <para><filename>Dispatcher/</filename> Optional. Holds your
+                  custom component dispatcher for the frontend only.</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>Dispatcher.php</filename> Your custom
+                      component frontend dispatcher.</para>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+
+                <listitem>
+                  <para><filename>Model/</filename> Required. Your component's
+                  Models.</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>ItemsModel.php</filename> An example
+                      model for the Items list view.</para>
+                    </listitem>
+
+                    <listitem>
+                      <para><filename>ItemModel.php</filename> An example
+                      model for the Item view. Handles editing and adding
+                      records.</para>
+                    </listitem>
+
+                    <listitem>
+                      <para>…</para>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+
+                <listitem>
+                  <para><filename>Service/</filename> Optional. Custom
+                  services.</para>
+
+                  <itemizedlist>
+                    <listitem>
+                      <para><filename>Category.php</filename> Optional. Your
+                      site's category service.</para>
+                    </listitem>
+
+                    <listitem>
+                      <para><filename>Router.php</filename> Optional. Your
+                      site's SEF router.</para>
+                    </listitem>
+                  </itemizedlist>
+                </listitem>
+
+                <listitem>
+                  <para><filename>View/</filename> Required. Your frontend
+                  view classes. All subdirectories must be in Uppercasefirst
+                  format and match the controller's name before the
+                  <code>Controller</code> word.</para>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+
+            <listitem>
+              <para><filename>tmpl/</filename> Required. The view templates
+              for your backend views. All the sub–directories are in <emphasis
+              role="bold">all lowercase</emphasis>.</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+
+        <listitem>
+          <para><filename>api/components/com_example/</filename> Optional.
+          Your Joomla API application integration. Just having this directory
+          is not enough, you will also need a published plugin for your
+          application in the <filename>webservices</filename> folder.</para>
+
+          <itemizedlist>
+            <listitem>
+              <para>src/ Required. The root of your extension's PHP files and
+              the root of the PSR-4 <code>\Acme\Example\Api</code> namespace
+              prefix.</para>
+
+              <itemizedlist>
+                <listitem>
+                  <para><filename>Controller/</filename> Required. Your
+                  component's controllers</para>
+                </listitem>
+
+                <listitem>
+                  <para><filename>View/</filename> Required. Your API view
+                  classes. All subdirectories must be in Uppercasefirst format
+                  and match the controller's name before the
+                  <code>Controller</code> word. Note that these views DO NOT
+                  use view template files; they return JSON data
+                  directly.</para>
+                </listitem>
+              </itemizedlist>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+
+        <listitem>
+          <para><filename>media/com_example/</filename> Optional. Your
+          component's static assets.</para>
+
+          <itemizedlist>
+            <listitem>
+              <para><filename>css/</filename> Optional. Custom CSS files for
+              your component.</para>
+            </listitem>
+
+            <listitem>
+              <para><filename>js/</filename> Optional. Custom JavaScript files
+              for your component.</para>
+            </listitem>
+
+            <listitem>
+              <para><filename>joomla.asset.json</filename> The <link
+              linkend="concepts-webassetmanager">WebAssetManager configuration
+              file</link> for your static assets.</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+      </itemizedlist>
+    </section>
+
     <section xml:id="com-services">
       <title>Service provider</title>
 
-      <para/>
+      <para>As discussed in the previous section, the service provider file is
+      mandatory for Joomla 4 MVC components and lives in the component's
+      <filename>services</filename> folder and always named
+      <filename>provider.php</filename>.</para>
+
+      <para>TODO</para>
     </section>
 
     <section xml:id="com-extension">
