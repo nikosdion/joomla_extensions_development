@@ -1932,7 +1932,65 @@ $componentDispatcher-&gt;dispatch();</programlisting>What Joomla does is ask
       <filename>services</filename> folder and always named
       <filename>provider.php</filename>.</para>
 
-      <para>TODO</para>
+      <para>The contents of the file look like this:</para>
+
+      <programlisting>&lt;?php
+defined('_JEXEC') || die;
+
+use Acme\Example\Administrator\Extension\ExampleComponent;
+use Joomla\CMS\Categories\CategoryFactoryInterface;
+use Joomla\CMS\Component\Router\RouterFactoryInterface;
+use Joomla\CMS\Dispatcher\ComponentDispatcherFactoryInterface;
+use Joomla\CMS\Extension\ComponentInterface;
+use Joomla\CMS\Extension\Service\Provider\CategoryFactory;
+use Joomla\CMS\Extension\Service\Provider\ComponentDispatcherFactory;
+use Joomla\CMS\Extension\Service\Provider\MVCFactory;
+use Joomla\CMS\HTML\Registry;
+use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
+use Joomla\DI\Container;
+use Joomla\DI\ServiceProviderInterface;
+
+return new class implements ServiceProviderInterface {
+	public function register(Container $container)
+	{
+		// Required: tells Joomla our component's namespace prefix for creating MVC objects
+		$container-&gt;registerServiceProvider(new MVCFactory('Acme\\Example'));
+		// Required: tells Joomla our component's namespace prefix for creating the component Dispatcher
+		$container-&gt;registerServiceProvider(new ComponentDispatcherFactory('Acme\\Example'));
+		// Optional: only if we are using a frontend Router for SEF URLs.
+		$container-&gt;registerServiceProvider(
+			new \Acme\Example\Administrator\Provider\RouterFactory('Acme\\Example')
+		);
+		// Optional: only if we use core categories in our component
+		$container-&gt;registerServiceProvider(new CategoryFactory('Acme\\Example'));
+
+		// Required: tells Joomla how to create our component's extension object
+		$container-&gt;set(
+			ComponentInterface::class,
+			function (Container $container) {
+				// If you do not have a custom extension class use \Joomla\CMS\Extension\MVCComponent instead.
+				// You MUST have a custom extension class if you use a custom HTML class, router or core categories.
+				$component = new \Acme\Example\Administrator\Extension\ExampleComponent(
+					$container-&gt;get(ComponentDispatcherFactoryInterface::class)
+				);
+
+				// Optional: only if you have a custom HTML Helper class
+				$component-&gt;setRegistry($container-&gt;get(Registry::class));
+				// Required: makes it possible for our component to create MVC objects
+				$component-&gt;setMVCFactory($container-&gt;get(MVCFactoryInterface::class));
+				// Optional: only if you have a frontend Router for SEF URLs.
+				$component-&gt;setRouterFactory($container-&gt;get(RouterFactoryInterface::class));
+				// Optional: only if you use core categories in your component.
+				$component-&gt;setCategoryFactory($container-&gt;get(CategoryFactoryInterface::class));
+
+				return $component;
+			}
+		);
+	}
+};
+</programlisting>
+
+      <para>I believe the comments make it self–explanatory.</para>
     </section>
 
     <section xml:id="com-extension">
