@@ -2343,7 +2343,123 @@ $articleModel = $contentExtension
     <section xml:id="com-dispatcher">
       <title>Dispatcher</title>
 
-      <para/>
+      <para>As we said <link linkend="com-j3-vs-j4-mvc">when comparing the
+      Joomla 3 to the Joomla 4 MVC</link>, the Dispatcher takes the place of
+      the front controller (<filename>controller.php</filename>) in the legacy
+      Joomla 3 MVC. In some ways it also takes the place of the entry point
+      file (e.g. <filename>example.php</filename> for a component named
+      <code>com_example</code>) as it's the first code which is executed when
+      our component is loaded with the explicit intent of rendering
+      output.</para>
+
+      <para>Most components do not need a custom Dispatcher. The default
+      Dispatcher provided by Joomla is just fine.</para>
+
+      <para>If you do decide to create a custom Dispatcher its class name
+      <emphasis role="bold">MUST</emphasis> be
+      <code><replaceable>\My\Prefix</replaceable>\Administrator\Dispatcher\Dispatcher</code>
+      (backend),
+      <code><replaceable>\My\Prefix</replaceable>\Site\Dispatcher\Dispatcher</code>
+      (frontend) or
+      <code><replaceable>\My\Prefix</replaceable>\Api\Dispatcher\Dispatcher</code>
+      (API application) where <code>\My\Prefix</code> is the namespace prefix
+      for your component. This class must extend from
+      <code>\Joomla\CMS\Dispatcher\ComponentDispatcher</code>.</para>
+
+      <para>Typically, there are two methods you might need to customise. One
+      is <code>loadLanguage</code> which loads your component's language
+      files. You may have to customise that if, for example, you need to load
+      the backend files in the frontend or vice versa, or if you need to load
+      some core component's language files on top of yours.</para>
+
+      <para>The other method may be the <code>dispatch()</code> method which
+      figures out the view, task and controller from the input and executes
+      the component.</para>
+
+      <para>Usually, I override the <code>dispatch()</code> method to add a
+      minimum PHP version check and fix up the request variables so I always
+      have a view and task. The latter helps when writing Routers for
+      components which have record add / edit views in the
+      <emphasis>frontend</emphasis>. Such a Dispatcher would look like the
+      following code example.</para>
+
+      <programlisting>&lt;?php
+namespace Acme\Example\Site\Dispatcher;
+
+defined('_JEXEC') or die;
+
+class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
+{
+	/**
+	 * The default controller (and view), if none is specified in the request.
+	 *
+	 * @var   string
+	 */
+	protected $defaultController = 'items';
+
+	/** @inheritdoc */
+	public function dispatch()
+	{
+		$minPHPVersion = '7.4.0';
+
+		if (version_compare(PHP_VERSION, $minPHPVersion, 'lt'))
+		{
+			throw new \RuntimeException(
+				sprintf(
+					'This component requires PHP %s or later.',
+					$minPHPVersion
+				)
+			);
+		}
+
+		$this-&gt;applyViewAndController();
+		
+		parent::dispatch();
+	}
+
+	/**
+	 * Applies the view and controller to the input object communicated to the MVC objects.
+	 *
+	 * If we have a controller without view or just a task=controllerName.taskName we populate the view to make things
+	 * easier and more consistent for us to handle.
+	 *
+	 * @return  void
+	 */
+	protected function applyViewAndController(): void
+	{
+		$controller = $this-&gt;input-&gt;getCmd('controller', null);
+		$view       = $this-&gt;input-&gt;getCmd('view', null);
+		$task       = $this-&gt;input-&gt;getCmd('task', 'default');
+
+		if (strpos($task, '.') !== false)
+		{
+			// Explode the controller.task command.
+			[$controller, $task] = explode('.', $task);
+			$view = null;
+		}
+
+		if (empty($controller) &amp;&amp; empty($view))
+		{
+			$controller = $this-&gt;defaultController;
+			$view       = $this-&gt;defaultController;
+		}
+		elseif (empty($controller) &amp;&amp; !empty($view))
+		{
+			$controller = $view;
+		}
+		elseif (!empty($controller) &amp;&amp; empty($view))
+		{
+			$view = $controller;
+		}
+
+		$controller = strtolower($controller);
+		$view       = strtolower($view);
+
+		$this-&gt;input-&gt;set('view', $view);
+		$this-&gt;input-&gt;set('controller', $controller);
+		$this-&gt;input-&gt;set('task', $task);
+	}
+}</programlisting>
     </section>
 
     <section xml:id="com-namespaces">
