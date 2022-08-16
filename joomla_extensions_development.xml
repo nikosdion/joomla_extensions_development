@@ -57,7 +57,7 @@
       things relatively simple and because I am doing this unpaid, on my
       limited free time, I decided to take a few shortcuts here and there. I
       do not explain every concept in great detail, I try to explain it in
-      practical detail. </para>
+      practical detail.</para>
 
       <para>If you want to see what a real world Joomla extension looks like I
       urge you to take a look at and dissect the Joomla 4 extensions my
@@ -397,7 +397,7 @@ class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
 
       <para>By being able to extend classes across application sides you would
       finally be able to get rid of duplicate code and obliterate bugs coming
-      from that bad practice. </para>
+      from that bad practice.</para>
 
       <para>By following the <link
       xlink:href="https://www.php-fig.org/psr/psr-4/">PSR-4</link> standard we
@@ -544,8 +544,8 @@ class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
       called the Joomla Factory (<code>JFactory</code> or
       <code>\Joomla\CMS\Factory</code>) with a very opinionated approach on
       instantiating all sorts of globally used services, from the application
-      itself, to the database, to the user objects, to the mailer object.
-      </para>
+      itself, to the database, to the user objects, to the mailer
+      object.</para>
 
       <para>While this is a better approach to using global variables (like
       WordPress' infamous <code>$wpdb</code> for accessing the database), this
@@ -625,8 +625,8 @@ $currentUser = Factory::getApplication()-&gt;getIdentity();</programlisting>
       the Extension class. In this potential future Joomla extensions will be
       self-contained and perfectly testable. Even better, they can be sure
       that whatever happens in an extension stays in the extension, without
-      leaking to the global application scope (and poison other extensions).
-      </para>
+      leaking to the global application scope (and poison other
+      extensions).</para>
     </section>
 
     <section xml:id="concepts-webassetmanager">
@@ -721,7 +721,7 @@ Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
       names it internally). Don't put them in your extension's directory,
       don't put them in <filename>cache</filename> or <filename>tmp</filename>
       (they are NOT web accessible, they CAN be moved around even outside the
-      web root AND their contents can and will be removed anytime). </para>
+      web root AND their contents can and will be removed anytime).</para>
 
       <para>You have a component named <code>com_foobar</code>? Put your
       static assets in <filename>media/com_foobar</filename>. You have a
@@ -738,7 +738,7 @@ Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
       <para>The second point, the <filename>joomla.assets.json</filename>
       file, tells Joomla where to find what, what depends on what else and how
       it all fits together. This file is placed in the extension's media
-      subdirectory. </para>
+      subdirectory.</para>
 
       <para>For example, a component <code>com_example</code> could have a
       <filename>media/com_example/joomla.asset.json</filename> file which
@@ -799,8 +799,8 @@ Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
       the <code>com_example.typography</code> asset which loads the
       <filename>typography.min.css</filename> file. In its turn, this asset
       depends on the core <code>fontawesome</code> asset which loads the
-      FontAwesome icon font in any way Joomla figures out is appropriate.
-      </para>
+      FontAwesome icon font in any way Joomla figures out is
+      appropriate.</para>
 
       <para>When we tell Joomla to load the <code>com_example.backend</code>
       style asset it will first load the CSS files for FontAwesome (if our
@@ -936,7 +936,7 @@ Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
 
       <para>We do NOT have to touch our view template file. Since we are
       telling it to load a preset, changing the preset is enough for Joomla to
-      figure out what it needs to do. </para>
+      figure out what it needs to do.</para>
 
       <para>Using the Web Asset Manager correctly can be a massive asset (no
       pun intended!) in your extensions' public frontend. Your view templates
@@ -1313,7 +1313,7 @@ $componentDispatcher-&gt;dispatch();</programlisting>What Joomla does is ask
         plugins</emphasis>. If you subclass the
         <code>Joomla\CMS\Extension\MVCExtension</code> class in your own
         component you can create your own methods to return <emphasis>ANY
-        OBJECT KNOWN TO THE COMPONENT AND ITS CONTAINER</emphasis>. </para>
+        OBJECT KNOWN TO THE COMPONENT AND ITS CONTAINER</emphasis>.</para>
 
         <para>This is of enormous importance.</para>
 
@@ -1328,7 +1328,7 @@ $componentDispatcher-&gt;dispatch();</programlisting>What Joomla does is ask
         <para>Joomla core components already do that. For example, you can get
         the backend <code>ArticleModel</code> of <code>com_content</code> in a
         frontend component or plugin to create a new Joomla article
-        <emphasis>the right way</emphasis>: </para>
+        <emphasis>the right way</emphasis>:</para>
 
         <programlisting>$articleModel = \Joomla\CMS\Factory::getApplication()
   -&gt;bootComponent('com_content')
@@ -1376,7 +1376,7 @@ $componentDispatcher-&gt;dispatch();</programlisting>What Joomla does is ask
         (Home) menu item for the current language. This means that you may be
         getting a <uri>controller</uri>, <uri>view</uri> or <uri>task</uri>
         request variable — as well as other variables which might mess with
-        your component, like <uri>id</uri> — from the Home menu item. </para>
+        your component, like <uri>id</uri> — from the Home menu item.</para>
 
         <para>Your Dispatcher is responsible for figuring out if this is the
         case and fix the input variables to prevent weird bugs / showing the
@@ -1495,7 +1495,7 @@ $componentDispatcher-&gt;dispatch();</programlisting>What Joomla does is ask
                   <itemizedlist>
                     <listitem>
                       <para><filename>mysql/</filename> Optional. Indicates
-                      updates for sites running on the MySQL database. </para>
+                      updates for sites running on the MySQL database.</para>
 
                       <itemizedlist>
                         <listitem>
@@ -1932,20 +1932,16 @@ $componentDispatcher-&gt;dispatch();</programlisting>What Joomla does is ask
       <filename>services</filename> folder and always named
       <filename>provider.php</filename>.</para>
 
-      <para>The contents of the file look like this:</para>
+      <para>The absolutely minimal minimal service provider file looks like
+      the following:</para>
 
       <programlisting>&lt;?php
 defined('_JEXEC') || die;
 
 use Acme\Example\Administrator\Extension\ExampleComponent;
-use Joomla\CMS\Categories\CategoryFactoryInterface;
-use Joomla\CMS\Component\Router\RouterFactoryInterface;
 use Joomla\CMS\Dispatcher\ComponentDispatcherFactoryInterface;
 use Joomla\CMS\Extension\ComponentInterface;
-use Joomla\CMS\Extension\Service\Provider\CategoryFactory;
-use Joomla\CMS\Extension\Service\Provider\ComponentDispatcherFactory;
 use Joomla\CMS\Extension\Service\Provider\MVCFactory;
-use Joomla\CMS\HTML\Registry;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
 use Joomla\DI\Container;
 use Joomla\DI\ServiceProviderInterface;
@@ -1953,36 +1949,26 @@ use Joomla\DI\ServiceProviderInterface;
 return new class implements ServiceProviderInterface {
 	public function register(Container $container)
 	{
-		// Required: tells Joomla our component's namespace prefix for creating MVC objects
+		// PART 1: Register service providers to the component's container
 		$container-&gt;registerServiceProvider(new MVCFactory('Acme\\Example'));
-		// Required: tells Joomla our component's namespace prefix for creating the component Dispatcher
-		$container-&gt;registerServiceProvider(new ComponentDispatcherFactory('Acme\\Example'));
-		// Optional: only if we are using a frontend Router for SEF URLs.
-		$container-&gt;registerServiceProvider(
-			new \Acme\Example\Administrator\Provider\RouterFactory('Acme\\Example')
-		);
-		// Optional: only if we use core categories in our component
-		$container-&gt;registerServiceProvider(new CategoryFactory('Acme\\Example'));
 
-		// Required: tells Joomla how to create our component's extension object
+		// PART 2: Instantiate and set up your extension object
 		$container-&gt;set(
 			ComponentInterface::class,
 			function (Container $container) {
-				// If you do not have a custom extension class use \Joomla\CMS\Extension\MVCComponent instead.
-				// You MUST have a custom extension class if you use a custom HTML class, router or core categories.
+				/**
+				 * PART 2.a: Instantiate the extension object
+				 *
+				 * If you do not have a custom extension class use \Joomla\CMS\Extension\MVCComponent instead.
+				 */
 				$component = new \Acme\Example\Administrator\Extension\ExampleComponent(
 					$container-&gt;get(ComponentDispatcherFactoryInterface::class)
 				);
 
-				// Optional: only if you have a custom HTML Helper class
-				$component-&gt;setRegistry($container-&gt;get(Registry::class));
-				// Required: makes it possible for our component to create MVC objects
+				// PART 2.b: Set up the extension object
 				$component-&gt;setMVCFactory($container-&gt;get(MVCFactoryInterface::class));
-				// Optional: only if you have a frontend Router for SEF URLs.
-				$component-&gt;setRouterFactory($container-&gt;get(RouterFactoryInterface::class));
-				// Optional: only if you use core categories in your component.
-				$component-&gt;setCategoryFactory($container-&gt;get(CategoryFactoryInterface::class));
 
+				// PART 2.c: return the extension object
 				return $component;
 			}
 		);
@@ -1990,13 +1976,368 @@ return new class implements ServiceProviderInterface {
 };
 </programlisting>
 
-      <para>I believe the comments make it self–explanatory.</para>
+      <para>As you can see the service provider returns an <link
+      xlink:href="https://www.php.net/manual/en/language.oop5.anonymous.php">anonymous
+      PHP class</link> which implements the
+      <code>Joomla\DI\ServiceProviderInterface</code>. That's the standard way
+      to extend Joomla's DIC. Remember, as we learned in <link
+      linkend="com-lifetime">the lifetime of a component</link>, Joomla
+      creates a <emphasis>copy</emphasis> of its DIC and uses it as our
+      component's own DIC. The service providers we set up in our component
+      stay with our component, they do not leak out to the global application
+      scope (the global Joomla DIC you get through the
+      <code>Joomla\CMS\Factory::getContainer()</code> static method).</para>
+
+      <para>Part 1 of that file lets us register service providers to our
+      component's DIC. At the bare minimum we need to register a
+      <code>Joomla\CMS\Extension\Service\Provider\MVCFactory</code> provider.
+      This returns an object implementing
+      <code>Joomla\CMS\MVC\Factory\MVCFactoryInterface</code> which is used by
+      our component's code (and Joomla's core code) to get the MVC objects of
+      our component (Controllers, Models, Views, Tables). If we want to use
+      more core Joomla features with out component we may have to register
+      more service providers as we'll see in the <link
+      linkend="com-extension">Extension class</link> section and the rest of
+      the sections of this chapter.</para>
+
+      <para>Part 2 sets up a service provider returning an object implementing
+      the <code>Joomla\CMS\Extension\ComponentInterface</code>, i.e. our
+      component's extension object.</para>
+
+      <para>Part 2.a is where we create an instance of our <link
+      linkend="com-extension">extension class</link>. If you have a dead
+      simple component which does not use a custom extension class you can use
+      Joomla's built-in <code>\Joomla\CMS\Extension\MVCComponent</code> class
+      instead. Most components will need a custom extension class so we
+      instantiate it here.</para>
+
+      <para>Part 2.b is where we set up the extension object we created in
+      Part 2.a. Remember when I told you that <link
+      linkend="concepts-container">Joomla's DIC is not really a Dependency
+      Injection Container</link> but more of a Service Locator? Because of
+      that fact, when we create the extension object it does not know of any
+      service objects it needs to use. Therefore we have to push them
+      manually.</para>
+
+      <para><emphasis>Sidebar: In my opinion, the three biggest shortcomings
+      of the Joomla 4 MVC are the lack of convention over configuration, the
+      lack of abstracted configuration and the lack of a real Dependency
+      Injection container. These three shortcomings are, respectively, why we
+      need to have a service provider file, why we need Part 1 and Part 2.b
+      and why we need Part 2.a. Most other PHP frameworks have already solved
+      these shortcomings. This means that any complaints that Joomla is moving
+      to a very abstracted approach just to compete with other PHP frameworks
+      are entirely unfounded; Joomla's architecture is still a good 10 or so
+      years behind the PHP state of the art. This is not a bad thing! Too much
+      abstraction may be a good thing for experienced, hardcore developers
+      like yours truly but not necessarily the easiest thing to get your head
+      around if you're a newcomer to Joomla or PHP in
+      general.</emphasis></para>
+
+      <para>Finally, we have Part 3 where we return the configured extension
+      object, necessary for our custom service provider to <emphasis>actually
+      work</emphasis>.</para>
+
+      <warning>
+        <para>You may be tempted to think that the service provider is only
+        ever called when Joomla is about to render your component. <emphasis
+        role="bold">This is not the case</emphasis>. Joomla will load a
+        component's service provider any time it needs to interact with any of
+        its services including the Router, or because another extension (such
+        as a plugin, or module) wants to get access to your component's Models
+        or some other service or object.</para>
+
+        <para>Just because your service provider's code is running DOES NOT
+        mean you are about to render an HTML page with your component, it DOES
+        NOT mean that you necessarily have access to the JPATH_COMPONENT and
+        JPATH_COMPONENT_ADMINISTRATOR constants and absolutely DOES NOT mean
+        that you should ever, <emphasis>ever</emphasis>, try to push CSS,
+        JavaScript or run any other code which assumes that Joomla is in an
+        HTML output state. </para>
+
+        <para>If you have such code (which is generally a bad idea) you should
+        run it in your component's <link
+        linkend="com-dispatcher">Dispatcher</link> and only after checking
+        that you are indeed running in an HTML application (check the type of
+        the object returned from calling
+        <code>\Joomla\CMS\Factory::getApplication()-&gt;getDocument()</code>).</para>
+      </warning>
     </section>
 
     <section xml:id="com-extension">
       <title>Extension class</title>
 
-      <para/>
+      <para>As we saw earlier in <link linkend="com-lifetime">the lifetime of
+      a component</link>, the Extension class of a component is <emphasis>sort
+      of</emphasis> a service locator for our component. Joomla checks if that
+      objects implements a PHP Interface it knows about and uses the service
+      communicated via the Interface implementation (typically one of the
+      corresponding PHP Traits provided by Joomla) to do something useful,
+      e.g. register an HTMLHelper helper, integrate with Tags, create SEF URLs
+      by using a Router and so on and so forth.</para>
+
+      <para>If your component does not make use of any of these features you
+      do not need to create a custom extension class for your component.
+      Joomla gives you the perfectly serviceable
+      <code>Joomla\CMS\Extension\MVCComponent</code> class which implements a
+      minimal Joomla 4 component: it can run because it returns a Dispatcher
+      and it can create MVC objects using the Joomla 4 MVC because it returns
+      an MVCFactory object. This is enough for a component which only runs in
+      the backend or runs in both the frontend and the backend but has no way
+      of letting Joomla create SEF URLs for it. You may think this is useless
+      but I'd contest you're not thinking simple enough. Case in point, some
+      core Joomla components doing exactly that. For example the
+      <code>com_actionlogs</code> component which only has a backend user
+      interface.</para>
+
+      <para>That said, there wouldn't be much to write if all or even most
+      components didn't need a custom extension class. You see, most
+      components need one or more of the following features. I am documenting
+      the features I discovered that need customisations in the extension
+      class and give you an overview of the required changes in your
+      component's code to make them work.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Use a custom <link linkend="com-html">HTML
+          Helper</link>.</para>
+
+          <para>Your extension class must implement the
+          <code>Joomla\CMS\HTML\HTMLRegistryAwareTrait</code> and use the
+          <code>Joomla\CMS\HTML\HTMLRegistryAwareTrait</code>. The extension
+          class must override the <code>boot</code> method and have a line
+          similar to <code>$this-&gt;getRegistry()-&gt;register('something',
+          new MyHTMLHelper())</code>. We'll see what that means in the section
+          covering the HTML helper.</para>
+        </listitem>
+
+        <listitem>
+          <para>Use <link linkend="com-categories">core
+          categories</link>.</para>
+
+          <para>Your extension class must implement the
+          <code>Joomla\CMS\Categories\CategoryServiceInterface</code> and use
+          the <code>Joomla\CMS\Categories\CategoryServiceTrait</code>. Your
+          service provider (<filename>provider.php</filename>) needs to
+          register a
+          <code>Joomla\CMS\Extension\Service\Provider\CategoryFactory</code>
+          service provider and use the extension object's
+          <code>setCategoryFactory</code> method to pass this factory to the
+          extension object. The extension class must override the
+          <code>getTableNameForSection</code> and
+          <code>getStateColumnForSection</code> methods defined in the
+          aforementioned trait and interface.</para>
+        </listitem>
+
+        <listitem>
+          <para>Integrate with Joomla's Tags feature.</para>
+
+          <para>Your extension class must implement the
+          <code>Joomla\CMS\Tag\TagServiceInterface</code> and use the
+          <code>Joomla\CMS\Tag\TagServiceTrait</code>. The extension class
+          must override the <code>getTableNameForSection</code> and
+          <code>getStateColumnForSection</code> methods defined in the
+          aforementioned trait and interface.</para>
+        </listitem>
+
+        <listitem>
+          <para>Integrate with <link linkend="com-fields">Joomla's Custom
+          Fields feature</link>.</para>
+
+          <para>Your extension class must implement the
+          <code>Joomla\CMS\Fields\FieldsServiceInterface</code>. The extension
+          class must implement the <code>validateSection</code> and
+          <code>getContext</code> methods defined in the aforementioned
+          interface.</para>
+        </listitem>
+
+        <listitem>
+          <para>Provide a <link linkend="com-router">Router</link> for
+          meaningful, human-readable SEF URLs in the frontend.</para>
+
+          <para>Your component must have a class implementing the
+          <code>Joomla\CMS\Component\Router\RouterFactoryInterface</code>
+          (Router factory) and a class implementing the
+          <code>Joomla\DI\ServiceProviderInterface</code> (Router factory
+          provider). Your extension class must implement the
+          <code>Joomla\CMS\Component\Router\RouterServiceInterface</code> and
+          use the <code>Joomla\CMS\Component\Router\RouterServiceTrait</code>.
+          Your service provider (<filename>provider.php</filename>) needs to
+          register your Router factory provider and use the extension object's
+          <code>setRouterFactory</code> method to pass the resulting Router
+          factory to the extension object.</para>
+        </listitem>
+
+        <listitem>
+          <para>Let Joomla associate items between languages on multi–language
+          sites.</para>
+
+          <para>Your component must have a class extending the
+          <code>Joomla\CMS\Association\AssociationExtensionHelper</code>. Your
+          service provider (<filename>provider.php</filename>) must register
+          this class with the
+          <code>Joomla\CMS\Association\AssociationExtensionInterface::class</code>
+          key and use the extension object's
+          <code>setAssociationExtension</code> method to assign the object
+          resulting from that service to the extension object. Your extension
+          object needs to implement the
+          <code>Joomla\CMS\Association\AssociationServiceInterface</code> and
+          use the
+          <code>Joomla\CMS\Association\AssociationServiceTrait</code>.</para>
+        </listitem>
+
+        <listitem>
+          <para>Integrate with Joomla's Workflows feature.</para>
+
+          <para>Your extension class must implement the
+          <code>Joomla\CMS\Workflow\WorkflowServiceInterface</code> and use
+          the <code>Joomla\CMS\Workflow\WorkflowServiceTrait</code>. The
+          extension class must override the <code>getModelName</code>,
+          <code>filterTransitions</code>,
+          <code>getWorkflowTableBySection</code>,
+          <code>getWorkflowContexts</code> and
+          <code>getCategoryWorkflowContext</code> methods defined in the
+          aforementioned trait and interface.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>As you can see, trying to do pretty much anything useful does
+      require a custom extension class.</para>
+
+      <bridgehead>Naming your extension class</bridgehead>
+
+      <para>There are no hard rules for naming your component's extension
+      class. That said, to help anyone reading your code — including yourself
+      six or so months later — retain a modicum of their sanity it is
+      advisable to use the convention
+      <code><replaceable>\My\Prefix</replaceable>\Administrator\Extension\<replaceable>Name</replaceable>Component</code>
+      where \My\Prefix is the namespace prefix of your component and
+      <code>Name</code> is the name of your component without the
+      <code>com_</code> prefix.</para>
+
+      <para>For example, if you have a component named
+      <code>com_example</code> with the namespace prefix
+      <code>\Acme\Example</code> your extension class should be
+      <code>\Acme\Example\Administrator\Extension\ExampleComponent</code> and
+      placed in the file
+      <filename>administrator/components/com_example/src/Extension/ExampleComponent.php</filename>.</para>
+
+      <bridgehead>Using your extension class in the service
+      provider</bridgehead>
+
+      <para>As you remember from the service provider section, in Part 2.a you
+      need to instantiate the extension class. These lines would look like
+      this:</para>
+
+      <programlisting>$component = new \Acme\Example\Administrator\Extension\ExampleComponent(
+	$container-&gt;get(ComponentDispatcherFactoryInterface::class)
+);</programlisting>
+
+      <para>Simple, isn't it?</para>
+
+      <bridgehead>Using your extension class from outside the
+      component</bridgehead>
+
+      <para>Now we are finally able to answer the question which you had in
+      mind coming to this section: why in the name of Cthulu do I have to have
+      an extension class and what does it accomplish beyond adding yet another
+      layer of complexity to my extension writing problems?</para>
+
+      <para>For that, let's consider this. Let's say we have a news site and
+      we are building a system plugin which checks every day for newly
+      published articles, auto–generating a daily summary blog post using the
+      intro text of these articles and some preset template (maybe even some
+      judicious use of a GPT-3–based AI). This plugin would need to publish an
+      article. You could of course just instantiate the
+      <code>ArticleTable</code> class of <code>com_content</code> directly to
+      do that but this would not run any content plugins or create the right
+      entries in the #__assets table, breaking your site. You need to use the
+      com_content Article backend model of <code>com_content</code>.</para>
+
+      <para>Back in the Joomla 3 days you would do that by directly
+      instantiating the <code>ContentModelArticle</code> class. Okay, first
+      problem: Joomla didn't know where to find it so you have to
+      <code>require_once()</code> the file. Second problem: what if that model
+      changes over time and has dependencies to other classes you have failed
+      to require the files of? Believe me, I've been there, done that and it
+      was about as enjoyable as using a rusty fork to pull my eyes out of
+      their sockets.</para>
+
+      <para>In Joomla 4 you don't have to care about the class autoloading,
+      but the <code>ArticleModel</code> will actually need access to other
+      services provided by the <code>com_content</code> component for things
+      like tagging, custom fields and workflows. If you try to instantiate the
+      model class directly you will get a lot of errors as well. So, who are
+      you gonna call? No, not Ghostbusters; they are Hollywood fiction. You're
+      gonna call the very real and very useful <code>bootComponent</code>
+      method of the application!</para>
+
+      <programlisting>$contentExtension = \Joomla\CMS\Factory::getApplication()
+  -&gt;bootComponent('com_content');
+$articleModel = $contentExtension
+  -&gt;getMVCFactory()
+  -&gt;createModel('Article', 'Administrator');</programlisting>
+
+      <para>The first two lines told Joomla to “boot” the
+      <code>com_content</code> component, returning its <emphasis>extension
+      object</emphasis>. Now we have have access to all services known to this
+      object through its various getters (method whose name start with
+      <code>get</code>).</para>
+
+      <para>This works for any component, anywhere, anytime. You can be in the
+      frontend, backend, API application or CLI application or in an execution
+      context you don't care to know about in a Scheduled Tasks plugin. No
+      problem! You can boot any components — yours, core, or third party — to
+      get its extension object and Bob's your uncle.</para>
+
+      <bridgehead>Getting access to the component's DIC anytime,
+      anywhere</bridgehead>
+
+      <para>I see that some of you are <emphasis>still</emphasis> not
+      convinced that the extension object is a cool concept.</para>
+
+      <para>Remember when I told you that the Joomla DIC — therefore the
+      component's DIC which is a customised copy of it — is not a real
+      Dependency Injection Container but a Service Locator and lamented the
+      fact that you cannot get a reference to it from anywhere in your
+      component, unlike modern PHP frameworks like Laravel?</para>
+
+      <para>Well, it turns out that you can get access to your component's DIC
+      anywhere, anytime. You just need to add the following handy code to your
+      extension's class:</para>
+
+      <programlisting>	protected static $dic;
+
+	public function boot(ContainerInterface $container)
+	{
+		self::$dic = $container;
+	}
+	
+	public static function getContainer()
+	{
+		if (empty(self::$dic))
+		{
+			Factory::getApplication()
+			       -&gt;bootComponent('com_example');
+		}
+		
+		return self::$dic;
+	}
+</programlisting>
+
+      <para>This code is very simple. We declare a protected static variable
+      holding our component's DIC. This is initialised by the boot method
+      which is called whenever the component is booted. The static method
+      getContainer returns the component's DIC; if the DIC was undefined at
+      this point it boots the component first.</para>
+
+      <para>So now you can simply do:</para>
+
+      <programlisting>$exampleDIC = \Acme\Example\Administrator\Extension\ExampleComponent::getContainer();</programlisting>
+
+      <para>The component's DIC gives you access to all of the application's
+      services and your component's service. Using the MVCFactory to get an
+      MVC object you can be sure that it will work as intended.</para>
     </section>
 
     <section xml:id="com-dispatcher">
