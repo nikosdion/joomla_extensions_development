@@ -53,11 +53,12 @@
       for your life.</para>
 
       <para>I am making every effort to make this book approachable to all
-      levels of developers, from the novice to the expert. However, to keep
-      things relatively simple and because I am doing this unpaid, on my
-      limited free time, I decided to take a few shortcuts here and there. I
-      do not explain every concept in great detail, I try to explain it in
-      practical detail.</para>
+      levels of developers, from the novice who's barely hacked together their
+      first plugin to the seasoned expert with dozens of extensions under
+      their belt. However, to keep things relatively simple and because I am
+      doing this unpaid, on my limited free time, I decided to take a few
+      shortcuts here and there. I do not explain every concept in great
+      detail, I try to explain it in practical detail.</para>
 
       <para>If you want to see what a real world Joomla extension looks like I
       urge you to take a look at and dissect the Joomla 4 extensions my
@@ -318,6 +319,44 @@
       section for it, please do let me know. I can't promise it will
       definitely make it into the book but I will at least promise to give it
       a good thought and most likely a good try.</para>
+    </section>
+
+    <section xml:id="about-me">
+      <title>About the author</title>
+
+      <para>Hi, I am Nicholas. I am a Mechanical Engineer turned Software
+      Engineer. I am from and still live in Greece with my wife, daughter and
+      our two naughty cats.</para>
+
+      <para>I've been into computers since I was 11 years olds, at the dawn of
+      the 1990s. Back then dinosaurs were still walking among us, haircuts
+      were <emphasis>weird</emphasis>, personal computers were the size of a
+      small backpack and had <emphasis>far less</emphasis> computing power
+      than your average smart lightbulb. Only one of the previous statements
+      is false. I immediately took to programming for, as I said to my parents
+      at the time, “I want to learn how to make this machine do things for me
+      so I don't have to do them”. LIttle did I know what I was getting myself
+      into…</para>
+
+      <para>I've been using Joomla as a site integrator and extensions
+      developer since it was called Mambo, back in 2004. I wrote my first
+      mass–distributed extension called JoomlaPack in October 2006 while
+      taking a two week break from my day job at the time as a business
+      consultant. One thing led to another, JoomlaPack became Akeeba Backup
+      and I gave up on business consultancy and mechanical engineering to
+      become a full time software engineer.</para>
+
+      <para>I've been actively participating in the Joomla community since
+      2009. I am a regular Joomla contributor and not just writting code. I've
+      been involved in community outreach efforts and instigated the events
+      leading to the beginning of the Joomla 4 effort. I still contribute to
+      Joomla and, if I want to be honest with myself, I will continue doing
+      that until Joomla or myself is no more, whichever comes first.</para>
+
+      <para>I am neurodivergent (ADHD) and have a particular sense of humour.
+      I firmly believe that life's too short to take it seriously. You'll see
+      that a lot in this book. I don't care about writing a dry, boring book,
+      especially on a subject as dry and boring as writing software.</para>
     </section>
   </chapter>
 
@@ -2926,17 +2965,652 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
     <section xml:id="com-models">
       <title>Models</title>
 
+      <para>The bulk of the implementation logic for Joomla 4 MVC models is
+      the same as in Joomla 3 MVC.</para>
+
+      <para>The Model classes extend from one of the base Joomla MVC Model
+      super–classes:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>Joomla\CMS\MVC\Model\BaseModel</term>
+
+          <listitem>
+            <para>The most basic model you can get. It does not connect to a
+            database and does not support form. This is the kind of model you
+            may need to use if you have a static view in your component (e.g.
+            a control panel not implemented with a core <link
+            linkend="com-dashboard">Dashboard</link>), if your model deals
+            with data outside of the database (e.g. processing images, talking
+            to a third party API over HTTP, converting files, etc) or if it
+            uses an external or third party library (e.g. in Akeeba Backup the
+            BackupModel uses our Akeeba Engine backup engine library).</para>
+
+            <para>The basic service it provide is model state management using
+            the <code>getState</code>, <code>setState</code> and
+            <code>populateState</code> methods.</para>
+
+            <tip>
+              <para>In a proper MVC implementation the only way the Controller
+              would “talk” to a Model is by setting its state and then reading
+              either the return value of the method it called or inspecting
+              the Model's state.</para>
+
+              <para>In Joomla MVC the model state is a weird beast. It is
+              ‘normally’ set by reading it from the session and overriding it
+              from the request parameters using the application's
+              <code>getUserStateFromRequest</code> method.</para>
+
+              <para>While this is mostly okay for simple administrator pages
+              listing and editing records you may find yourself in situations
+              where you need to “talk” to the model from the Controller.
+              Instead of passing this information around as HTTP GET/POST
+              parameters — which can be inspected and
+              <emphasis>overridden</emphasis> by a curious or malicious user —
+              I urge you to instead override the <code>display</code> method
+              of your Controller and set the Model's state after instantiating
+              it. This is something you will not see anywhere in the Joomla
+              core code but something you SHOULD be doing in your more complex
+              components to avoid embarrassing and easily preventable security
+              vulnerabilities.</para>
+
+              <para>Speaking of which, <emphasis>always</emphasis> validate
+              the data type and values of your model state in your code.
+              Writing secure code requires you to adopt a “trust no–one”
+              stance against any data which is not hard–coded into your
+              extension's code! Do not assume that the data will be safe
+              because (you think that) only a Super User can access a specific
+              view. First of all, your assumption may be wrong. Moreover, your
+              Model may be used outside the View you have in mind, even by
+              third party components, plugins and modules integrating with
+              your extension. Trust no–one, not even your own
+              assumptions!</para>
+            </tip>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>Joomla\CMS\MVC\Model\BaseDatabaseModel</term>
+
+          <listitem>
+            <para>This is an extension to BaseModel primarily adding database
+            support. You can get the applicable database object with
+            <code>$this-&gt;getDbo()</code> (Joomla 4.0 or later 4.x version)
+            or <code>$this-&gt;getDatabase()</code> (Joomla 4.2 and later
+            versions, including 5.0 and later).</para>
+
+            <para>Beyond that, it lets you dispatch events using the global
+            Event Dispatcher you get with
+            <code>$this-&gt;getDispatcher()</code> (Joomla 4.2 and later), get
+            the Joomla user object of the currently logged in user with
+            <code>$this-&gt;getCurrentUser()</code> (Joomla 4.2 and later),
+            and get the CacheControllerFactory to talk to Joomla's cache with
+            <code>$this-&gt;getCacheControllerFactory()</code> (Joomla 4.2 and
+            later).</para>
+
+            <para>This is the most used type of model super–class, either
+            having your models directly extend it or indirectly extend it by
+            using one of its descendant classes.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>Joomla\CMS\MVC\Model\FormModel</term>
+
+          <listitem>
+            <para>This is an extension to the BaseDatabaseModel which
+            additionally implements Form handling.</para>
+
+            <important>
+              <para>This IS NOT the class you want to extend in pages which
+              edit existing or create new records! What you are looking for in
+              this case is Joomla\CMS\MVC\Model\AdminModel (yes, even in the
+              frontend!).</para>
+            </important>
+
+            <para>This is the kind of Model you are going to use on pages
+            which render a Form using an XML file for collecting information
+            from the user BUT NOT for the purpose of editing or creating a
+            record. </para>
+
+            <para>A practical example of this is the Joomla Global
+            Configuration page's model
+            (<code>Joomla\Component\Config\Administrator\Model\ApplicationModel</code>)
+            which does render an XML form with the Global Configuration
+            option. Compare this to the article edit page's model
+            (<code>Joomla\Component\Content\Administrator\Model\ArticleModel</code>)
+            and the difference becomes evident right away!</para>
+
+            <para>In your components you might want to use this type of Model
+            in custom configuration pages. For example, you may have a
+            component which post new articles automatically on social media.
+            You may want to create different configurations for Facebook,
+            Twitter, Reddit and whatnot. The page managing each of these
+            configurations, each one using its own XML form file, would very
+            likely use a Model class extending from <code>FormModel</code>
+            instead of <code>AdminModel</code>.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>Joomla\CMS\MVC\Model\AdminModel</term>
+
+          <listitem>
+            <para>This is an extension to the <code>FormModel</code> which is
+            designed specifically for creating new and editing existing
+            records.</para>
+
+            <para>What is the difference? Whereas <code>FormModel</code> is
+            made to deal with the collection of arbitrary data, the
+            <code>AdminModel</code> is made to create and edit records having
+            the same data shape, defined in a database table. As a result, it
+            works together with a <link linkend="com-tables">Table
+            object</link>. Most of its methods will be talking to the Table
+            object.</para>
+
+            <para>It also supports automatic integration with content plugins
+            and implements the methods you need to save new/existing records,
+            reorder records, change record associations, batch process
+            records, check–in and check–out records to the database, change
+            the publish / trash state, and permanently delete records. Yup,
+            this type of Model basically handles nearly everything you need to
+            manage records in the backend of a site
+            <emphasis>except</emphasis> listing records.</para>
+
+            <note>
+              <para>I had personally found it extremely confusing that the
+              <code>AdminModel</code> (and the corresponding
+              <code>FormController</code>) is responsible for handling all the
+              actions you see available in the toolbar of a records list page.
+              When you think about architecture it does make sense. When you
+              are new to Joomla you might wonder why this is not handled by
+              <code>ListModel</code> (and its corresponding
+              <code>AdminController</code>). This is unfortunately a case of
+              “you do this just because”, not a case of using what you'd
+              intuitively think is the right thing to use. I know,
+              right?!</para>
+
+              <para>You may also get confused by the fact that an
+              AdminController has a ListModel whereas a FormController has an
+              AdminModel. It looks like someone had a stroke trying to name
+              things. </para>
+
+              <para>Thankfully, no, nobody had a stroke — the weird naming
+              comes from the fact that when forms were introduced in Joomla
+              1.6 we had to maintain backwards compatibility to Joomla 1.5,
+              thereby causing a class naming mayhem. You know what are the two
+              hardest things in software development? Handling dates, managing
+              backwards compatibility and off–by–one errors!</para>
+            </note>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>Joomla\CMS\MVC\Model\ItemModel</term>
+
+          <listitem>
+            <para>This is an extension of the DatabaseModel, designed to
+            <emphasis>display</emphasis> a single record in the
+            frontend.</para>
+
+            <para>This is something you will use probably a lot in the
+            frontend of your application when you want to show a single record
+            which cannot be edited. Unlike the FormModel and the AdminModel,
+            this Model class does not have any kind of management code for the
+            records. It just displays them and that's it.</para>
+
+            <tip>
+              <para>Practically speaking, you might just end up extending your
+              frontend Model from your backend Model which in turn extends
+              from Joomla's AdminModel if you need to provide any kind of
+              frontend administration of your component. There is no point
+              creating two models to talk to the same data, one just to show
+              it and one just to modify it. It also makes no sense to have
+              your frontend Model extend from AdminModel and duplicate your
+              code (WET code) when you can simply extend your backend model
+              and refrain from repeating yourself (DRY code).</para>
+            </tip>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>Joomla\CMS\MVC\Model\ListModel</term>
+
+          <listitem>
+            <para>This class extends from the DatabaseModel and has the
+            ability to manage forms (you need them for Search Tools a.k.a.
+            list filters) and, crucially, to provide pagination–aware list of
+            records from a database table.</para>
+
+            <para>You know how the main Joomla backend user interface pattern
+            is a list of records? Yup, this is the Model which implements
+            it.</para>
+
+            <tip>
+              <para>In the frontend of your component you will very frequently
+              find yourself needing to list a bunch of items in
+              pagination–aware lists. The traditional Joomla code pattern was
+              to create a frontend Model which extended from BaseDatabaseModel
+              and have the same code to list items copied over from the
+              backend.</para>
+
+              <para>Don't do that. It's WET code and I've already mentioned
+              that it's the source of many a bug.</para>
+
+              <para>What you will practically find yourself doing is extending
+              the frontend Model from the backend Model. Unlike Joomla 3, this
+              is now possible!</para>
+
+              <para>You need to be acutely aware, though, that you will need
+              to override the <code>populateState</code> method in the
+              frontend model. By default, this method will accept any kind of
+              user input for filtering the list of records which could indeed
+              be used by a malicious user to display items they are not
+              supposed to access!</para>
+
+              <para>An even better approach is what I hinted to earlier.
+              Override the <code>display</code> method of your Controller. In
+              there, first do a <code>getState</code> on your model (to run
+              the <code>populateState</code> and be done with it), then
+              explicitly set the Model state using its <code>setState</code>
+              method before passing it to your View object. When you do that,
+              the state set by your Controller's code overrides whatever
+              <code>populateState</code> did, thereby mitigating any security
+              risks.</para>
+            </tip>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <bridgehead>Interfaces and Traits</bridgehead>
+
+      <para>In Joomla 3 each Model type tried to do everything under the sun
+      and even implement features which might have nothing to do with your
+      component, like tags and versioning.</para>
+
+      <para>In Joomla 4 and later versions the default Model classes don't do
+      any of that. That's a good thing because it promotes the computer
+      science principle called Separation of Concerns. If you need additional
+      features you will be doing a bit of <emphasis>object
+      composition</emphasis>. </para>
+
+      <para>For those with a Computer Science background, you may wonder how
+      you can do object composition in a language like PHP which, unlike C for
+      example, does not allow classes to inherit (extend) from multiple
+      classes. The answer is by using Traits provided by Joomla.</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>\Joomla\CMS\Versioning\VersionableModelTrait</term>
+
+          <listitem>
+            <para>Implements support for Versions (record history).</para>
+
+            <para>Only applicable to models extending from
+            <code>AdminModel</code>. This requires the <guilabel>Behaviour -
+            Versionable</guilabel> plugin to be published. The corresponding
+            Table must implement the
+            <code>\Joomla\CMS\Versioning\VersionableTableInterface</code>
+            interface and the corresponding Controller must use the
+            <code>\Joomla\CMS\Versioning\VersionableControllerTrait</code>
+            trait.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\Joomla\CMS\MVC\Model\WorkflowBehaviorTrait</term>
+
+          <listitem>
+            <para>Implements support for Workflows (prescribed steps for state
+            changes in records).</para>
+
+            <para>Only applicable to models extending from
+            <code>AdminModel</code>. The model must implement the
+            <code>\Joomla\CMS\MVC\Model\WorkflowModelInterface</code>
+            interface. </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <bridgehead>Pushing services to your Model (the One True Joomla Way™:
+      pushing services)</bridgehead>
+
+      <note>
+        <para>Yes, this is VERY complicated and not very stable. I DO NOT
+        RECOMMEND THIS APPROACH! There is a simpler way presented towards the
+        end of this section.</para>
+      </note>
+
+      <para>As noted eariler, Joomla implements a “service push” approach. If
+      your Model needs a custom service from the component's <link
+      linkend="concepts-container">DI Container</link> you need to follow a
+      few steps. Let's say you want to push an
+      <code>\Acme\Example\Administrator\Service\FacebookPublish</code> service
+      to your Model to make it a bit easier to understand.</para>
+
+      <para>First, you need to make sure that you register a service provider
+      in <link linkend="com-services">your component's service provider</link>
+      implementation:</para>
+
+      <programlisting>$container-&gt;set(
+    \Acme\Example\Administrator\Service\FacebookPublish::class,
+    function (Container $container) {
+        return new \Acme\Example\Administrator\Service\FacebookPublish();
+    }
+);</programlisting>
+
+      <para>Then, you will need to create a custom MVCFactory service provider
+      for your component:</para>
+
+      <programlisting>&lt;?php
+
+namespace Acme\Example\Administrator\Provider;
+
+use Acme\Example\Administrator\Service\FacebookPublish;
+use Joomla\CMS\Cache\CacheControllerFactoryInterface;
+use Joomla\CMS\Form\FormFactoryInterface;
+use Joomla\CMS\MVC\Factory\ApiMVCFactory;
+use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
+use Joomla\CMS\Router\SiteRouter;
+use Joomla\Database\DatabaseInterface;
+use Joomla\DI\Container;
+use Joomla\DI\ServiceProviderInterface;
+use Joomla\Event\DispatcherInterface;
+
+class MVCFactory implements ServiceProviderInterface
+{
+	private $namespace;
+
+	public function __construct(string $namespace)
+	{
+		$this-&gt;namespace = $namespace;
+	}
+
+	public function register(Container $container)
+	{
+		$container-&gt;set(
+			MVCFactoryInterface::class,
+			function (Container $container) {
+				if (\Joomla\CMS\Factory::getApplication()-&gt;isClient('api')) {
+					$factory = new ApiMVCFactory($this-&gt;namespace);
+				} else {
+					$factory = new \Acme\Example\Administrator\Service\MVCFactory($this-&gt;namespace);
+				}
+
+				$factory-&gt;setFormFactory($container-&gt;get(FormFactoryInterface::class));
+				$factory-&gt;setDispatcher($container-&gt;get(DispatcherInterface::class));
+				$factory-&gt;setDatabase($container-&gt;get(DatabaseInterface::class));
+				$factory-&gt;setSiteRouter($container-&gt;get(SiteRouter::class));
+				$factory-&gt;setCacheControllerFactory($container-&gt;get(CacheControllerFactoryInterface::class));
+				$factory-&gt;setFacebookPublish($container-&gt;get(FacebookPublish::class))
+
+				return $factory;
+			}
+		);
+	}
+}
+</programlisting>
+
+      <para>This returns a custom MVCFactory object
+      (<code>\Acme\Example\Administrator\Service\MVCFactory</code>) which we
+      need to also implement. This custom factory implements a
+      <code>setFacebookPublish</code> method for our custom MVCFactory service
+      provider to be able to push the <code>FacebookPublish</code> service to
+      the factory and overrides the <code>createModel</code> method to push
+      the <code>FacebookPublish</code> service to the model (the chain of
+      pushing the service is DIC =&gt; MVCFactory =&gt; Model):</para>
+
+      <programlisting>&lt;?php
+
+namespace Acme\Example\Administrator\Service;
+
+use Acme\Example\Administrator\Service\FacebookPublishAware;
+use Acme\Example\Administrator\Service\FacebookPublish;
+
+class MVCFactory extends \Joomla\CMS\MVC\Factory\MVCFactory
+{
+	private $fbPublish;
+
+	public function setFacebookPublish(FacebookPublish $fbPublish): void
+	{
+		$this-&gt;fbPublish = $fbPublish;
+	}
+
+	public function createModel($name, $prefix = '', array $config = [])
+	{
+		$model = parent::createModel($name, $prefix, $config);
+
+		if ($model instanceof FacebookPublishAware) {
+			$model-&gt;setFacebookPublish($this-&gt;fbPublish);
+		}
+	}
+}</programlisting>
+
+      <para>So, for our custom MVCFactory to know when to push our
+      FacebookPublish service we need an interface,
+      <code>Acme\Example\Administrator\Service\FacebookPublishAware</code>. If
+      a Model implements this interface then the MVCFactory knows to push the
+      service using the model's <code>setFacebookPublish</code> method defined
+      in the interface. So let's create the interface:</para>
+
+      <programlisting>&lt;?php
+
+namespace Acme\Example\Administrator\Service;
+
+use Acme\Example\Administrator\Service\FacebookPublish;
+
+interface FacebookPublishAware
+{
+	public function setFacebookPublish(FacebookPublish $fbPublish): void;
+}</programlisting>
+
+      <para>A model implementing this custom service would look like
+      this:</para>
+
+      <programlisting>&lt;?php
+
+namespace Acme\Example\Administrator\Model;
+
+use Acme\Example\Administrator\Service\FacebookPublish;
+use Acme\Example\Administrator\Service\FacebookPublishAware;
+use Joomla\CMS\MVC\Model\AdminModel;
+
+class ItemModel extends AdminModel implements FacebookPublishAware
+{
+	private $fbPublish;
+
+	public function setFacebookPublish(FacebookPublish $fbPublish): void
+	{
+		$this-&gt;fbPublish = $fbPublish;
+	}
+	
+	protected function getFacebookPublish(): FacebookPublish
+	{
+		return $this-&gt;fbPublish;
+	}
+	
+	// The rest of the Model's code goes here…
+}</programlisting>
+
+      <para>You need to think of it like so. A service must be able to be
+      instantiated by the component's container, therefore I need to add a
+      service provider to it in my services.php. If I have a service I need it
+      to be pushed to my Model. My Model is instantiated by the MVCFactory,
+      therefore I need a custom MVCFactory to push my service. The MVCFactory
+      will know to push my service if my Models implement an interface. My
+      component will only know that I have a custom MVCFactory if I create an
+      MVCFactory service provider and tell it's DIC to use it.</para>
+
+      <para>Knowing these steps you can have a FAR MORE EFFICIENT way of
+      writing your code than the bass ackwards method I presented
+      above:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Create your custom service.</para>
+        </listitem>
+
+        <listitem>
+          <para>Edit your <filename>services.php</filename> and add a service
+          provide for your service.</para>
+        </listitem>
+
+        <listitem>
+          <para>Create an Interface your models will implement when they need
+          to be pushed this service.</para>
+        </listitem>
+
+        <listitem>
+          <para>Create a custom MVCFactory which pushes this service to the
+          models which implement the interface you just created.</para>
+        </listitem>
+
+        <listitem>
+          <para>Create a custom MVCFactory service provider which instantiates
+          your custom MVCFactory class AND pushes your custom service to
+          it.</para>
+
+          <warning>
+            <para>It is currently IMPOSSIBLE to extend from the core Joomla
+            MVCFactory service provider. Moreover, this service provider is
+            going to be changing a lot, especially in the run–up to Joomla 5.
+            This means that you will need to REVIEW AND MODIFY your custom
+            MVCFactory service provider every time a new Joomla major or minor
+            version is released. This is far from ideal. Read on for an
+            alternative.</para>
+          </warning>
+        </listitem>
+
+        <listitem>
+          <para>Go back to your <filename>services.php</filename> file and
+          replace the generic Joomla MVCFactory service provider with your
+          own.</para>
+        </listitem>
+      </itemizedlist>
+
+      <bridgehead>Pushing services to your Model (the Practical Way: using the
+      DIC as the Service Provider it really is)</bridgehead>
+
+      <para>If you read the exuberantly long description of how to use a
+      custom service the Joomla Way (pushing services) you may be running for
+      your life. That was my reaction, too. Even more so when there is a
+      caveat that doing all this complicated work means that my extensions
+      break every time Joomla publishes a new major or minor version.</para>
+
+      <para>So, here's another idea. Let's <emphasis
+      role="bold">pull</emphasis> the custom service <emphasis
+      role="bold">from</emphasis> the component's DIC.</para>
+
+      <para>First, you need to make sure that you register a service provider
+      in <link linkend="com-services">your component's service provider</link>
+      implementation:</para>
+
+      <programlisting>$container-&gt;set(
+    \Acme\Example\Administrator\Service\FacebookPublish::class,
+    function (Container $container) {
+        return new \Acme\Example\Administrator\Service\FacebookPublish();
+    }
+);</programlisting>
+
+      <para>Then, you need to modify your <link
+      linkend="com-extension">component's extension class section</link> as we
+      saw on that section's “Getting access to the component's DIC anytime,
+      anywhere” to be able to statically return the component's DI Container
+      anytime, anywhere:</para>
+
+      <programlisting>	protected static $dic;
+
+	public function boot(ContainerInterface $container)
+	{
+		self::$dic = $container;
+	}
+	
+	public static function getContainer()
+	{
+		if (empty(self::$dic))
+		{
+			Factory::getApplication()
+			       -&gt;bootComponent('com_example');
+		}
+		
+		return self::$dic;
+	}</programlisting>
+
+      <para>Now your Model can simply pull the service from the Component's
+      DIC in its constructor:</para>
+
+      <programlisting>&lt;?php
+
+namespace Acme\Example\Administrator\Model;
+
+use Acme\Example\Administrator\Extension\ExampleComponent;
+use Acme\Example\Administrator\Service\FacebookPublish;
+use Joomla\CMS\Form\FormFactoryInterface;
+use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
+use Joomla\CMS\MVC\Model\AdminModel;
+
+class ItemModel extends AdminModel
+{
+	private $fbPublish;
+
+	public function __construct($config = [], MVCFactoryInterface $factory = null,
+								FormFactoryInterface $formFactory = null)
+	{
+		parent::__construct($config, $factory, $formFactory);
+
+		$exampleDIC      = ExampleComponent::getContainer();
+		$this-&gt;fbPublish = $exampleDIC-&gt;get(FacebookPublish::class);
+	}
+
+	protected function getFacebookPublish(): FacebookPublish
+	{
+		return $this-&gt;fbPublish;
+	}
+
+	// The rest of your model's code goes here…
+}</programlisting>
+
+      <para>This method works great and won't break when Joomla changes how
+      the MVCFactory service provider works. There are two (minor) downsides
+      to this approach:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The Model now has a direct hard dependency on the component's
+          extension class. For real world use inside Joomla this is not a big
+          deal; the only recommended way to create instances of a component's
+          Models is through its MVCFactory object which necessarily goes
+          through the component's extension object. If you are writing Unit
+          Tests, though, you can no longer isolate the Model. You will need to
+          inject a dependency injection container with your custom service in
+          the component's extension class.</para>
+        </listitem>
+
+        <listitem>
+          <para>The extension class has a static method to fetch the DIC. If
+          this is not already set up it will try to go through the global
+          application object to boot the component. If you are writing Unit
+          Tests this is a problem, hence why I said that you need to inject a
+          DIC to your component's extension class.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Unfortunately, this part of Joomla's MVC is NOT very well thought
+      out. It is essentially asking developers to either always be anxious
+      that their components will break because Joomla evolves over time OR do
+      something which violates the entire point of dependency injection just
+      to make sure that their components remain viable. This is something I am
+      trying to convince the maintainers to address.</para>
+    </section>
+
+    <section xml:id="com-controllers">
+      <title>Controllers</title>
+
       <para/>
     </section>
 
     <section xml:id="com-views">
       <title>Views</title>
-
-      <para/>
-    </section>
-
-    <section xml:id="com-controllers">
-      <title>Controllers</title>
 
       <para/>
     </section>
@@ -2961,6 +3635,18 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
 
     <section xml:id="com-router">
       <title>Router</title>
+
+      <para/>
+    </section>
+
+    <section xml:id="com-dashboard">
+      <title>Dashboard</title>
+
+      <para/>
+    </section>
+
+    <section xml:id="com-events">
+      <title>Dispatching events (calling plugins)</title>
 
       <para/>
     </section>
