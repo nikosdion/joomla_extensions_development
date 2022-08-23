@@ -615,7 +615,7 @@ class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
       mock object when writing Unit Tests. Much easier, much more robust, no
       more therapy necessary after writing Unit Tests.</para>
 
-      <para>The Container is not the preferred way to get access to several
+      <para>The Container is now the preferred way to get access to several
       services previously available only through the Factory (they are still
       available through the Factory in Joomla 4 but will very likely disappear
       in Joomla 5). Let's see a few practical examples:</para>
@@ -1169,7 +1169,7 @@ Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
       (bad idea; we are using MVC to avoid this bad practice). Second,
       Joomla's raw, unadulterated power comes from the fact that our end users
       can <emphasis>override</emphasis> View Templates in their sites, thereby
-      changing the presentation of our component in ways we can neither thing
+      changing the presentation of our component in ways we can neither think
       of nor support in any meaningful way across our entire user base.</para>
 
       <para>This is the overview of Joomla's MVC and you'll be happy to know
@@ -2604,7 +2604,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
       the class and file naming remained untouched until the release of Joomla
       4 in 2020.</para>
 
-      <bridgehead>How things work Joomla 4.0 onwards </bridgehead>
+      <bridgehead>How things work Joomla 4.0 onwards</bridgehead>
 
       <para>Fixing the hot mess of class and file naming in component's MVC
       was one of the priorities in Joomla 4. Having a CMS in 2020 (when Joomla
@@ -2785,7 +2785,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
       <filename>administrator/components/com_example/models/item.php</filename>.
       If you did that from outside the <code>com_example</code> component,
       e.g. in a module or plugin, it would fail unless either the class was
-      already loaded beforehand OR you had done something like </para>
+      already loaded beforehand OR you had done something like</para>
 
       <programlisting>\Joomla\CMS\MVC\Model\BaseDatabaseModel::addIncludePath(
   'components/com_example/models', 'ExampleModel'
@@ -2828,7 +2828,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
         getting the object I asked for and expected, not something potentially
         random I have no way of checking. Therefore, the MVCFactory object
         solves the single biggest source of frustration in Joomla component
-        development. Hallelujah! </para>
+        development. Hallelujah!</para>
       </important>
 
       <para>When you are writing code in a Controller or Model class you can
@@ -2862,7 +2862,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
           <term>createController</term>
 
           <listitem>
-            <para>Loads and creates a controller object. </para>
+            <para>Loads and creates a controller object.</para>
 
             <programlisting>$myController = $this-&gt;getMVCFactory()
   -&gt;createController('Item', 'Administrator');</programlisting>
@@ -2921,8 +2921,8 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
             <warning>
               <para>Joomla table classes are only defined in the backend
               (<code>Administrator</code>) of your component. Therefore your
-              second argument MUST always be <code>'Administrator'</code>.
-              </para>
+              second argument MUST always be
+              <code>'Administrator'</code>.</para>
 
               <para>While you could conceivably define table classes in the
               site or api parts of your component it's not recommended and you
@@ -3071,7 +3071,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
             <para>This is the kind of Model you are going to use on pages
             which render a Form using an XML file for collecting information
             from the user BUT NOT for the purpose of editing or creating a
-            record. </para>
+            record.</para>
 
             <para>A practical example of this is the Joomla Global
             Configuration page's model
@@ -3133,7 +3133,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
               <para>You may also get confused by the fact that an
               AdminController has a ListModel whereas a FormController has an
               AdminModel. It looks like someone had a stroke trying to name
-              things. </para>
+              things.</para>
 
               <para>Thankfully, no, nobody had a stroke — the weird naming
               comes from the fact that when forms were introduced in Joomla
@@ -3232,7 +3232,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
       any of that. That's a good thing because it promotes the computer
       science principle called Separation of Concerns. If you need additional
       features you will be doing a bit of <emphasis>object
-      composition</emphasis>. </para>
+      composition</emphasis>.</para>
 
       <para>For those with a Computer Science background, you may wonder how
       you can do object composition in a language like PHP which, unlike C for
@@ -3267,7 +3267,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
             <para>Only applicable to models extending from
             <code>AdminModel</code>. The model must implement the
             <code>\Joomla\CMS\MVC\Model\WorkflowModelInterface</code>
-            interface. </para>
+            interface.</para>
           </listitem>
         </varlistentry>
       </variablelist>
