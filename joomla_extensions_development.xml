@@ -77,6 +77,44 @@
       xlink:href="https://www.dionysopoulos.me">dionysopoulos.me</link>.</para>
     </section>
 
+    <section xml:id="about-me">
+      <title>About the author</title>
+
+      <para>Hi, I am Nicholas. I am a Mechanical Engineer turned Software
+      Engineer. I am from and still live in Greece with my wife, daughter and
+      our two naughty cats.</para>
+
+      <para>I've been into computers since I was 11 years olds, at the dawn of
+      the 1990s. Back then dinosaurs were still walking among us, haircuts
+      were <emphasis>weird</emphasis>, personal computers were the size of a
+      small backpack and had <emphasis>far less</emphasis> computing power
+      than your average smart lightbulb. Only one of the previous statements
+      is false. I immediately took to programming for, as I said to my parents
+      at the time, “I want to learn how to make this machine do things for me
+      so I don't have to do them”. LIttle did I know what I was getting myself
+      into…</para>
+
+      <para>I've been using Joomla as a site integrator and extensions
+      developer since it was called Mambo, back in 2004. I wrote my first
+      mass–distributed extension called JoomlaPack in October 2006 while
+      taking a two week break from my day job at the time as a business
+      consultant. One thing led to another, JoomlaPack became Akeeba Backup
+      and I gave up on business consultancy and mechanical engineering to
+      become a full time software engineer.</para>
+
+      <para>I've been actively participating in the Joomla community since
+      2009. I am a regular Joomla contributor and not just writting code. I've
+      been involved in community outreach efforts and instigated the events
+      leading to the beginning of the Joomla 4 effort. I still contribute to
+      Joomla and, if I want to be honest with myself, I will continue doing
+      that until Joomla or myself is no more, whichever comes first.</para>
+
+      <para>I am neurodivergent (ADHD) and have a particular sense of humour.
+      I firmly believe that life's too short to take it seriously. You'll see
+      that a lot in this book. I don't care about writing a dry, boring book,
+      especially on a subject as dry and boring as writing software.</para>
+    </section>
+
     <section xml:id="intro-j4-features">
       <title>New Joomla 4 features at a glance</title>
 
@@ -319,44 +357,6 @@
       section for it, please do let me know. I can't promise it will
       definitely make it into the book but I will at least promise to give it
       a good thought and most likely a good try.</para>
-    </section>
-
-    <section xml:id="about-me">
-      <title>About the author</title>
-
-      <para>Hi, I am Nicholas. I am a Mechanical Engineer turned Software
-      Engineer. I am from and still live in Greece with my wife, daughter and
-      our two naughty cats.</para>
-
-      <para>I've been into computers since I was 11 years olds, at the dawn of
-      the 1990s. Back then dinosaurs were still walking among us, haircuts
-      were <emphasis>weird</emphasis>, personal computers were the size of a
-      small backpack and had <emphasis>far less</emphasis> computing power
-      than your average smart lightbulb. Only one of the previous statements
-      is false. I immediately took to programming for, as I said to my parents
-      at the time, “I want to learn how to make this machine do things for me
-      so I don't have to do them”. LIttle did I know what I was getting myself
-      into…</para>
-
-      <para>I've been using Joomla as a site integrator and extensions
-      developer since it was called Mambo, back in 2004. I wrote my first
-      mass–distributed extension called JoomlaPack in October 2006 while
-      taking a two week break from my day job at the time as a business
-      consultant. One thing led to another, JoomlaPack became Akeeba Backup
-      and I gave up on business consultancy and mechanical engineering to
-      become a full time software engineer.</para>
-
-      <para>I've been actively participating in the Joomla community since
-      2009. I am a regular Joomla contributor and not just writting code. I've
-      been involved in community outreach efforts and instigated the events
-      leading to the beginning of the Joomla 4 effort. I still contribute to
-      Joomla and, if I want to be honest with myself, I will continue doing
-      that until Joomla or myself is no more, whichever comes first.</para>
-
-      <para>I am neurodivergent (ADHD) and have a particular sense of humour.
-      I firmly believe that life's too short to take it seriously. You'll see
-      that a lot in this book. I don't care about writing a dry, boring book,
-      especially on a subject as dry and boring as writing software.</para>
     </section>
   </chapter>
 
@@ -1312,127 +1312,138 @@ $componentDispatcher-&gt;dispatch();</programlisting>What Joomla does is ask
       between legacy Joomla 3 MVC components, modern Joomla 4 MVC components
       and how Joomla 4 makes them all work.</para>
 
-      <bridgehead>Booting the component</bridgehead>
+      <section xml:id="com-lifetime-booting">
+        <title>Booting the component</title>
 
-      <para>The <code>bootComponent</code> method is implemented by
-      <code>Joomla\CMS\Extension\ExtensionManagerTrait</code>. The first thing
-      it does, by calling its <code>loadExtension</code> method, is to figure
-      out if this is a Joomla 4 MVC or Joomla 3 MVC component. It does that by
-      looking for the <filename>services/provider.php</filename> file under
-      the component's root. As you may have guessed this is our component's
-      <link linkend="com-services">service provider</link> and the reason why
-      all Joomla 4 MVC components, even the simplest ones for which we could
-      infer their service provider, really do need to have a service provider
-      file.</para>
+        <para>The <code>bootComponent</code> method is implemented by
+        <code>Joomla\CMS\Extension\ExtensionManagerTrait</code>. The first
+        thing it does, by calling its <code>loadExtension</code> method, is to
+        figure out if this is a Joomla 4 MVC or Joomla 3 MVC component. It
+        does that by looking for the
+        <filename>services/provider.php</filename> file under the component's
+        root. As you may have guessed this is our component's <link
+        linkend="com-services">service provider</link> and the reason why all
+        Joomla 4 MVC components, even the simplest ones for which we could
+        infer their service provider, really do need to have a service
+        provider file.</para>
 
-      <para>If the file exists it's loaded and its services are registered
-      into the copy of the Joomla DIC which is used as our component's
-      DIC.</para>
+        <para>If the file exists it's loaded and its services are registered
+        into the copy of the Joomla DIC which is used as our component's
+        DIC.</para>
 
-      <note>
-        <para>This means that our component only sees a frozen in time copy of
-        the global application services. You cannot register any services in
-        the component's DIC and expect them to be available in the global
-        application.</para>
-      </note>
+        <note>
+          <para>This means that our component only sees a frozen in time copy
+          of the global application services. You cannot register any services
+          in the component's DIC and expect them to be available in the global
+          application.</para>
+        </note>
 
-      <para>If the file does not exist, Joomla creates an instance of the
-      <code>Joomla\CMS\Extension\LegacyComponent</code>. As you can see, this
-      extension object uses a legacy MVC factory object which "speaks" the
-      Joomla 3 non-namespaced MVC class names and a legacy component
-      dispatcher which looks for the <filename>componentName.php</filename>
-      (in our example: <filename>example.php</filename>) component entry point
-      file and loads it. This is exactly how Joomla 4 can render components
-      using Joomla 3 MVC.</para>
+        <para>If the file does not exist, Joomla creates an instance of the
+        <code>Joomla\CMS\Extension\LegacyComponent</code>. As you can see,
+        this extension object uses a legacy MVC factory object which "speaks"
+        the Joomla 3 non-namespaced MVC class names and a legacy component
+        dispatcher which looks for the <filename>componentName.php</filename>
+        (in our example: <filename>example.php</filename>) component entry
+        point file and loads it. This is exactly how Joomla 4 can render
+        components using Joomla 3 MVC.</para>
 
-      <para>The rest of this section will talk about a Joomla 4 MVC
-      component.</para>
+        <para>The rest of this section will talk about a Joomla 4 MVC
+        component.</para>
 
-      <para>Finally, Joomla returns <link linkend="com-extension">the
-      component's extension object</link> as the result of the
-      <code>bootComponent</code> method.</para>
+        <para>Finally, Joomla returns <link linkend="com-extension">the
+        component's extension object</link> as the result of the
+        <code>bootComponent</code> method.</para>
 
-      <tip>
-        <para>You can call
-        <code>\Joomla\CMS\Factory::getApplication()-&gt;bootComponent('com_example')</code>
-        to get the <code>com_example</code> component's extension object
-        anytime, anywhere — <emphasis role="bold">including in modules and
-        plugins</emphasis>. If you subclass the
-        <code>Joomla\CMS\Extension\MVCExtension</code> class in your own
-        component you can create your own methods to return <emphasis>ANY
-        OBJECT KNOWN TO THE COMPONENT AND ITS CONTAINER</emphasis>.</para>
+        <tip>
+          <para>You can call
+          <code>\Joomla\CMS\Factory::getApplication()-&gt;bootComponent('com_example')</code>
+          to get the <code>com_example</code> component's extension object
+          anytime, anywhere — <emphasis role="bold">including in modules and
+          plugins</emphasis>. If you subclass the
+          <code>Joomla\CMS\Extension\MVCExtension</code> class in your own
+          component you can create your own methods to return <emphasis>ANY
+          OBJECT KNOWN TO THE COMPONENT AND ITS CONTAINER</emphasis>.</para>
 
-        <para>This is of enormous importance.</para>
+          <para>This is of enormous importance.</para>
 
-        <para>You can instantiate any MVC class of the component. You have
-        access to your HTML helper, categories service and router service. You
-        can get an instance of any of the custom services you created in your
-        component. All of that WITHOUT any static helpers in your extension,
-        WITHOUT worrying that something might break if you call your code
-        outside your component. Your Models can provide a public API for third
-        party developers communicating with your component.</para>
+          <para>You can instantiate any MVC class of the component. You have
+          access to your HTML helper, categories service and router service.
+          You can get an instance of any of the custom services you created in
+          your component. All of that WITHOUT any static helpers in your
+          extension, WITHOUT worrying that something might break if you call
+          your code outside your component. Your Models can provide a public
+          API for third party developers communicating with your
+          component.</para>
 
-        <para>Joomla core components already do that. For example, you can get
-        the backend <code>ArticleModel</code> of <code>com_content</code> in a
-        frontend component or plugin to create a new Joomla article
-        <emphasis>the right way</emphasis>:</para>
+          <para>Joomla core components already do that. For example, you can
+          get the backend <code>ArticleModel</code> of
+          <code>com_content</code> in a frontend component or plugin to create
+          a new Joomla article <emphasis>the right way</emphasis>:</para>
 
-        <programlisting>$articleModel = \Joomla\CMS\Factory::getApplication()
+          <programlisting>$articleModel = \Joomla\CMS\Factory::getApplication()
   -&gt;bootComponent('com_content')
   -&gt;getMVCFactory()
   -&gt;createModel('Article', 'Administrator');</programlisting>
-      </tip>
+        </tip>
+      </section>
 
-      <para><bridgehead>Getting the Dispatcher</bridgehead></para>
+      <section xml:id="com-lifetime-dispatcher">
+        <title>Getting the Dispatcher</title>
 
-      <para>The extension object is responsible for returning a number of
-      interesting objects through its methods. These objects are meant to be
-      used for interacting with the component. One of these is
-      <code>getDispatcher</code> which lets us retrieve the component's <link
-      linkend="com-dispatcher">Dispatcher</link> object.</para>
+        <para>The extension object is responsible for returning a number of
+        interesting objects through its methods. These objects are meant to be
+        used for interacting with the component. One of these is
+        <code>getDispatcher</code> which lets us retrieve the component's
+        <link linkend="com-dispatcher">Dispatcher</link> object.</para>
 
-      <para>Your extension can have a custom dispatcher class,
-      <code>\My\Prefix\Dispatcher\Dispatcher</code>, where
-      <code>\My\Prefix</code> is your component's prefix. If this class
-      exists, an object instance of it is returned.</para>
+        <para>Your extension can have a custom dispatcher class,
+        <code>\My\Prefix\Dispatcher\Dispatcher</code>, where
+        <code>\My\Prefix</code> is your component's prefix. If this class
+        exists, an object instance of it is returned.</para>
 
-      <para>If your extension does not have a dispatcher an instance of the
-      default <code>Joomla\CMS\Dispatcher\ComponentDispatcher</code> (site and
-      administrator applications) or
-      <code>Joomla\CMS\Dispatcher\ApiDispatcher</code> (API application) will
-      be created and returned instead.</para>
+        <para>If your extension does not have a dispatcher an instance of the
+        default <code>Joomla\CMS\Dispatcher\ComponentDispatcher</code> (site
+        and administrator applications) or
+        <code>Joomla\CMS\Dispatcher\ApiDispatcher</code> (API application)
+        will be created and returned instead.</para>
+      </section>
 
-      <bridgehead>Dispatching the component</bridgehead>
+      <section xml:id="com-lifetime-dispatching">
+        <title>Dispatching the component</title>
 
-      <para>The dispatcher object has a <code>dispatch()</code> method. This
-      method looks in the request data to figure out which controller it needs
-      to instantiate and which task it should execute on it. The controller
-      object is instantiated through your component's <code>MVCFactory</code>
-      service and its <code>execute</code> and <code>redirect</code> methods
-      are called on it. So, yes, this is basically what your old Joomla 3 MVC
-      <filename>controller.php</filename> file was doing.</para>
+        <para>The dispatcher object has a <code>dispatch()</code> method. This
+        method looks in the request data to figure out which controller it
+        needs to instantiate and which task it should execute on it. The
+        controller object is instantiated through your component's
+        <code>MVCFactory</code> service and its <code>execute</code> and
+        <code>redirect</code> methods are called on it. So, yes, this is
+        basically what your old Joomla 3 MVC
+        <filename>controller.php</filename> file was doing.</para>
 
-      <tip>
-        <para>Having a custom dispatcher means that you can manipulate the
-        <emphasis>controller and task</emphasis> based on other request
-        variables.</para>
+        <tip>
+          <para>Having a custom dispatcher means that you can manipulate the
+          <emphasis>controller and task</emphasis> based on other request
+          variables.</para>
 
-        <para>This is very important when your component is accessed
-        <emphasis>outside of a Joomla menu item (no Itemid in the request
-        variables)</emphasis>. In this case Joomla always uses the default
-        (Home) menu item for the current language. This means that you may be
-        getting a <uri>controller</uri>, <uri>view</uri> or <uri>task</uri>
-        request variable — as well as other variables which might mess with
-        your component, like <uri>id</uri> — from the Home menu item.</para>
+          <para>This is very important when your component is accessed
+          <emphasis>outside of a Joomla menu item (no Itemid in the request
+          variables)</emphasis>. In this case Joomla always uses the default
+          (Home) menu item for the current language. This means that you may
+          be getting a <uri>controller</uri>, <uri>view</uri> or
+          <uri>task</uri> request variable — as well as other variables which
+          might mess with your component, like <uri>id</uri> — from the Home
+          menu item.</para>
 
-        <para>Your Dispatcher is responsible for figuring out if this is the
-        case and fix the input variables to prevent weird bugs / showing the
-        wrong page of your component when it's accessed without a menu item
-        id, e.g. a URL like <uri>/component/example?view=foobar</uri>. This is
-        something which has happened a lot when I converted my own extensions
-        to Joomla 4, including LoginGuard (the extension contributed as
-        Joomla's Multi-factor Authentication feature in Joomla 4.2).</para>
-      </tip>
+          <para>Your Dispatcher is responsible for figuring out if this is the
+          case and fix the input variables to prevent weird bugs / showing the
+          wrong page of your component when it's accessed without a menu item
+          id, e.g. a URL like <uri>/component/example?view=foobar</uri>. This
+          is something which has happened a lot when I converted my own
+          extensions to Joomla 4, including LoginGuard (the extension
+          contributed as Joomla's Multi-factor Authentication feature in
+          Joomla 4.2).</para>
+        </tip>
+      </section>
     </section>
 
     <section xml:id="com-dirs">
@@ -2251,109 +2262,114 @@ return new class implements ServiceProviderInterface {
       <para>As you can see, trying to do pretty much anything useful does
       require a custom extension class.</para>
 
-      <bridgehead>Naming your extension class</bridgehead>
+      <section xml:id="com-extension-naming">
+        <title>Naming your extension class</title>
 
-      <para>There are no hard rules for naming your component's extension
-      class. That said, to help anyone reading your code — including yourself
-      six or so months later — retain a modicum of their sanity it is
-      advisable to use the convention
-      <code><replaceable>\My\Prefix</replaceable>\Administrator\Extension\<replaceable>Name</replaceable>Component</code>
-      where \My\Prefix is the namespace prefix of your component and
-      <code>Name</code> is the name of your component without the
-      <code>com_</code> prefix.</para>
+        <para>There are no hard rules for naming your component's extension
+        class. That said, to help anyone reading your code — including
+        yourself six or so months later — retain a modicum of their sanity it
+        is advisable to use the convention
+        <code><replaceable>\My\Prefix</replaceable>\Administrator\Extension\<replaceable>Name</replaceable>Component</code>
+        where \My\Prefix is the namespace prefix of your component and
+        <code>Name</code> is the name of your component without the
+        <code>com_</code> prefix.</para>
 
-      <para>For example, if you have a component named
-      <code>com_example</code> with the namespace prefix
-      <code>\Acme\Example</code> your extension class should be
-      <code>\Acme\Example\Administrator\Extension\ExampleComponent</code> and
-      placed in the file
-      <filename>administrator/components/com_example/src/Extension/ExampleComponent.php</filename>.</para>
+        <para>For example, if you have a component named
+        <code>com_example</code> with the namespace prefix
+        <code>\Acme\Example</code> your extension class should be
+        <code>\Acme\Example\Administrator\Extension\ExampleComponent</code>
+        and placed in the file
+        <filename>administrator/components/com_example/src/Extension/ExampleComponent.php</filename>.</para>
+      </section>
 
-      <bridgehead>Using your extension class in the service
-      provider</bridgehead>
+      <section xml:id="com-extension-provider">
+        <title>Using your extension class in the service provider</title>
 
-      <para>As you remember from the service provider section, in Part 2.a you
-      need to instantiate the extension class. These lines would look like
-      this:</para>
+        <para>As you remember from the service provider section, in Part 2.a
+        you need to instantiate the extension class. These lines would look
+        like this:</para>
 
-      <programlisting>$component = new \Acme\Example\Administrator\Extension\ExampleComponent(
+        <programlisting>$component = new \Acme\Example\Administrator\Extension\ExampleComponent(
 	$container-&gt;get(ComponentDispatcherFactoryInterface::class)
 );</programlisting>
 
-      <para>Simple, isn't it?</para>
+        <para>Simple, isn't it?</para>
+      </section>
 
-      <bridgehead>Using your extension class from outside the
-      component</bridgehead>
+      <section xml:id="com-extension-outside-com">
+        <title>Using your extension class from outside the component</title>
 
-      <para>Now we are finally able to answer the question which you had in
-      mind coming to this section: why in the name of Cthulu do I have to have
-      an extension class and what does it accomplish beyond adding yet another
-      layer of complexity to my extension writing problems?</para>
+        <para>Now we are finally able to answer the question which you had in
+        mind coming to this section: why in the name of Cthulu do I have to
+        have an extension class and what does it accomplish beyond adding yet
+        another layer of complexity to my extension writing problems?</para>
 
-      <para>For that, let's consider this. Let's say we have a news site and
-      we are building a system plugin which checks every day for newly
-      published articles, auto–generating a daily summary blog post using the
-      intro text of these articles and some preset template (maybe even some
-      judicious use of a GPT-3–based AI). This plugin would need to publish an
-      article. You could of course just instantiate the
-      <code>ArticleTable</code> class of <code>com_content</code> directly to
-      do that but this would not run any content plugins or create the right
-      entries in the #__assets table, breaking your site. You need to use the
-      com_content Article backend model of <code>com_content</code>.</para>
+        <para>For that, let's consider this. Let's say we have a news site and
+        we are building a system plugin which checks every day for newly
+        published articles, auto–generating a daily summary blog post using
+        the intro text of these articles and some preset template (maybe even
+        some judicious use of a GPT-3–based AI). This plugin would need to
+        publish an article. You could of course just instantiate the
+        <code>ArticleTable</code> class of <code>com_content</code> directly
+        to do that but this would not run any content plugins or create the
+        right entries in the #__assets table, breaking your site. You need to
+        use the com_content Article backend model of
+        <code>com_content</code>.</para>
 
-      <para>Back in the Joomla 3 days you would do that by directly
-      instantiating the <code>ContentModelArticle</code> class. Okay, first
-      problem: Joomla didn't know where to find it so you have to
-      <code>require_once()</code> the file. Second problem: what if that model
-      changes over time and has dependencies to other classes you have failed
-      to require the files of? Believe me, I've been there, done that and it
-      was about as enjoyable as using a rusty fork to pull my eyes out of
-      their sockets.</para>
+        <para>Back in the Joomla 3 days you would do that by directly
+        instantiating the <code>ContentModelArticle</code> class. Okay, first
+        problem: Joomla didn't know where to find it so you have to
+        <code>require_once()</code> the file. Second problem: what if that
+        model changes over time and has dependencies to other classes you have
+        failed to require the files of? Believe me, I've been there, done that
+        and it was about as enjoyable as using a rusty fork to pull my eyes
+        out of their sockets.</para>
 
-      <para>In Joomla 4 you don't have to care about the class autoloading,
-      but the <code>ArticleModel</code> will actually need access to other
-      services provided by the <code>com_content</code> component for things
-      like tagging, custom fields and workflows. If you try to instantiate the
-      model class directly you will get a lot of errors as well. So, who are
-      you gonna call? No, not Ghostbusters; they are Hollywood fiction. You're
-      gonna call the very real and very useful <code>bootComponent</code>
-      method of the application!</para>
+        <para>In Joomla 4 you don't have to care about the class autoloading,
+        but the <code>ArticleModel</code> will actually need access to other
+        services provided by the <code>com_content</code> component for things
+        like tagging, custom fields and workflows. If you try to instantiate
+        the model class directly you will get a lot of errors as well. So, who
+        are you gonna call? No, not Ghostbusters; they are Hollywood fiction.
+        You're gonna call the very real and very useful
+        <code>bootComponent</code> method of the application!</para>
 
-      <programlisting>$contentExtension = \Joomla\CMS\Factory::getApplication()
+        <programlisting>$contentExtension = \Joomla\CMS\Factory::getApplication()
   -&gt;bootComponent('com_content');
 $articleModel = $contentExtension
   -&gt;getMVCFactory()
   -&gt;createModel('Article', 'Administrator');</programlisting>
 
-      <para>The first two lines told Joomla to “boot” the
-      <code>com_content</code> component, returning its <emphasis>extension
-      object</emphasis>. Now we have have access to all services known to this
-      object through its various getters (method whose name start with
-      <code>get</code>).</para>
+        <para>The first two lines told Joomla to “boot” the
+        <code>com_content</code> component, returning its <emphasis>extension
+        object</emphasis>. Now we have have access to all services known to
+        this object through its various getters (method whose name start with
+        <code>get</code>).</para>
 
-      <para>This works for any component, anywhere, anytime. You can be in the
-      frontend, backend, API application or CLI application or in an execution
-      context you don't care to know about in a Scheduled Tasks plugin. No
-      problem! You can boot any components — yours, core, or third party — to
-      get its extension object and Bob's your uncle.</para>
+        <para>This works for any component, anywhere, anytime. You can be in
+        the frontend, backend, API application or CLI application or in an
+        execution context you don't care to know about in a Scheduled Tasks
+        plugin. No problem! You can boot any components — yours, core, or
+        third party — to get its extension object and Bob's your uncle.</para>
+      </section>
 
-      <bridgehead>Getting access to the component's DIC anytime,
-      anywhere</bridgehead>
+      <section xml:id="com-extension-dic-proxy">
+        <title>Getting access to the component's DIC anytime, anywhere</title>
 
-      <para>I see that some of you are <emphasis>still</emphasis> not
-      convinced that the extension object is a cool concept.</para>
+        <para>I see that some of you are <emphasis>still</emphasis> not
+        convinced that the extension object is a cool concept.</para>
 
-      <para>Remember when I told you that the Joomla DIC — therefore the
-      component's DIC which is a customised copy of it — is not a real
-      Dependency Injection Container but a Service Locator and lamented the
-      fact that you cannot get a reference to it from anywhere in your
-      component, unlike modern PHP frameworks like Laravel?</para>
+        <para>Remember when I told you that the Joomla DIC — therefore the
+        component's DIC which is a customised copy of it — is not a real
+        Dependency Injection Container but a Service Locator and lamented the
+        fact that you cannot get a reference to it from anywhere in your
+        component, unlike modern PHP frameworks like Laravel?</para>
 
-      <para>Well, it turns out that you can get access to your component's DIC
-      anywhere, anytime. You just need to add the following handy code to your
-      extension's class:</para>
+        <para>Well, it turns out that you can get access to your component's
+        DIC anywhere, anytime. You just need to add the following handy code
+        to your extension's class:</para>
 
-      <programlisting>	protected static $dic;
+        <programlisting>	protected static $dic;
 
 	public function boot(ContainerInterface $container)
 	{
@@ -2372,19 +2388,20 @@ $articleModel = $contentExtension
 	}
 </programlisting>
 
-      <para>This code is very simple. We declare a protected static variable
-      holding our component's DIC. This is initialised by the boot method
-      which is called whenever the component is booted. The static method
-      getContainer returns the component's DIC; if the DIC was undefined at
-      this point it boots the component first.</para>
+        <para>This code is very simple. We declare a protected static variable
+        holding our component's DIC. This is initialised by the boot method
+        which is called whenever the component is booted. The static method
+        getContainer returns the component's DIC; if the DIC was undefined at
+        this point it boots the component first.</para>
 
-      <para>So now you can simply do:</para>
+        <para>So now you can simply do:</para>
 
-      <programlisting>$exampleDIC = \Acme\Example\Administrator\Extension\ExampleComponent::getContainer();</programlisting>
+        <programlisting>$exampleDIC = \Acme\Example\Administrator\Extension\ExampleComponent::getContainer();</programlisting>
 
-      <para>The component's DIC gives you access to all of the application's
-      services and your component's service. Using the MVCFactory to get an
-      MVC object you can be sure that it will work as intended.</para>
+        <para>The component's DIC gives you access to all of the application's
+        services and your component's service. Using the MVCFactory to get an
+        MVC object you can be sure that it will work as intended.</para>
+      </section>
     </section>
 
     <section xml:id="com-dispatcher">
@@ -2516,255 +2533,262 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
       Controllers and Tables work in the Joomla 4 MVC we need to talk about
       how they are <emphasis>named</emphasis>.</para>
 
-      <bridgehead>How things worked from Joomla 1.5 to 3.10</bridgehead>
+      <section xml:id="com-namespaces-j3">
+        <title>How things worked from Joomla 1.5 to 3.10</title>
 
-      <para>In Joomla 3 the naming convention was
-      <code>ComponentTypeName</code> where</para>
+        <para>In Joomla 3 the naming convention was
+        <code>ComponentTypeName</code> where</para>
 
-      <itemizedlist>
-        <listitem>
-          <para><code>Component</code> is the name of the component without
-          the <code>com_</code> prefix and with the first letter in uppercase.
-          For example, if you have <code>com_example</code> the first part of
-          an MVC class name was <code>Example</code>.</para>
-        </listitem>
+        <itemizedlist>
+          <listitem>
+            <para><code>Component</code> is the name of the component without
+            the <code>com_</code> prefix and with the first letter in
+            uppercase. For example, if you have <code>com_example</code> the
+            first part of an MVC class name was <code>Example</code>.</para>
+          </listitem>
 
-        <listitem>
-          <para><code>Type</code> is the type of the class you have, i.e. one
-          of <code>Component</code>, <code>Model</code>, <code>View</code>, or
-          <code>Table</code>. Again, the first letter is uppercase.</para>
-        </listitem>
+          <listitem>
+            <para><code>Type</code> is the type of the class you have, i.e.
+            one of <code>Component</code>, <code>Model</code>,
+            <code>View</code>, or <code>Table</code>. Again, the first letter
+            is uppercase.</para>
+          </listitem>
 
-        <listitem>
-          <para>Name is the name of the specific MVC class with its first
-          letter in uppercase, e.g. <code>Item</code>.</para>
-        </listitem>
-      </itemizedlist>
+          <listitem>
+            <para>Name is the name of the specific MVC class with its first
+            letter in uppercase, e.g. <code>Item</code>.</para>
+          </listitem>
+        </itemizedlist>
 
-      <para>This conventions held true in both the front- and backend parts of
-      your component. For example, both the frontend and the backend would
-      have a class named ExampleControllerItem and they could not extend from
-      each other. This led to a <emphasis>lot</emphasis> of code duplication.
-      Code duplication is the natural enemy of <link
-      xlink:href="https://en.wikipedia.org/wiki/Don%27t_repeat_yourself">DRY</link>
-      (Don't Repeat Yourself) code and a source of the most egregious bugs.
-      That's why this practice is mockingly called WET: Write Everything
-      Twice. When you put it like that it sounds exactly as ridiculous as it
-      is practicing it.</para>
+        <para>This conventions held true in both the front- and backend parts
+        of your component. For example, both the frontend and the backend
+        would have a class named ExampleControllerItem and they could not
+        extend from each other. This led to a <emphasis>lot</emphasis> of code
+        duplication. Code duplication is the natural enemy of <link
+        xlink:href="https://en.wikipedia.org/wiki/Don%27t_repeat_yourself">DRY</link>
+        (Don't Repeat Yourself) code and a source of the most egregious bugs.
+        That's why this practice is mockingly called WET: Write Everything
+        Twice. When you put it like that it sounds exactly as ridiculous as it
+        is practicing it.</para>
 
-      <para>As for file naming, things were pretty clear for Controllers,
-      Models and Tables. The name of the file was the <code>Name</code> part
-      of your class name, but in all lowercase. For example, the class
-      <code>ExampleControllerItem</code> was placed in a file called
-      <filename>item.php</filename>.</para>
+        <para>As for file naming, things were pretty clear for Controllers,
+        Models and Tables. The name of the file was the <code>Name</code> part
+        of your class name, but in all lowercase. For example, the class
+        <code>ExampleControllerItem</code> was placed in a file called
+        <filename>item.php</filename>.</para>
 
-      <para>Views were... a bit more complicated. A view has a <emphasis>view
-      type</emphasis> which corresponds to the <parameter>format</parameter>
-      URL parameter, the default (if not specified) being
-      <option>html</option>. However, if all view classes of the
-      <code>com_example</code> component for the view name <code>item</code>
-      are called <code>ExampleViewItem</code> how does Joomla figure out which
-      one to load for the <code>html</code>, <code>json</code>,
-      <code>raw</code>, <code>feed</code> etc view types? The trick was in the
-      <emphasis>file name</emphasis>. Regardless of the name of the view
-      class, the file name the class was stored in was following the naming
-      convention
-      <filename>view.<replaceable>view_type</replaceable>.php</filename> where
-      the <replaceable>view_type</replaceable> is the view type in all
-      lowercase (corresponds to the URL <parameter>format</parameter>
-      parameter). The HTML view class would be stored in a file called
-      <filename>view.html.php</filename>. This was maddening because a. the
-      file name does not include even a hint to the class name and b. view
-      classes cannot extend from each other. Another case of WET.</para>
+        <para>Views were... a bit more complicated. A view has a
+        <emphasis>view type</emphasis> which corresponds to the
+        <parameter>format</parameter> URL parameter, the default (if not
+        specified) being <option>html</option>. However, if all view classes
+        of the <code>com_example</code> component for the view name
+        <code>item</code> are called <code>ExampleViewItem</code> how does
+        Joomla figure out which one to load for the <code>html</code>,
+        <code>json</code>, <code>raw</code>, <code>feed</code> etc view types?
+        The trick was in the <emphasis>file name</emphasis>. Regardless of the
+        name of the view class, the file name the class was stored in was
+        following the naming convention
+        <filename>view.<replaceable>view_type</replaceable>.php</filename>
+        where the <replaceable>view_type</replaceable> is the view type in all
+        lowercase (corresponds to the URL <parameter>format</parameter>
+        parameter). The HTML view class would be stored in a file called
+        <filename>view.html.php</filename>. This was maddening because a. the
+        file name does not include even a hint to the class name and b. view
+        classes cannot extend from each other. Another case of WET.</para>
 
-      <para>With such complicated class and file naming — not to mention one
-      not always being related to the other — it was impossible to write
-      anything that remotely resembled a working autoloader for component
-      classes. This resulted in Joomla using some ugly static calls in its
-      base controller, model, view and table classes to get the MVC object you
-      wanted. Whether that worked or not depended on whether they were called
-      from within the same component or if you had used other badly documented
-      static calls to tell these base classes where to look for component
-      classes. If you wanted to mix front- and backend classes… let's just say
-      the result was not pretty.</para>
+        <para>With such complicated class and file naming — not to mention one
+        not always being related to the other — it was impossible to write
+        anything that remotely resembled a working autoloader for component
+        classes. This resulted in Joomla using some ugly static calls in its
+        base controller, model, view and table classes to get the MVC object
+        you wanted. Whether that worked or not depended on whether they were
+        called from within the same component or if you had used other badly
+        documented static calls to tell these base classes where to look for
+        component classes. If you wanted to mix front- and backend classes…
+        let's just say the result was not pretty.</para>
 
-      <para>Basically, the Joomla 1.5 to 3.10 MVC class and file naming was a
-      rolling Dumpster fire in the sixth ring of Hell. Yet, it was still
-      better than nothing, i.e. what WordPress plugin developers have to
-      contend with even to this day. It's funny how literally anything is
-      better than nothing and how attached people got to what is objectively a
-      bad solution which was rushed out of the door.</para>
+        <para>Basically, the Joomla 1.5 to 3.10 MVC class and file naming was
+        a rolling Dumpster fire in the sixth ring of Hell. Yet, it was still
+        better than nothing, i.e. what WordPress plugin developers have to
+        contend with even to this day. It's funny how literally anything is
+        better than nothing and how attached people got to what is objectively
+        a bad solution which was rushed out of the door.</para>
 
-      <para>A bit of history: The MVC in Joomla 1.5 to 3.10 was never
-      considered “finished” by its lead developer, Johan Janssens. He was
-      aware of its shortcomings but ran out of time improving it in 2006.
-      Janssens left the project shortly after Joomla 1.5 was released. The MVC
-      architecture wasn't updated significantly in subsequent versions.
-      Features were still added to it, e.g. Forms support in Joomla 1.6, but
-      the class and file naming remained untouched until the release of Joomla
-      4 in 2020.</para>
+        <para>A bit of history: The MVC in Joomla 1.5 to 3.10 was never
+        considered “finished” by its lead developer, Johan Janssens. He was
+        aware of its shortcomings but ran out of time improving it in 2006.
+        Janssens left the project shortly after Joomla 1.5 was released. The
+        MVC architecture wasn't updated significantly in subsequent versions.
+        Features were still added to it, e.g. Forms support in Joomla 1.6, but
+        the class and file naming remained untouched until the release of
+        Joomla 4 in 2020.</para>
+      </section>
 
-      <bridgehead>How things work Joomla 4.0 onwards</bridgehead>
+      <section xml:id="com-namespaces-j4">
+        <title>How things work Joomla 4.0 onwards</title>
 
-      <para>Fixing the hot mess of class and file naming in component's MVC
-      was one of the priorities in Joomla 4. Having a CMS in 2020 (when Joomla
-      4 was released) still use a half–finished and proven problematic
-      architecture from 2006 would just not cut it.</para>
+        <para>Fixing the hot mess of class and file naming in component's MVC
+        was one of the priorities in Joomla 4. Having a CMS in 2020 (when
+        Joomla 4 was released) still use a half–finished and proven
+        problematic architecture from 2006 would just not cut it.</para>
 
-      <para>The first step was to add <link
-      linkend="concepts-namespaces">namespaces</link> and make sure that the
-      <link linkend="com-dirs">folder and file names</link> follow the <link
-      xlink:href="https://www.php-fig.org/psr/psr-4/">PSR-4</link>
-      standard.</para>
+        <para>The first step was to add <link
+        linkend="concepts-namespaces">namespaces</link> and make sure that the
+        <link linkend="com-dirs">folder and file names</link> follow the <link
+        xlink:href="https://www.php-fig.org/psr/psr-4/">PSR-4</link>
+        standard.</para>
 
-      <para>Your component's namespace prefix is declared in the XML manifest
-      of the component using a new XML element under the
-      <code>&lt;extension&gt;</code> root element:</para>
+        <para>Your component's namespace prefix is declared in the XML
+        manifest of the component using a new XML element under the
+        <code>&lt;extension&gt;</code> root element:</para>
 
-      <programlisting>&lt;namespace path="src"&gt;My\Namespace\Prefix&lt;/namespace&gt;</programlisting>
+        <programlisting>&lt;namespace path="src"&gt;My\Namespace\Prefix&lt;/namespace&gt;</programlisting>
 
-      <para>The <code>path</code> attribute tells Joomla which subdirectory of
-      your extension holds the PSR-4 of your extension's PHP files. It is best
-      practice to name it <filename>src</filename> but <emphasis>you don't
-      have to</emphasis>. I always assume you are using
-      <filename>src</filename>.</para>
+        <para>The <code>path</code> attribute tells Joomla which subdirectory
+        of your extension holds the PSR-4 of your extension's PHP files. It is
+        best practice to name it <filename>src</filename> but <emphasis>you
+        don't have to</emphasis>. I always assume you are using
+        <filename>src</filename>.</para>
 
-      <para>The text inside the XML element, <code>My\Namespace\Prefix</code>
-      in our example, is the namespace prefix you will be using. Each
-      component can register its own namespace prefix without any
-      restrictions. It is <emphasis>recommended</emphasis> to use the
-      convention <code>\Company\Something</code> where <code>Company</code> is
-      your company name (or a shortened version thereof) and
-      <code>Something</code> corresponds to the <code>com_something</code>
-      extension name of your component. For example, the component
-      <code>com_example</code> by Acme, Inc could have a namespace prefix of
-      <code>\Acme\Example</code> set up in its XML manifest.</para>
+        <para>The text inside the XML element,
+        <code>My\Namespace\Prefix</code> in our example, is the namespace
+        prefix you will be using. Each component can register its own
+        namespace prefix without any restrictions. It is
+        <emphasis>recommended</emphasis> to use the convention
+        <code>\Company\Something</code> where <code>Company</code> is your
+        company name (or a shortened version thereof) and
+        <code>Something</code> corresponds to the <code>com_something</code>
+        extension name of your component. For example, the component
+        <code>com_example</code> by Acme, Inc could have a namespace prefix of
+        <code>\Acme\Example</code> set up in its XML manifest.</para>
 
-      <para>Note that this is the common namespace prefix for your entire
-      component. Your component has a different part for each of the three web
-      applications in Joomla: frontend (site), backend (administrator) and api
-      (the brand–new JSON API; this is optional).</para>
+        <para>Note that this is the common namespace prefix for your entire
+        component. Your component has a different part for each of the three
+        web applications in Joomla: frontend (site), backend (administrator)
+        and api (the brand–new JSON API; this is optional).</para>
 
-      <para>Here is how namespace prefixes work across different types of
-      extensions, assuming a common namespace prefix
-      <code>Acme\Example</code>:</para>
+        <para>Here is how namespace prefixes work across different types of
+        extensions, assuming a common namespace prefix
+        <code>Acme\Example</code>:</para>
 
-      <itemizedlist>
-        <listitem>
-          <para><emphasis role="bold">Component, frontend</emphasis>. The
-          frontend classes MUST be under the namespace
-          <code>\Acme\Example\Site</code>. The folder
-          <filename>components/com_example/src</filename> is the root of the
-          <code>\Acme\Example\Site</code> namespace.</para>
-        </listitem>
+        <itemizedlist>
+          <listitem>
+            <para><emphasis role="bold">Component, frontend</emphasis>. The
+            frontend classes MUST be under the namespace
+            <code>\Acme\Example\Site</code>. The folder
+            <filename>components/com_example/src</filename> is the root of the
+            <code>\Acme\Example\Site</code> namespace.</para>
+          </listitem>
 
-        <listitem>
-          <para><emphasis role="bold">Component, backend</emphasis>. The
-          backend classes MUST be under the namespace
-          <code>\Acme\Example\Administrator</code>. The folder
-          <filename>administrator/components/com_example/src</filename> is the
-          root of the <code>\Acme\Example\Administrator</code>
-          namespace.</para>
-        </listitem>
+          <listitem>
+            <para><emphasis role="bold">Component, backend</emphasis>. The
+            backend classes MUST be under the namespace
+            <code>\Acme\Example\Administrator</code>. The folder
+            <filename>administrator/components/com_example/src</filename> is
+            the root of the <code>\Acme\Example\Administrator</code>
+            namespace.</para>
+          </listitem>
 
-        <listitem>
-          <para><emphasis role="bold">Component, API application</emphasis>.
-          The API application classes MUST be under the namespace
-          <code>\Acme\Example\Api</code>. The folder
-          <filename>api/components/com_example/src</filename> is the root of
-          the <code>\Acme\Example\Api</code> namespace.</para>
-        </listitem>
-      </itemizedlist>
+          <listitem>
+            <para><emphasis role="bold">Component, API application</emphasis>.
+            The API application classes MUST be under the namespace
+            <code>\Acme\Example\Api</code>. The folder
+            <filename>api/components/com_example/src</filename> is the root of
+            the <code>\Acme\Example\Api</code> namespace.</para>
+          </listitem>
+        </itemizedlist>
 
-      <para>As for the class naming, it's not a big departure from Joomla 3.
-      It's just a more normalised version which takes namespaces into
-      account.</para>
+        <para>As for the class naming, it's not a big departure from Joomla 3.
+        It's just a more normalised version which takes namespaces into
+        account.</para>
 
-      <para>In Joomla 4 and beyond the naming convention for controllers,
-      models and tables is
-      <code>\<replaceable>NamespacePrefix</replaceable>\<replaceable>ApplicationType</replaceable>\<replaceable>Type</replaceable>\<replaceable>Name</replaceable><replaceable>Type</replaceable></code>
-      where:</para>
+        <para>In Joomla 4 and beyond the naming convention for controllers,
+        models and tables is
+        <code>\<replaceable>NamespacePrefix</replaceable>\<replaceable>ApplicationType</replaceable>\<replaceable>Type</replaceable>\<replaceable>Name</replaceable><replaceable>Type</replaceable></code>
+        where:</para>
 
-      <itemizedlist>
-        <listitem>
-          <para><replaceable>NamespacePrefix</replaceable> is your common
-          namespace prefix, e.g. <code>\Acme\Example</code>.</para>
-        </listitem>
+        <itemizedlist>
+          <listitem>
+            <para><replaceable>NamespacePrefix</replaceable> is your common
+            namespace prefix, e.g. <code>\Acme\Example</code>.</para>
+          </listitem>
 
-        <listitem>
-          <para><replaceable>ApplicationType</replaceable> is the type of the
-          application part of your component i.e. one of <code>Site</code>
-          (frontend), <code>Administrator</code> (backend), or
-          <code>Api</code> (JSON API application).</para>
-        </listitem>
+          <listitem>
+            <para><replaceable>ApplicationType</replaceable> is the type of
+            the application part of your component i.e. one of
+            <code>Site</code> (frontend), <code>Administrator</code>
+            (backend), or <code>Api</code> (JSON API application).</para>
+          </listitem>
 
-        <listitem>
-          <para><replaceable>Name</replaceable> is the name of the specific
-          MVC class with its first letter in uppercase, e.g.
-          <code>Item</code>.</para>
-        </listitem>
+          <listitem>
+            <para><replaceable>Name</replaceable> is the name of the specific
+            MVC class with its first letter in uppercase, e.g.
+            <code>Item</code>.</para>
+          </listitem>
 
-        <listitem>
-          <para><code><replaceable>Type</replaceable></code> is the type of
-          the class you have, i.e. one of <code>Component</code>,
-          <code>Model</code>, or <code>Table</code>. Again, the first letter
-          is uppercase.</para>
-        </listitem>
-      </itemizedlist>
+          <listitem>
+            <para><code><replaceable>Type</replaceable></code> is the type of
+            the class you have, i.e. one of <code>Component</code>,
+            <code>Model</code>, or <code>Table</code>. Again, the first letter
+            is uppercase.</para>
+          </listitem>
+        </itemizedlist>
 
-      <para>Controllers, models and tables are placed under your
-      <filename>src</filename> directory following PSR-4. So, a backend class
-      <code>\Acme\Example\Administrator\Model\ItemModel</code> for a component
-      <code>com_example</code> whose common namespace prefix is
-      <code>\Acme\Example</code> is placed in the file
-      <filename>administrator/components/com_example/src/Model/ItemModel.php</filename>.</para>
+        <para>Controllers, models and tables are placed under your
+        <filename>src</filename> directory following PSR-4. So, a backend
+        class <code>\Acme\Example\Administrator\Model\ItemModel</code> for a
+        component <code>com_example</code> whose common namespace prefix is
+        <code>\Acme\Example</code> is placed in the file
+        <filename>administrator/components/com_example/src/Model/ItemModel.php</filename>.</para>
 
-      <para>Views have a very slightly different convention because we also
-      have the <emphasis>view type</emphasis>. Their naming convention is
-      <code>\<replaceable>NamespacePrefix</replaceable>\<replaceable>ApplicationType</replaceable>\View\<replaceable>Name</replaceable>\<replaceable>ViewType</replaceable></code>
-      where:</para>
+        <para>Views have a very slightly different convention because we also
+        have the <emphasis>view type</emphasis>. Their naming convention is
+        <code>\<replaceable>NamespacePrefix</replaceable>\<replaceable>ApplicationType</replaceable>\View\<replaceable>Name</replaceable>\<replaceable>ViewType</replaceable></code>
+        where:</para>
 
-      <itemizedlist>
-        <listitem>
-          <para><replaceable>NamespacePrefix</replaceable> is your common
-          namespace prefix, e.g. <code>\Acme\Example</code>.</para>
-        </listitem>
+        <itemizedlist>
+          <listitem>
+            <para><replaceable>NamespacePrefix</replaceable> is your common
+            namespace prefix, e.g. <code>\Acme\Example</code>.</para>
+          </listitem>
 
-        <listitem>
-          <para><replaceable>ApplicationType</replaceable> is the type of the
-          application part of your component i.e. one of <code>Site</code>
-          (frontend), <code>Administrator</code> (backend), or
-          <code>Api</code> (JSON API application).</para>
-        </listitem>
+          <listitem>
+            <para><replaceable>ApplicationType</replaceable> is the type of
+            the application part of your component i.e. one of
+            <code>Site</code> (frontend), <code>Administrator</code>
+            (backend), or <code>Api</code> (JSON API application).</para>
+          </listitem>
 
-        <listitem>
-          <para>Name is the name of the specific MVC class with its first
-          letter in uppercase, e.g. <code>Item</code>.</para>
-        </listitem>
+          <listitem>
+            <para>Name is the name of the specific MVC class with its first
+            letter in uppercase, e.g. <code>Item</code>.</para>
+          </listitem>
 
-        <listitem>
-          <para><code>ViewType</code> corresponds to the format URL parameter
-          with its first letter in uppercase, e.g. <code>Html</code>,
-          <code>Json</code>, <code>Feed</code>, <code>Raw</code> and so
-          on.</para>
-        </listitem>
-      </itemizedlist>
+          <listitem>
+            <para><code>ViewType</code> corresponds to the format URL
+            parameter with its first letter in uppercase, e.g.
+            <code>Html</code>, <code>Json</code>, <code>Feed</code>,
+            <code>Raw</code> and so on.</para>
+          </listitem>
+        </itemizedlist>
 
-      <para>View classes are placed under your <filename>src</filename>
-      directory following PSR-4. So, a backend class
-      <code>\Acme\Example\Administrator\View\Item\Html</code> for a component
-      <code>com_example</code> whose common namespace prefix is
-      <code>\Acme\Example</code> is placed in the file
-      <filename>administrator/components/com_example/src/View/Item/Html.php</filename>.</para>
+        <para>View classes are placed under your <filename>src</filename>
+        directory following PSR-4. So, a backend class
+        <code>\Acme\Example\Administrator\View\Item\Html</code> for a
+        component <code>com_example</code> whose common namespace prefix is
+        <code>\Acme\Example</code> is placed in the file
+        <filename>administrator/components/com_example/src/View/Item/Html.php</filename>.</para>
 
-      <para>Right away you can see how namespaces are benefiting us. A
-      controller, model, or view in the frontend, backend and api application
-      have a different FQN (<link
-      xlink:href="https://www.php.net/manual/en/language.namespaces.rules.php">Fully
-      Qualified Name</link>). They no longer have the same name. One can
-      extend the other if we want to, we <emphasis>can</emphasis> mix front-,
-      backend and api MVC objects if we need to and all of these classes can
-      be autoloaded without having to use weird static calls. Cool!</para>
+        <para>Right away you can see how namespaces are benefiting us. A
+        controller, model, or view in the frontend, backend and api
+        application have a different FQN (<link
+        xlink:href="https://www.php.net/manual/en/language.namespaces.rules.php">Fully
+        Qualified Name</link>). They no longer have the same name. One can
+        extend the other if we want to, we <emphasis>can</emphasis> mix
+        front-, backend and api MVC objects if we need to and all of these
+        classes can be autoloaded without having to use weird static calls.
+        Cool!</para>
+      </section>
     </section>
 
     <section xml:id="com-mvcfactory">
@@ -2935,6 +2959,8 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
         </varlistentry>
       </variablelist>
 
+      <bridgehead>MVCFactory and Dependency Injection</bridgehead>
+
       <para>The MVCFactory also performs a modicum of dependency injection. It
       inspects each created MVC object and checks which interfaces it
       implements. Depending on which interfaces are implemented some basic
@@ -2942,24 +2968,23 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
       object) are taken from the corresponding services in the component's DI
       container and injected into the MVC object.</para>
 
-      <para>If you want to inject additional services you will have to create
-      a custom MVCFactory class and an MVCFactory service which returns an
-      instance of that class. Then you need to register your custom MVCFactory
-      service to your component's <link linkend="com-services">service
-      provider</link>. Yes, it's possible, but still not a very common
-      practice.</para>
+      <para>If you want to inject additional services you will have to extend
+      the MVCFactory service in your component's service provider using a
+      custom MVCFactory wrapper. When registering the service extension in
+      your component's <link linkend="com-services">service provider</link>
+      you can push your custom service to the MVCFactory wrapper and use it in
+      the overridden methods of the wrapper. We will see an example of that
+      <link linkend="com-models-push-service-joomla">pushing a custom service
+      into a Model</link> later in this book.</para>
 
-      <para><emphasis>Side note: I would very much prefer it if the
-      component;s DI Container — which is actually a service locator — was
-      injected directly into the MVC objects. However, that's the inverse of
-      Joomla 4 MVC's logic: it is a situation where each object
-      </emphasis>pulls<emphasis> its dependencies from the service locator
-      instead of its dependencies being </emphasis>pushed<emphasis> to it by
-      the factory class. There are strengths and weaknesses in both
-      approaches. The biggest strength of Joomla's approach is testability,
-      though it comes at the expense of convenience. Maybe in the future we'll
-      see real dependency injection, based on constructor arguments
-      typehinting. Maybe!</emphasis></para>
+      <para>While this sounds like a bit of a chore, it is actually a very
+      clean architecture. If you decide to make a change in your service's
+      initialisation — or swap it out with a completely different
+      implementation altogether — you can do that trivially by changing one
+      line of code in your service provider. No more hunting down all over
+      your codebase for that elusive reference to the service you are using.
+      This is just another way Dependency Injection helps you write more
+      sustainable code.</para>
     </section>
 
     <section xml:id="com-models">
@@ -3272,253 +3297,50 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
         </varlistentry>
       </variablelist>
 
-      <bridgehead>Pushing services to your Model (the One True Joomla Way™:
-      pushing services)</bridgehead>
+      <section xml:id="com-models-push-service-joomla">
+        <title>Pushing services to the Model: the Joomla Way</title>
 
-      <note>
-        <para>Yes, this is VERY complicated and not very stable. I DO NOT
-        RECOMMEND THIS APPROACH! There is a simpler way presented towards the
-        end of this section.</para>
-      </note>
+        <note>
+          <para>This way only applies to Joomla 4.3 and later. If you want
+          your component to support earlier Joomla versions you will have to
+          use the alternative method outlined towards the end of this
+          section.</para>
+        </note>
 
-      <para>As noted eariler, Joomla implements a “service push” approach. If
-      your Model needs a custom service from the component's <link
-      linkend="concepts-container">DI Container</link> you need to follow a
-      few steps. Let's say you want to push an
-      <code>\Acme\Example\Administrator\Service\FacebookPublish</code> service
-      to your Model to make it a bit easier to understand.</para>
+        <para>TODO — This section is pending the submission and acceptance of
+        a Pull Request to the Joomla Project.</para>
+      </section>
 
-      <para>First, you need to make sure that you register a service provider
-      in <link linkend="com-services">your component's service provider</link>
-      implementation:</para>
+      <section xml:id="com-models-push-service-alt">
+        <title>Pushing services to the Model: an alternative</title>
 
-      <programlisting>$container-&gt;set(
+        <para>While Joomla 4.3 and later allows you to push services into the
+        Model using an MVCFactory wrapper which extends the MVC service,
+        necessary parts of this architecture did not exist in previous Joomla
+        versions. We will have to use a slightly less “architecturally clean”
+        solution.</para>
+
+        <para>We will <emphasis role="bold">pull</emphasis> the custom service
+        <emphasis role="bold">from</emphasis> the component's DIC.</para>
+
+        <para>First, you need to make sure that you register a service
+        provider in <link linkend="com-services">your component's service
+        provider</link> implementation:</para>
+
+        <programlisting>$container-&gt;set(
     \Acme\Example\Administrator\Service\FacebookPublish::class,
     function (Container $container) {
         return new \Acme\Example\Administrator\Service\FacebookPublish();
     }
 );</programlisting>
 
-      <para>Then, you will need to create a custom MVCFactory service provider
-      for your component:</para>
+        <para>Then, you need to modify your <link
+        linkend="com-extension">component's extension class section</link> as
+        we saw on that section's “Getting access to the component's DIC
+        anytime, anywhere” to be able to statically return the component's DI
+        Container anytime, anywhere:</para>
 
-      <programlisting>&lt;?php
-
-namespace Acme\Example\Administrator\Provider;
-
-use Acme\Example\Administrator\Service\FacebookPublish;
-use Joomla\CMS\Cache\CacheControllerFactoryInterface;
-use Joomla\CMS\Form\FormFactoryInterface;
-use Joomla\CMS\MVC\Factory\ApiMVCFactory;
-use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
-use Joomla\CMS\Router\SiteRouter;
-use Joomla\Database\DatabaseInterface;
-use Joomla\DI\Container;
-use Joomla\DI\ServiceProviderInterface;
-use Joomla\Event\DispatcherInterface;
-
-class MVCFactory implements ServiceProviderInterface
-{
-	private $namespace;
-
-	public function __construct(string $namespace)
-	{
-		$this-&gt;namespace = $namespace;
-	}
-
-	public function register(Container $container)
-	{
-		$container-&gt;set(
-			MVCFactoryInterface::class,
-			function (Container $container) {
-				if (\Joomla\CMS\Factory::getApplication()-&gt;isClient('api')) {
-					$factory = new ApiMVCFactory($this-&gt;namespace);
-				} else {
-					$factory = new \Acme\Example\Administrator\Service\MVCFactory($this-&gt;namespace);
-				}
-
-				$factory-&gt;setFormFactory($container-&gt;get(FormFactoryInterface::class));
-				$factory-&gt;setDispatcher($container-&gt;get(DispatcherInterface::class));
-				$factory-&gt;setDatabase($container-&gt;get(DatabaseInterface::class));
-				$factory-&gt;setSiteRouter($container-&gt;get(SiteRouter::class));
-				$factory-&gt;setCacheControllerFactory($container-&gt;get(CacheControllerFactoryInterface::class));
-				$factory-&gt;setFacebookPublish($container-&gt;get(FacebookPublish::class))
-
-				return $factory;
-			}
-		);
-	}
-}
-</programlisting>
-
-      <para>This returns a custom MVCFactory object
-      (<code>\Acme\Example\Administrator\Service\MVCFactory</code>) which we
-      need to also implement. This custom factory implements a
-      <code>setFacebookPublish</code> method for our custom MVCFactory service
-      provider to be able to push the <code>FacebookPublish</code> service to
-      the factory and overrides the <code>createModel</code> method to push
-      the <code>FacebookPublish</code> service to the model (the chain of
-      pushing the service is DIC =&gt; MVCFactory =&gt; Model):</para>
-
-      <programlisting>&lt;?php
-
-namespace Acme\Example\Administrator\Service;
-
-use Acme\Example\Administrator\Service\FacebookPublishAware;
-use Acme\Example\Administrator\Service\FacebookPublish;
-
-class MVCFactory extends \Joomla\CMS\MVC\Factory\MVCFactory
-{
-	private $fbPublish;
-
-	public function setFacebookPublish(FacebookPublish $fbPublish): void
-	{
-		$this-&gt;fbPublish = $fbPublish;
-	}
-
-	public function createModel($name, $prefix = '', array $config = [])
-	{
-		$model = parent::createModel($name, $prefix, $config);
-
-		if ($model instanceof FacebookPublishAware) {
-			$model-&gt;setFacebookPublish($this-&gt;fbPublish);
-		}
-	}
-}</programlisting>
-
-      <para>So, for our custom MVCFactory to know when to push our
-      FacebookPublish service we need an interface,
-      <code>Acme\Example\Administrator\Service\FacebookPublishAware</code>. If
-      a Model implements this interface then the MVCFactory knows to push the
-      service using the model's <code>setFacebookPublish</code> method defined
-      in the interface. So let's create the interface:</para>
-
-      <programlisting>&lt;?php
-
-namespace Acme\Example\Administrator\Service;
-
-use Acme\Example\Administrator\Service\FacebookPublish;
-
-interface FacebookPublishAware
-{
-	public function setFacebookPublish(FacebookPublish $fbPublish): void;
-}</programlisting>
-
-      <para>A model implementing this custom service would look like
-      this:</para>
-
-      <programlisting>&lt;?php
-
-namespace Acme\Example\Administrator\Model;
-
-use Acme\Example\Administrator\Service\FacebookPublish;
-use Acme\Example\Administrator\Service\FacebookPublishAware;
-use Joomla\CMS\MVC\Model\AdminModel;
-
-class ItemModel extends AdminModel implements FacebookPublishAware
-{
-	private $fbPublish;
-
-	public function setFacebookPublish(FacebookPublish $fbPublish): void
-	{
-		$this-&gt;fbPublish = $fbPublish;
-	}
-	
-	protected function getFacebookPublish(): FacebookPublish
-	{
-		return $this-&gt;fbPublish;
-	}
-	
-	// The rest of the Model's code goes here…
-}</programlisting>
-
-      <para>You need to think of it like so. A service must be able to be
-      instantiated by the component's container, therefore I need to add a
-      service provider to it in my services.php. If I have a service I need it
-      to be pushed to my Model. My Model is instantiated by the MVCFactory,
-      therefore I need a custom MVCFactory to push my service. The MVCFactory
-      will know to push my service if my Models implement an interface. My
-      component will only know that I have a custom MVCFactory if I create an
-      MVCFactory service provider and tell it's DIC to use it.</para>
-
-      <para>Knowing these steps you can have a FAR MORE EFFICIENT way of
-      writing your code than the bass ackwards method I presented
-      above:</para>
-
-      <itemizedlist>
-        <listitem>
-          <para>Create your custom service.</para>
-        </listitem>
-
-        <listitem>
-          <para>Edit your <filename>services.php</filename> and add a service
-          provide for your service.</para>
-        </listitem>
-
-        <listitem>
-          <para>Create an Interface your models will implement when they need
-          to be pushed this service.</para>
-        </listitem>
-
-        <listitem>
-          <para>Create a custom MVCFactory which pushes this service to the
-          models which implement the interface you just created.</para>
-        </listitem>
-
-        <listitem>
-          <para>Create a custom MVCFactory service provider which instantiates
-          your custom MVCFactory class AND pushes your custom service to
-          it.</para>
-
-          <warning>
-            <para>It is currently IMPOSSIBLE to extend from the core Joomla
-            MVCFactory service provider. Moreover, this service provider is
-            going to be changing a lot, especially in the run–up to Joomla 5.
-            This means that you will need to REVIEW AND MODIFY your custom
-            MVCFactory service provider every time a new Joomla major or minor
-            version is released. This is far from ideal. Read on for an
-            alternative.</para>
-          </warning>
-        </listitem>
-
-        <listitem>
-          <para>Go back to your <filename>services.php</filename> file and
-          replace the generic Joomla MVCFactory service provider with your
-          own.</para>
-        </listitem>
-      </itemizedlist>
-
-      <bridgehead>Pushing services to your Model (the Practical Way: using the
-      DIC as the Service Provider it really is)</bridgehead>
-
-      <para>If you read the exuberantly long description of how to use a
-      custom service the Joomla Way (pushing services) you may be running for
-      your life. That was my reaction, too. Even more so when there is a
-      caveat that doing all this complicated work means that my extensions
-      break every time Joomla publishes a new major or minor version.</para>
-
-      <para>So, here's another idea. Let's <emphasis
-      role="bold">pull</emphasis> the custom service <emphasis
-      role="bold">from</emphasis> the component's DIC.</para>
-
-      <para>First, you need to make sure that you register a service provider
-      in <link linkend="com-services">your component's service provider</link>
-      implementation:</para>
-
-      <programlisting>$container-&gt;set(
-    \Acme\Example\Administrator\Service\FacebookPublish::class,
-    function (Container $container) {
-        return new \Acme\Example\Administrator\Service\FacebookPublish();
-    }
-);</programlisting>
-
-      <para>Then, you need to modify your <link
-      linkend="com-extension">component's extension class section</link> as we
-      saw on that section's “Getting access to the component's DIC anytime,
-      anywhere” to be able to statically return the component's DI Container
-      anytime, anywhere:</para>
-
-      <programlisting>	protected static $dic;
+        <programlisting>	protected static $dic;
 
 	public function boot(ContainerInterface $container)
 	{
@@ -3536,10 +3358,10 @@ class ItemModel extends AdminModel implements FacebookPublishAware
 		return self::$dic;
 	}</programlisting>
 
-      <para>Now your Model can simply pull the service from the Component's
-      DIC in its constructor:</para>
+        <para>Now your Model can simply pull the service from the Component's
+        DIC in its constructor:</para>
 
-      <programlisting>&lt;?php
+        <programlisting>&lt;?php
 
 namespace Acme\Example\Administrator\Model;
 
@@ -3570,37 +3392,31 @@ class ItemModel extends AdminModel
 	// The rest of your model's code goes here…
 }</programlisting>
 
-      <para>This method works great and won't break when Joomla changes how
-      the MVCFactory service provider works. There are two (minor) downsides
-      to this approach:</para>
+        <para>For completeness' sake, here are there are two (minor) downsides
+        to this approach:</para>
 
-      <itemizedlist>
-        <listitem>
-          <para>The Model now has a direct hard dependency on the component's
-          extension class. For real world use inside Joomla this is not a big
-          deal; the only recommended way to create instances of a component's
-          Models is through its MVCFactory object which necessarily goes
-          through the component's extension object. If you are writing Unit
-          Tests, though, you can no longer isolate the Model. You will need to
-          inject a dependency injection container with your custom service in
-          the component's extension class.</para>
-        </listitem>
+        <itemizedlist>
+          <listitem>
+            <para>The Model now has a direct hard dependency on the
+            component's extension class. For real world use inside Joomla this
+            is not a big deal; the only recommended way to create instances of
+            a component's Models is through its MVCFactory object which
+            necessarily goes through the component's extension object. If you
+            are writing Unit Tests, though, you can no longer isolate the
+            Model. You will need to inject a dependency injection container
+            with your custom service in the component's extension
+            class.</para>
+          </listitem>
 
-        <listitem>
-          <para>The extension class has a static method to fetch the DIC. If
-          this is not already set up it will try to go through the global
-          application object to boot the component. If you are writing Unit
-          Tests this is a problem, hence why I said that you need to inject a
-          DIC to your component's extension class.</para>
-        </listitem>
-      </itemizedlist>
-
-      <para>Unfortunately, this part of Joomla's MVC is NOT very well thought
-      out. It is essentially asking developers to either always be anxious
-      that their components will break because Joomla evolves over time OR do
-      something which violates the entire point of dependency injection just
-      to make sure that their components remain viable. This is something I am
-      trying to convince the maintainers to address.</para>
+          <listitem>
+            <para>The extension class has a static method to fetch the DIC. If
+            this is not already set up it will try to go through the global
+            application object to boot the component. If you are writing Unit
+            Tests this is a problem, hence why I said that you need to inject
+            a DIC to your component's extension class.</para>
+          </listitem>
+        </itemizedlist>
+      </section>
     </section>
 
     <section xml:id="com-controllers">
