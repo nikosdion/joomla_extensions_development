@@ -3247,55 +3247,57 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
         </varlistentry>
       </variablelist>
 
-      <bridgehead>Interfaces and Traits</bridgehead>
+      <section xml:id="com-models-interfaces-traits">
+        <title>Interfaces and Traits</title>
 
-      <para>In Joomla 3 each Model type tried to do everything under the sun
-      and even implement features which might have nothing to do with your
-      component, like tags and versioning.</para>
+        <para>In Joomla 3 each Model type tried to do everything under the sun
+        and even implement features which might have nothing to do with your
+        component, like tags and versioning.</para>
 
-      <para>In Joomla 4 and later versions the default Model classes don't do
-      any of that. That's a good thing because it promotes the computer
-      science principle called Separation of Concerns. If you need additional
-      features you will be doing a bit of <emphasis>object
-      composition</emphasis>.</para>
+        <para>In Joomla 4 and later versions the default Model classes don't
+        do any of that. That's a good thing because it promotes the computer
+        science principle called Separation of Concerns. If you need
+        additional features you will be doing a bit of <emphasis>object
+        composition</emphasis>.</para>
 
-      <para>For those with a Computer Science background, you may wonder how
-      you can do object composition in a language like PHP which, unlike C for
-      example, does not allow classes to inherit (extend) from multiple
-      classes. The answer is by using Traits provided by Joomla.</para>
+        <para>For those with a Computer Science background, you may wonder how
+        you can do object composition in a language like PHP which, unlike C
+        for example, does not allow classes to inherit (extend) from multiple
+        classes. The answer is by using Traits provided by Joomla.</para>
 
-      <variablelist>
-        <varlistentry>
-          <term>\Joomla\CMS\Versioning\VersionableModelTrait</term>
+        <variablelist>
+          <varlistentry>
+            <term>\Joomla\CMS\Versioning\VersionableModelTrait</term>
 
-          <listitem>
-            <para>Implements support for Versions (record history).</para>
+            <listitem>
+              <para>Implements support for Versions (record history).</para>
 
-            <para>Only applicable to models extending from
-            <code>AdminModel</code>. This requires the <guilabel>Behaviour -
-            Versionable</guilabel> plugin to be published. The corresponding
-            Table must implement the
-            <code>\Joomla\CMS\Versioning\VersionableTableInterface</code>
-            interface and the corresponding Controller must use the
-            <code>\Joomla\CMS\Versioning\VersionableControllerTrait</code>
-            trait.</para>
-          </listitem>
-        </varlistentry>
+              <para>Only applicable to models extending from
+              <code>AdminModel</code>. This requires the <guilabel>Behaviour -
+              Versionable</guilabel> plugin to be published. The corresponding
+              Table must implement the
+              <code>\Joomla\CMS\Versioning\VersionableTableInterface</code>
+              interface and the corresponding Controller must use the
+              <code>\Joomla\CMS\Versioning\VersionableControllerTrait</code>
+              trait.</para>
+            </listitem>
+          </varlistentry>
 
-        <varlistentry>
-          <term>\Joomla\CMS\MVC\Model\WorkflowBehaviorTrait</term>
+          <varlistentry>
+            <term>\Joomla\CMS\MVC\Model\WorkflowBehaviorTrait</term>
 
-          <listitem>
-            <para>Implements support for Workflows (prescribed steps for state
-            changes in records).</para>
+            <listitem>
+              <para>Implements support for Workflows (prescribed steps for
+              state changes in records).</para>
 
-            <para>Only applicable to models extending from
-            <code>AdminModel</code>. The model must implement the
-            <code>\Joomla\CMS\MVC\Model\WorkflowModelInterface</code>
-            interface.</para>
-          </listitem>
-        </varlistentry>
-      </variablelist>
+              <para>Only applicable to models extending from
+              <code>AdminModel</code>. The model must implement the
+              <code>\Joomla\CMS\MVC\Model\WorkflowModelInterface</code>
+              interface.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+      </section>
 
       <section xml:id="com-models-push-service-joomla">
         <title>Pushing services to the Model: the Joomla Way</title>
@@ -3422,7 +3424,390 @@ class ItemModel extends AdminModel
     <section xml:id="com-controllers">
       <title>Controllers</title>
 
-      <para/>
+      <para>The bulk of the implementation logic for Joomla 4 MVC Controllers
+      is the same as in Joomla 3 MVC.</para>
+
+      <para>The logic is that most views are displayed using the component's
+      <code>DisplayController</code> which extends from Joomla's
+      <code>Joomla\CMS\MVC\Controller\BaseController</code>. You only write
+      custom controllers when there's an action needed or when you need access
+      to a Form object.</para>
+
+      <tip>
+        <para>The kind of MVC practiced by Joomla and described above is a bit
+        “dirty”; all views share a common DisplayController for displaying.
+        This is fine with Joomla's one–trick–pony components, only able to
+        display one kind of information. </para>
+
+        <para>When you have something more complex this may not be at all
+        convenient. For example, a document management system might need
+        separate views to display nested categories, available items
+        (including the actual <emphasis>downloading</emphasis> part!) and
+        uploading items, as well as viewing, adding and managing comments per
+        document. In these cases it's typically much more efficient to have a
+        separate controller per view. In components like that each view
+        consists of a Controller, Model and View class (an MVC triad) which is
+        more in line with how the normative MVC coding pattern is meant to
+        work. This is perfectly possible in Joomla <emphasis>as long as you
+        have a custom Dispatcher</emphasis>. You can see how I am doing that
+        <link
+        xlink:href="https://github.com/akeeba/release-system/blob/development/component/backend/src/Dispatcher/Dispatcher.php">in
+        the Dispatcher of Akeeba Release System</link>, the software downloads
+        management software used by Joomla's official Downloads site.</para>
+      </tip>
+
+      <para>The Controller classes extend from one of the base Joomla MVC
+      Model super–classes:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>Joomla\CMS\MVC\Controller\BaseController</term>
+
+          <listitem>
+            <para>The most basic controller you can get. It is mainly used to
+            power the <code>DisplayController</code> of the component or
+            whenever you want to create custom controllers to display stuff
+            and perform non–administrative actions (e.g. in the
+            frontend).</para>
+
+            <warning>
+              <para>Heads up! In Joomla 3 the default display controller was
+              in the root of the component as the file
+              <filename>controller.php</filename> e.g.
+              <filename>administrator/components/com_example/controller.php</filename>.
+              This is no longer the case in Joomla 4 and later. All
+              controllers are under the <filename>src/Controller</filename>
+              folder and the default controller is named
+              <code>DisplayController</code> which means that in the above
+              example it would be located in
+              <filename>administrator/components/com_example/srs/Controller/DisplayController.php</filename>.</para>
+
+              <para>In Joomla 4 and later the <code>DisplayController</code>
+              is mostly empty except for a line like this:</para>
+
+              <programlisting>protected $default_view = 'foobar';</programlisting>
+
+              <para>This is the name of the “default view”. That's the view
+              which will be displayed if the <parameter>view</parameter> URL
+              parameter is not provided in the request.</para>
+            </warning>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\Joomla\CMS\MVC\Controller\AdminController</term>
+
+          <listitem>
+            <para>This is an extension to BaseController. It is meant for
+            displaying list views in the backend of your site, e.g. a list of
+            articles.</para>
+
+            <tip>
+              <para>This is the controller you will be typically using for
+              controllers whose name is <emphasis
+              role="bold">plural</emphasis> such as
+              <code>\Acme\Example\Administrator\Controller\ItemsController</code>.
+              Since this is the Items controller and “items” is plural it
+              gives us a hint that it will be displaying multiple items which,
+              in the Joomla backend, is very likely to be a list.</para>
+
+              <para>A mnemonic way to remember this is PASiFIC (yes, with the
+              misspelling and all) "Plural Admin Singular Form Identifies the
+              Controller".</para>
+            </tip>
+
+            <para>It also handles <emphasis role="bold">some</emphasis> of the
+            admin tasks you will have to perform on records in a Joomla list
+            view: publish, unpulish, archive, trash, report, orderup,
+            orderdown, delete, reorder, saveorder, checkin, checkout,
+            saveOrderAjax and runTransition. Everything else has to be handled
+            by a singular named Controller which extends FormController. Yes,
+            that's confusing and yes, it's the source of many bugs — but
+            that's the same as Joomla 3 and earlier so at least it's
+            <emphasis>consistently confusing</emphasis>.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\Joomla\CMS\MVC\Controller\FormController</term>
+
+          <listitem>
+            <para>This is an extension to the BaseController which
+            additionally implements Form handling. This is meant to be used in
+            views which add or edit a database record. Additionally, it will
+            be used in views which handle an XML Form e.g. a configuration
+            page.</para>
+
+            <tip>
+              <para>This is the controller you will be typically using for
+              controllers whose name is <emphasis
+              role="bold">singular</emphasis> such as
+              <code>\Acme\Example\Administrator\Controller\ItemController</code>.
+              Since this is the Item controller and “item” is singular it
+              gives us a hint that it will be displaying a single item which,
+              in the Joomla backend, is very likely to be an add / edit record
+              page.</para>
+
+              <para>In the frontend of the site you may have <emphasis
+              role="bold">two</emphasis> controllers for the same data type.
+              One DisplayController extending from BaseController to display
+              the item and one singular name controller extending from
+              FormController to add or edit an item. It
+              <emphasis>is</emphasis> possible to have a single controller,
+              extending from FormController. You see, FormController itself
+              extends from BaseController which has the display method which
+              is used to display stuff, i.e. it already contains the
+              functionality of the typical DisplayController.</para>
+            </tip>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\Joomla\CMS\MVC\Controller\ApiController</term>
+
+          <listitem>
+            <para>This is a very special kind of controller which is only used
+            in the <link linkend="com-api">JSON API application part of your
+            component</link> e.g. the code under
+            <filename>api/components/com_example</filename>. </para>
+
+            <para>This type of controller does not have a direct equivalent in
+            the other controllers. It can do everything. Produce a list of
+            records, return a single record, create a new record and modify or
+            delete an existing record.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <section xml:id="com-controllers-basic-services">
+        <title>Basic services in your Controller</title>
+
+        <para>A Controller object created by Joomla has a few basic services.
+        In the olden days before Joomla 4 we had to use static methods in
+        <code>\Joomla\CMS\Factory</code> (formerly <code>JFactory</code>) or
+        the base MVC objects themselves to get access to these services. You
+        are no longer supposed to do that, you are supposed to use the
+        services provided in the Controller object itself.</para>
+
+        <bridgehead>Application</bridgehead>
+
+        <para>In Joomla 3 and earlier we would get the currently active
+        application object through
+        <code>\Joomla\CMS\Factory::getApplication()</code>. Do NOT do
+        that.</para>
+
+        <para>In Joomla 4 and later you can get the currently active
+        application object through <code>$this-&gt;app</code>.</para>
+
+        <para>Please remember that the application you are getting is not
+        necessarily a <code>SiteApplication</code> or
+        <code>AdministratorApplication</code>. It may very well be an
+        <code>ApiApplication</code> (JSON API), a
+        <code>ConsoleApplication</code> (Joomla CLI app) or even a custom
+        application extending from
+        <code>\Joomla\CMS\Application\CMSApplication</code>.</para>
+
+        <bridgehead>Dispatcher</bridgehead>
+
+        <para>In Joomla 3 and earlier you'd run plugin events by doing
+        something like this:</para>
+
+        <programlisting>$results = \Joomla\CMS\Factory::getApplication()
+  -&gt;triggerEvent('onSomething', [$param1, $param2]);</programlisting>
+
+        <para>In Joomla 4 and later there are two ways to call plugin
+        events.</para>
+
+        <para>The first method is the legacy method, going through the
+        application's <code>triggerEvent</code> method, which is discouraged
+        and will eventually go away.</para>
+
+        <programlisting>$results = $this-&gt;app-&gt;triggerEvent('onSomething', [$param1, $param2]);</programlisting>
+
+        <para>The second and recommended method is going through the Joomla
+        events dispatcher and using real events.</para>
+
+        <programlisting>$event = \Joomla\CMS\Event\GenericEvent::create('onSomething', [$param1, $param2]);
+$this-&gt;getDispatcher()-&gt;dispatch($event-&gt;getName(), $event);
+$results = $event-&gt;getArgument('result', []);</programlisting>
+
+        <para>While this looks a bit more complicated it has some
+        benefits.</para>
+
+        <para>Using Events to access plugins means that you get access to a
+        <link linkend="plg-concrete-events">concrete event object</link>. All
+        core Joomla events will correspond to concrete event objects in Joomla
+        5.0, meaning that you will be able to add typehinting and have your
+        IDE (e.g. phpStorm, Visual Studio Code, NetBeans, Eclipse, ...)
+        auto–complete the argument names when manipulating an event.</para>
+
+        <para>The real Events implemented in Joomla 4 and later, unlike plain
+        old plugin handlers we had in Joomla 1.0 to 3.10, can prevent some of
+        their arguments to be modified, prescribe exactly
+        <emphasis>what</emphasis> can be modified and even allow plugins to
+        stop the processing of an event when we reach a point that further
+        processing is unnecessary. If you slowly move from just using custom
+        event names to concrete event classes you can implement far more
+        complex features in your code with much less code — believe me, I've
+        been there and done that! Event handling is one of those fundamental
+        things which you are <emphasis>really</emphasis> upset it's changed
+        but once you start getting the idea of how the new system works you
+        start wondering how you could have ever written software without
+        it.</para>
+
+        <bridgehead>Input</bridgehead>
+
+        <para>Back in the olden days we'd get the user's input by doing one of
+        these (the more of these you remember the older you are — some date
+        back to the early 00s!):</para>
+
+        <programlisting>// Joomla 1.0
+$foo = \JRequest::getCmd('foo');
+// Joomla 1.5
+$input = new \Joomla\CMS\Input\Input();
+$foo = $input-&gt;getCmd('foo');
+// Joomla 1.6
+$foo = Joomla\CMS\Factory::getApplication()-&gt;input-&gt;getCmd('foo');</programlisting>
+
+        <para>This had always been a bad idea because our Controller had to
+        <emphasis>know</emphasis> about the global application object and its
+        request variables. This meant, for example, that we could not reuse
+        our component to display a view <link linkend="com-hmvc">using
+        HMVC</link>.</para>
+
+        <para>Since Joomla 3.0 the Controller object has an <code>input</code>
+        property which holds its own <code>\Joomla\CMS\Input\Input</code>
+        object. In Joomla 3 this was typically just the application's input
+        object unless you were manually constructing a controller (with a lot
+        of effort).</para>
+
+        <para>In Joomla 4.0 and later the input property contains its own
+        \Joomla\CMS\Input\Input object <emphasis>which comes from the DI
+        Container of the component</emphasis>. Remember that when booting a
+        component we get access to its <link linkend="com-extension">component
+        extension object</link> which has access to the component's <link
+        linkend="concepts-container">DI Container</link>. This of course means
+        that we can add <link linkend="com-extension-dic-proxy">a method to
+        that object to access the DI Container</link> and set a custom input
+        object, thereby implementing HMVC very easily — something that Joomla
+        core maintainers didn't think was possible with the core architecture
+        a few years ago! This means that whenever we want to create a module
+        which displays the same information an existing view of our component
+        already does, albeit in a slightly different format, all we need to do
+        is create a new view template or layout and use HMVC, without having
+        to rewrite our business logic in the module. We can write less code to
+        do more. That's awesome!</para>
+
+        <para>That is (one of the many reasons) why you should
+        <emphasis>always</emphasis> be accessing the input as
+        <code>$this-&gt;input</code> in your controllers. Now you know.</para>
+
+        <bridgehead>MVCFactory</bridgehead>
+
+        <para>Back in Joomla 1.0 to 3.10 creating an MVC object such as a
+        Model, View, Table, or even another Controller from inside our
+        Controller required calling static methods in the base MVC objects or
+        proxy methods in the controller, like so:</para>
+
+        <programlisting>$someController = \Joomla\CMS\MVC\Controller\BaseController::getInstance('Some');
+$someModel = \Joomla\CMS\MVC\Model\BaseDatabaseModel::getInstance('Some', 'ExampleModel');
+// or
+$someModel = $this-&gt;createModel('Some', 'ExampleModel');
+$someView = $this-&gt;createView('Some', 'ExampleView', 'Html');
+$someTable = \Joomla\CMS\Table\Table::getInstance('Some', 'ExampleTable');</programlisting>
+
+        <para>There are two things which strike us as suboptimal:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>There is no consistency in how you create MVC objects. Some
+            are static calls, some are method calls to proxy functions.</para>
+          </listitem>
+
+          <listitem>
+            <para>There is no consistency in the arguments you provide.
+            Creating a controller only needs its name (and requires the magic
+            configuration array key <code>base_path</code> if you want to get
+            a controller from a component other than the current one),
+            creating anything else requires us to give it the prefix of the
+            MVC class name (not just the component name).</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>This is what we'd call “sanity came here to die”.</para>
+
+        <para>Joomla 3.10 introduced the MVCFactory for creating models, views
+        and tables and Joomla 4.0 extended it by also letting it create
+        controllers. See how easier and more consistent everything is
+        now:</para>
+
+        <programlisting>// Only on Joomla 4.0 and later
+$someController = $this-&gt;getMVCFactory()-&gt;createController('Some', 'Administrator');
+// Joomla 3.10 and later
+$someModel = $this-&gt;getMVCFactory()-&gt;createModel('Some', 'Administrator');
+$someView = $this-&gt;getMVCFactory()-&gt;createView('Some', 'Administrator', 'Html');
+$someTable = $this-&gt;getMVCFactory()-&gt;createTable('Some', 'Administrator');
+// Inside the Controller I can still do this (4.0 and later):
+$someModel = $this-&gt;getModel('Some', 'Administrator');
+$someView = $this-&gt;getView('Some', 'Administrator', 'Html');</programlisting>
+
+        <para>First of all, we see that creating MVC objects is now very
+        consistent and easier. </para>
+
+        <para>Second, we notice that the <code>$prefix</code> argument is no
+        longer something component–specific (such as
+        <code>ExampleModel</code>) but simply the side of the application
+        (Site, Administrator or Api) that we want to get the MVC object
+        from.</para>
+
+        <note>
+          <para>Tables are only available in the Administrator side of the
+          application. While you can theoretically defined different Table
+          classes in the frontend (Site) or JSON API (Api) side it's not a
+          good idea as you will very likely run into issues where the “wrong”
+          table class is being used. As a result, it's advisable to always
+          call <code>createTable</code> with two parameters and set the second
+          parameter to <option>Administrator</option>).</para>
+        </note>
+
+        <para>Legacy Joomla 3 components still work despite the apparent
+        backwards compatibility (b/c) break in the <code>getModel</code> and
+        <code>getView</code> methods. Why is that? Well, it's because Joomla 4
+        uses the <code>\Joomla\CMS\MVC\Factory\LegacyFactory</code> instead of
+        <code>\Joomla\CMS\MVC\Factory\MVCFactory</code> for these components.
+        The LegacyFactory is aware of the b/c break and acts accordingly so
+        you, the extensions developer, do not suffer. This is possible because
+        each component has its own DI Container. So that's another way how
+        using a DI Container allowed Joomla to create an updated, richer MVC
+        API without breaking backwards compatibility with Joomla 3 — at least
+        until Joomla 6.0. Neat, huh?</para>
+
+        <para>As a developer, you should remember this when you are inside a
+        Controller writing code:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>If you want to get a Model or View use the controller's
+            <code>getModel</code> and <code>getView</code> methods.</para>
+          </listitem>
+
+          <listitem>
+            <para>If you want to get another <code>Controller</code> or a
+            <code>Table</code> do not instantiate them directly! Always go
+            through the MVCFactory.</para>
+          </listitem>
+
+          <listitem>
+            <para>The second argument to all these methods is the application
+            side you are getting an object from. Leave it empty to use the
+            <emphasis>current</emphasis> application side or pass an explicit
+            value. If you leave it empty keep in mind that, for example, your
+            backend controller may be running in the frontend. In this case,
+            do you <emphasis>really</emphasis> want to get the frontend
+            model?</para>
+          </listitem>
+        </itemizedlist>
+      </section>
     </section>
 
     <section xml:id="com-views">
