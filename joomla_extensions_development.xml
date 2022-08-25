@@ -3457,7 +3457,7 @@ class ItemModel extends AdminModel
       </tip>
 
       <para>The Controller classes extend from one of the base Joomla MVC
-      Model super–classes:</para>
+      Controller super–classes:</para>
 
       <variablelist>
         <varlistentry>
@@ -3813,7 +3813,151 @@ $someView = $this-&gt;getView('Some', 'Administrator', 'Html');</programlisting>
     <section xml:id="com-views">
       <title>Views</title>
 
-      <para/>
+      <para>Views, in Joomla 3, referred to two different things: the View
+      classes and the view templates. In fact, the view templates were placed
+      in a <code>tmpl</code> folder under each View's folder which was a bad
+      idea: you had the output rendering in a subdirectory of the business
+      logic, making it hard to discern when one ends and the other
+      begins.</para>
+
+      <para>In Joomla 4 there is a separation of these two very different
+      types of code. The view classes (which we will call Views) are placed in
+      the <filename>src/View</filename> folder with one subdirectory for each
+      view in <code>Uppercasefirst</code> format. The view templates are
+      placed in the <filename>tmpl</filename> folder in your component's
+      folder with one subdirectory for each view they correspond to in
+      <code>lowercase</code> format.</para>
+
+      <warning>
+        <para><emphasis role="bold">Folder and file name case
+        matters</emphasis>. You may not notice it when developing on a Windows
+        or macOS machine with a case–insensitive filesystem but you will
+        <emphasis>definitely</emphasis> suffer if you mix it up when deploying
+        your component on a Linux–based server where the filesystem is
+        virtually guaranteed to be case–sensitive.</para>
+
+        <para>Let's say you have a view which is called Foobar.</para>
+
+        <para>Your HTML View class file path relative to your component's root
+        MUST be <filename>src/View/Foobar/Html.php</filename>. It can NOT be
+        <filename>src/View/FooBar/Html.php</filename> (mixed case in the
+        subdirectory) or <filename>src/View/Foobar/HTML.php</filename> (wrong
+        case for the filename)!</para>
+
+        <para>Your view <filename>default.php</filename> view template file
+        path relative to your component's root MUST be
+        <filename>tmpl/foobar/default.php</filename>. It cannot be
+        <filename>tmpl/Foobar/default.php</filename> (wrong case for the
+        subdirectory)!</para>
+
+        <para>Knowing this will save you hours of “fun” hitting your head
+        against a brick wall, wondering why it works on your computer but on
+        your server.</para>
+      </warning>
+
+      <para>The bulk of the implementation logic for Joomla 4 MVC Views is the
+      same as in Joomla 3 MVC.</para>
+
+      <para>The View classes extend from one of the base Joomla MVC View
+      super–classes:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>\Joomla\CMS\MVC\View\AbstractView</term>
+
+          <listitem>
+            <para>This is the base class all views extend from. You will have
+            to implement the <code>display</code> method yourself.</para>
+
+            <para>It is very rare that you are going to extend from this view.
+            Typically, this is something you will do when you are rendering a
+            non-HTML document, without using a view template file. Do note
+            that if you are outputting JSON you may want to use
+            <code>\Joomla\CMS\MVC\View\JsonView</code> instead.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\Joomla\CMS\MVC\View\HtmlView</term>
+
+          <listitem>
+            <para>This is the most common view type, used whenever you want to
+            display HTML output in the front- or backend.</para>
+
+            <note>
+              <para>Even though Joomla defines the
+              <code>\Joomla\CMS\MVC\View\ListView</code> class for
+              administrator list views and
+              <code>\Joomla\CMS\MVC\View\FormView</code> for add/edit views,
+              these view classes are no longer used in Joomla 4. Both types of
+              pages use the HtmlView instead. As a result, the two more
+              specialised view types will not be mentioned again in this
+              book.</para>
+            </note>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\Joomla\CMS\MVC\View\JsonView</term>
+
+          <listitem>
+            <para>This view type is used to output a JSON document. You set
+            its <code>_output</code> property and that's all there is to it.
+            This is rarely used on its own.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\Joomla\CMS\MVC\View\JsonApiView</term>
+
+          <listitem>
+            <para>This view type is used exclusively in the Api (JSON API)
+            application. It's used to output data from the JSON API in JSON
+            format (what else?).</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\Joomla\CMS\MVC\View\CategoriesView</term>
+
+          <listitem>
+            <para>This view type is used in the frontend (site) application to
+            display a list of categories. You are supposed to use this if you
+            are using Joomla's core categories in your component.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\Joomla\CMS\MVC\View\CategoryView</term>
+
+          <listitem>
+            <para>This view type is used in the frontend (site) application to
+            display a single category, typically with a list of its
+            subcategories and items. You are supposed to use this if you are
+            using Joomla's core categories in your component.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\Joomla\CMS\MVC\View\CategoryFeedView</term>
+
+          <listitem>
+            <para>This view type is used in the frontend (site) application to
+            display an RSS / Atom feed of a category's objects. You are
+            supposed to use this if you are using Joomla's core categories in
+            your component.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>Since Joomla 4.2.0 you can use
+      <code>$this-&gt;getCurrentUser()</code> in a view to get the Joomla User
+      object for the currently logged in user.</para>
+
+      <para>Since Joomla 4.0.0 you can get the Joomla event dispatcher with
+      <code>$this-&gt;getDispatcher()</code> to run plugin events as explained
+      <link linkend="com-controllers-basic-services">in the Controller
+      documentation</link>.</para>
     </section>
 
     <section xml:id="com-tables">
