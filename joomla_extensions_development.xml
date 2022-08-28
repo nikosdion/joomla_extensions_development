@@ -3437,7 +3437,7 @@ class ItemModel extends AdminModel
         <para>The kind of MVC practiced by Joomla and described above is a bit
         “dirty”; all views share a common DisplayController for displaying.
         This is fine with Joomla's one–trick–pony components, only able to
-        display one kind of information. </para>
+        display one kind of information.</para>
 
         <para>When you have something more complex this may not be at all
         convenient. For example, a document management system might need
@@ -3569,7 +3569,7 @@ class ItemModel extends AdminModel
             <para>This is a very special kind of controller which is only used
             in the <link linkend="com-api">JSON API application part of your
             component</link> e.g. the code under
-            <filename>api/components/com_example</filename>. </para>
+            <filename>api/components/com_example</filename>.</para>
 
             <para>This type of controller does not have a direct equivalent in
             the other controllers. It can do everything. Produce a list of
@@ -3752,7 +3752,7 @@ $someModel = $this-&gt;getModel('Some', 'Administrator');
 $someView = $this-&gt;getView('Some', 'Administrator', 'Html');</programlisting>
 
         <para>First of all, we see that creating MVC objects is now very
-        consistent and easier. </para>
+        consistent and easier.</para>
 
         <para>Second, we notice that the <code>$prefix</code> argument is no
         longer something component–specific (such as
@@ -3963,7 +3963,567 @@ $someView = $this-&gt;getView('Some', 'Administrator', 'Html');</programlisting>
     <section xml:id="com-tables">
       <title>Tables</title>
 
-      <para/>
+      <para>Tables, or rather Table classes, in Joomla's MVC are an
+      abstraction to a row of an actual database table. They are used
+      internally by Models to create new records, modify existing records and
+      delete old records. It's not exactly an <link
+      xlink:href="https://en.wikipedia.org/wiki/Active_record_pattern">Active
+      Record</link> pattern as it does not really participate in the R (Read)
+      of the <link
+      xlink:href="https://en.wikipedia.org/wiki/Create,_read,_update_and_delete">CRUD</link>
+      operations — Joomla's models query the database directly for listing
+      multiple records and returning a single record. It also does not handle
+      relationships. Like, at all.</para>
+
+      <para>The logic of how Table classes work has not changed between Joomla
+      3 and 4. They are namespaced and they have the familiar superclasses
+      they extend from:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>\Joomla\CMS\Table\Table</term>
+
+          <listitem>
+            <para>A plain old record in a database table.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>\Joomla\CMS\Table\Nested</term>
+
+          <listitem>
+            <para>A record in a database table which supports <link
+            xlink:href="https://en.wikipedia.org/wiki/Nested_set_model">Nested
+            Sets</link> (think how categories work, where categories can be
+            placed under other categories and so on).</para>
+
+            <para>The table MUST have the following columns:</para>
+
+            <itemizedlist>
+              <listitem>
+                <para><code>parent_id</code>. The primary key of the parent
+                node. Provides adjacency list data for nodes.</para>
+              </listitem>
+
+              <listitem>
+                <para>level. The depth level of the node in the tree.</para>
+              </listitem>
+
+              <listitem>
+                <para>lft. The left value of the node for managing its
+                placement in the nested sets tree.</para>
+              </listitem>
+
+              <listitem>
+                <para>rgt. The right value of the node for managing its
+                placement in the nested sets tree.</para>
+              </listitem>
+
+              <listitem>
+                <para>alias. The alias of this node used to construct the full
+                text path, forward-slash delimited.</para>
+              </listitem>
+            </itemizedlist>
+
+            <note>
+              <para>Nested Sets are very slow when you need to add, remove,
+              and reorder records. It's not necessary to use a Nested table to
+              create a nested structure. In some use cases where writing is
+              very common and the number of items in each nested structure
+              rather limited (e.g. nested comments) it may actually be easier
+              to only store the parent ID of each node and calculate the tree
+              structure in PHP code. The read performance is comparable within
+              a few dozen milliseconds but the write performance can be over
+              100 times(!!!) faster when you have more than a couple thousand
+              records.</para>
+
+              <para>On that note, do remember that Joomla uses a Nested table
+              for the <database>#__assets</database> records. Everything that
+              has its own permissions such as categories, articles, banners,
+              contacts, extensions, custom data types you add with an asset
+              ID, etc also has a record in that table. That's why as a site
+              grows in size operations against these records become
+              increasingly slow. </para>
+
+              <para>Unfortunately, this cannot be (easily) solved in Joomla;
+              nested assets are a cornerstone of Joomla access control since
+              version 1.6. The only real solution would be using a graph
+              database which is impractical; neither MySQL nor PostgreSQL, the
+              two database server technologies supported by Joomla and widely
+              found on commercial hosting, have graph features (they are
+              relational databases a.k.a. <link
+              xlink:href="https://en.wikipedia.org/wiki/Relational_database#RDBMS">RDBMS</link>).
+              </para>
+
+              <para>So, if you find yourself in a situation where you need
+              nested sets but can't afford the performance hit after adding
+              thousands or millions of records and calculating the tree in
+              memory using PHP code is impractical (and cannot be cached in a
+              sensible manner) ask yourself: am I actually developing for the
+              right database server and platform? Not all software can be
+              written for Joomla and MySQL / PostgreSQL and that's alright. We
+              are software engineers; our job is to find the right tool for
+              the job and use it in the most efficient way possible to make
+              something new and functional.</para>
+            </note>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>The rest of this section is mostly tips and tricks for using
+      Tables the way Joomla intended — and even more efficiently!</para>
+
+      <section xml:id="com-tables-get-object">
+        <title>Getting the table object</title>
+
+        <para>As noted in the <link linkend="com-mvcfactory">MVCFactory</link>
+        section, you are no longer meant to instantiate Table objects using
+        static method calls. You are meant to go through MVCFactory's
+        <code>createTable</code> method.</para>
+
+        <para>In the olden days we'd do something like this:</para>
+
+        <programlisting>// Returns the Item table from com_example (ExampleTableItem)
+$table = \Joomla\CMS\Table\Table::getInstance('Item', 'ExampleTable');</programlisting>
+
+        <para>While this still works for old components written with the
+        Joomla 3 MVC, it's part of the backwards compatibility with legacy
+        component code and will eventually be removed. In fact, the
+        <emphasis>only</emphasis> time you are supposed to use this in Joomla
+        4 is when interfacing an old component which has not been migrated to
+        the Joomla 4 architecture yet.</para>
+
+        <para>For components based on the Joomla 4+ MVC this won't work at
+        all! You need to go through the MVCFactory of the extension.</para>
+
+        <para>If you are inside a Controller or Model and need to get a Table
+        object instance for a Table class which belongs <emphasis>to your own
+        component</emphasis> you must do:</para>
+
+        <programlisting>/**
+ * Gets a NEW table object for the Item table in the Administrator section of the component, e.g.
+ * \Acme\Example\Administrator\Table\ItemTable
+ */
+$table = $this-&gt;getMVCFactory()-&gt;createTable('Item', 'Administrator');</programlisting>
+
+        <para>In any other case you will need to boot the component through
+        the application object to get its MVCFactory to create the table
+        instance. For example:</para>
+
+        <programlisting>// It's best to have the application object injected to your code instead of using this...
+$app = \Joomla\CMS\Factory::getApplication();
+// Get the table
+$table = $app-&gt;bootComponent('com_example')
+  -&gt;getMVCFactory()
+  -&gt;createTable('Item', 'Administrator');</programlisting>
+
+        <para>Going through the MVCFactory makes sure that the table is
+        constructed correctly. Remember, as we saw <link
+        linkend="com-models-push-service-joomla">in the Model section</link>,
+        you can push custom services into any MVC object — including Tables —
+        through a custom MVCFactory decorator. This means that the only
+        forwards compatible method of getting a Table object which will always
+        work is going through the MVCFactory of its component.</para>
+      </section>
+
+      <section xml:id="com-tables-check">
+        <title>Customising the validation</title>
+
+        <para>One of the many jobs of a Table object is to validate the data
+        before it's written to the database. This is done in its
+        <code>check()</code> method.</para>
+
+        <para>You can override that method in your custom Table classes to add
+        custom validation. At the very least you should validate the data type
+        and that the data is within an accepted range of values. The latter is
+        domain–specific, i.e. you need to know how your database table and
+        component work to write that code. That's why Joomla doesn't offer
+        much in the way of automatic data validation.</para>
+      </section>
+
+      <section xml:id="com-tables-events">
+        <title>Using plugin events</title>
+
+        <para>Table classes can call plugin events. For example, Joomla's
+        default <code>Table::check()</code> implementation goes through the
+        <code>onTableCheck</code> plugin event to let plugins perform
+        additional data validation before data is written to the
+        database.</para>
+
+        <para>The Table superclasses offer a <code>getDispatcher()</code>
+        method to get a reference to Joomla's Events Dispatcher object. As we
+        noted in the <link
+        linkend="com-controllers-basic-services">Controllers</link> section
+        this is the preferred way to use plugins in Joomla 4 and
+        beyond.</para>
+      </section>
+
+      <section xml:id="com-tables-docblocks">
+        <title>Add type hints with phpDoc DocBlocks and @property</title>
+
+        <para>The Table classes do NOT declare concrete public properties for
+        most of the database table columns. Instead, they use implied public
+        properties — and eventually the magic <code>__get()</code> and
+        <code>__set()</code> PHP methods as PHP 9 will remove support for
+        implied public properties in objects which do not extend directly from
+        <code>\stdClass</code>.</para>
+
+        <para>This means that when you get a Table object and type–hint it
+        correctly, like the example below, your IDE will not offer any
+        auto–completion suggestions or type hints for the database table
+        columns supported by your table class.</para>
+
+        <programlisting>/** @var \Acme\Example\Administrator\Table\ItemTable **/
+$table = $this-&gt;getMVCFactory()-&gt;createTable('Item', 'Administrator');</programlisting>
+
+        <para>I find this annoying. The whole reason we're using an IDE is so
+        we don't have to remember a large number of little things, like how
+        the table columns are named in every table of every table the core CMS
+        or our component is using.</para>
+
+        <para>Luckily, this is trivial to fix.</para>
+
+        <para>Given the following table definition:</para>
+
+        <programlisting>CREATE TABLE IF NOT EXISTS `#__example_items` (
+    `id`          bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+    `catid`       bigint(20)          NOT NULL,
+    `fromname`    varchar(255)        NOT NULL,
+    `fromemail`   varchar(255)        NOT NULL DEFAULT '',
+    `subject`     varchar(255)        NOT NULL DEFAULT '',
+    `body`        mediumtext          NOT NULL,
+    `enabled`     tinyint(3)          NOT NULL DEFAULT 1,
+    `token`       char(32)                     DEFAULT NULL,
+    `created_on`  datetime            NULL     DEFAULT NULL,
+    `created_by`  bigint(20)          NOT NULL DEFAULT '0',
+    `modified_on` datetime            NULL     DEFAULT NULL,
+    `modified_by` bigint(20)          NOT NULL DEFAULT '0',
+    `locked_on`   datetime            NULL     DEFAULT NULL,
+    `locked_by`   bigint(20)          NOT NULL DEFAULT '0',
+    PRIMARY KEY (`id`)
+) ENGINE = InnoDB
+  DEFAULT COLLATE = utf8mb4_unicode_ci;</programlisting>
+
+        <para>You can add the following phpDoc DocBlock at the top of your
+        class:</para>
+
+        <programlisting>/**
+ * @property int    $id            The primary key
+ * @property int    $catid         The category ID, foreign key to #__categories
+ * @property string $fromname      Name of the sender
+ * @property string $fromemail     Email address of the sender
+ * @property string $subject       Subject line of this contact item
+ * @property string $body          Body text of this contact item
+ * @property int    $enabled       Is it published?
+ * @property string $token         Reply token
+ * @property string $created_on    Date and time the record was created
+ * @property int    $created_by    ID of the user who created the record
+ * @property string $modified_on   Date and time the record was last modified
+ * @property int    $modified_by   ID of the user who last modified the record
+ * @property string $locked_on     Date and time the record was locked
+ * @property int    $locked_by     ID of the user who locked the record
+ */</programlisting>
+
+        <para>Now you get full auto–completion, type hinting and inline
+        documentation for your table columns. You're welcome!</para>
+      </section>
+
+      <section xml:id="com-tables-relations">
+        <title>Basic relation management with getters and setters</title>
+
+        <para>As noted earlier in this section, Joomla does not really offer a
+        full implementation of the Active Record pattern — at least, not yet.
+        One of the biggest omissions is relationships.</para>
+
+        <para>Let's say that we have a helpdesk ticket system. Each support
+        ticket has one or more posts. Conversely, each post has exactly one
+        ticket. Posts and tickets are database tables with corresponding Table
+        classes. I actually wrote such a component and found myself too often
+        having to get the ticket a post belongs to, usually many times within
+        the same request. Sure I can instantiate a TicketTable object and have
+        it load the data off the database but if I'm doing that several times
+        in a request it's slow and unhelpful. So, how about we “upgrade” our
+        PostTable to return our ticket object? It's quite easy, really!</para>
+
+        <programlisting>&lt;?php
+
+use Acme\Example\Administrator\Table\TicketTable;
+
+class PostTable extends \Joomla\CMS\Table\Table
+{
+	/**
+	 * Ticket this post belongs to
+	 *
+	 * @var   TicketTable|null
+	 */
+	private $ticket;
+
+	/**
+	 * Get the ticket this post belongs to
+	 *
+	 * @return  TicketTable|null
+	 */
+	public function getTicket(): ?TicketTable
+	{
+		if (is_null($this-&gt;ticket))
+		{
+			$this-&gt;ticket = new TicketTable($this-&gt;getDbo(), $this-&gt;getDispatcher());
+
+			if ($this-&gt;ticket-&gt;load($this-&gt;ticket_id) === false)
+			{
+				throw new RuntimeException('There is no such ticket');
+			}
+		}
+
+		return $this-&gt;ticket;
+	}
+
+	/**
+	 * Set the ticket this post belongs to.
+	 *
+	 * @param   TicketTable|null  $ticket  The ticket to set. NULL to make ATS reload the ticket on the next getTicket()
+	 *                                     method call.
+	 * @param   bool              $force   True to reset $this-&gt;ticket_id to the $ticket ID (or NULL, if no ticket).
+	 *
+	 * @return  self
+	 */
+	public function setTicket(?TicketTable $ticket, bool $force = false): self
+	{
+		$this-&gt;ticket = $ticket;
+
+		if ($force)
+		{
+			$this-&gt;ticket_id = empty($ticket) ? null : $ticket-&gt;getId();
+
+			return $this;
+		}
+
+		if (empty($ticket) &amp;&amp; $this-&gt;ticket-&gt;getId() != $this-&gt;ticket_id)
+		{
+			throw new InvalidArgumentException('Ticket ID does not correspond to the loaded post');
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Remember to remove the loaded relationship when resetting the table.
+	 */
+	public function reset()
+	{
+		$this-&gt;ticket = null;
+
+		parent::reset();
+	}
+}</programlisting>
+
+        <note>
+          <para>I am instantiating the TicketTable directly because, in this
+          case, I know I can safely do so. If my TicketTable had dependencies
+          on other tables I should be going through the MVCFactory. I decided
+          to keep it simple here because there's already a lot going
+          on.</para>
+        </note>
+
+        <para>The idea can be broken down in the following steps:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Create a private property to hold our related object, in
+            this case the ticket the post belongs to.</para>
+          </listitem>
+
+          <listitem>
+            <para>Reset that property back to NULL in the <code>reset()</code>
+            method.</para>
+          </listitem>
+
+          <listitem>
+            <para>Create a setter which sets the relationship <emphasis>if and
+            only if</emphasis> the TicketTable object we're passing matches
+            the post table's <code>ticket_id</code> column value. The setter
+            is optional; it makes it easier for us when creating both a new
+            post and a new ticket i.e. when a client submits a new helpdesk
+            item.</para>
+          </listitem>
+
+          <listitem>
+            <para>Create a getter which returns the already saved relationship
+            object. If none is specified, we load it from the database.</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>This is very naive, late–bound relationship handling (lazy
+        loading) but it's better than nothing. </para>
+
+        <para>If you'd like to do eager relationship loading (when loading a
+        big list of posts) you'd have to implement it yourself. For starters,
+        you'd need something like that in your PostTable:</para>
+
+        <programlisting>	/**
+	 * @param   self[]  $postTables
+	 */
+	public function eagerLoad(array &amp;$postTables): void
+	{
+		// Get the unique ticket IDs 
+		$ticketIDs = array_map(
+			function (PostTable $x) {
+				return $x-&gt;ticket_id;
+			},
+			$postTables
+		);
+		$ticketIDs = array_unique($ticketIDs);
+
+		// Get the raw ticket data, keyed by ticket ID
+		$db = $this-&gt;getDbo();
+		$query = $db-&gt;getQuery(true)
+			-&gt;select('*')
+			-&gt;from('#__example_tickets')
+			-&gt;whereIn($db-&gt;quoteName('id'), $ticketIDs);
+		$tickets = $db-&gt;setQuery($query)-&gt;loadObjectList('id') ?: [];
+
+		// Convert the raw ticket data into TicketTable objects
+		$tickets = array_map(
+			function (object $rawData): TicketTable
+			{
+				$ticket = new TicketTable($this-&gt;getDbo(), $this-&gt;getDispatcher());
+				$ticket-&gt;bind($rawData);
+
+				return $ticket;
+			},
+			$tickets
+		);
+		
+		// Set the TicketTable objects to each PostTable object
+		foreach ($postTables as $postTable)
+		{
+			$postTable-&gt;setTicket($tickets[$postTable-&gt;ticket_id]);
+		}
+	}
+</programlisting>
+
+        <para>Now, whenever you write code which returns an array of PostTable
+        objects just run the resulting through that method and it set the
+        related TicketObject instances to each member of the array of
+        PostTable objects.</para>
+
+        <para>Why do eager loading? With eager loading you only need 2
+        queries: one to get the list of posts data, one to get the list of
+        tickets data. With lazy loading you'd need N + 1 database queries: one
+        to get the list of posts data, one per post (N queries in total) to
+        get each post's ticket data.</para>
+
+        <para>Eager loading only makes sense if you are going to process a
+        large number of records all at once and you are definitely going to
+        need access to their related objects.</para>
+      </section>
+
+      <section xml:id="com-tables-assets">
+        <title>Asset management</title>
+
+        <para>In some cases you want your database records to have a special
+        set of permissions which can override those set for the entire
+        component in its Options. This is especially important if you are
+        using the Joomla Categories, in which case your items may belong to a
+        category, which belongs in another category, which belongs in another
+        category… This cascading of permissions is made easy with Joomla's
+        assets management.</para>
+
+        <para>To enabled assets management in your table you need to have an
+        <code>asset_id</code> column in your database table. This sets
+        <code>$this-&gt;_trackAssets = true</code> when your table object is
+        constructed (no need to do it manually).</para>
+
+        <para>Moreover, you MAY have to override the
+        _<code>getAssetParentId</code>, <code>_getAssetName</code> and
+        <code>_getAssetTitle</code> methods if your items described by this
+        table class belong in categories. Look at
+        <code>\Joomla\CMS\Table\Content</code> to understand what is going
+        on.</para>
+
+        <para>Finally, your <code>bind()</code> method needs to be overwritten
+        so you can call the <code>$this-&gt;setRules()</code> method against
+        the raw, JSON–encoded permissions data stored in the database table.
+        Saving rules is automatic; you don't have to handle it
+        yourself.</para>
+      </section>
+
+      <section xml:id="com-tables-arrays-and-json">
+        <title>Working with arrays and JSON data</title>
+
+        <para>Sometimes you need to work with arrays of values or data which
+        is stored as JSON but needs to be accessed as an object or array.
+        Don't worry, this is possible with Joomla's Table class, albeit not
+        immediately obvious.</para>
+
+        <para>Let's say you want to work with array data in a column called
+        <database>params</database>, stored in the database as a JSON-encoded
+        string. You will need to think about three things:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Resetting a table. By default, Joomla uses the default value
+            you have for the same named column in your database table. You
+            want to change that to an empty array.</para>
+          </listitem>
+
+          <listitem>
+            <para>Binding data. When Joomla loads a record and when we call
+            the table object's <code>save()</code> method to create or modify
+            a record, Joomla always calls the <code>bind()</code> method to
+            set up the object's properties in way which makes sense for use in
+            the code. In there we will need to convert our encoded field into
+            an array.</para>
+          </listitem>
+
+          <listitem>
+            <para>Storing data. The store() method needs the data in the
+            record to be in a format which can be stored in the database table
+            as–is. The plan here is to convert the array data to JSON before
+            this method executes and convert out data back to array data right
+            before this method returns.</para>
+          </listitem>
+        </itemizedlist>
+
+        <programlisting>class ItemTable extends \Joomla\CMS\Table\Table
+{
+	public function bind($src, $ignore = [])
+	{
+		$src           = (array) $src;
+		$src['params'] = @json_decode($src['params']);
+
+		return parent::bind($src, $ignore);
+	}
+
+	public function store($updateNulls = false)
+	{
+		$this-&gt;params = @json_decode($this-&gt;params ?? '{}', true) ?? [];
+
+		$result = parent::store($updateNulls);
+
+		$this-&gt;params = @json_encode($this-&gt;params) ?? '{}';
+
+		return $result;
+	}
+
+	public function reset()
+	{
+		parent::reset();
+
+		$this-&gt;params = [];
+	}
+}</programlisting>
+
+        <para>Nothing stops you from using a
+        <code>\Joomla\Registry\Registry</code> object instead of a plain
+        array; in fact, it may be easier to manage. You may also have multiple
+        fields in need of this kind of conversion.</para>
+
+        <para>Another practical example is multi-select form fields, e.g.
+        selecting one or more usergroups. The resulting array of integers can
+        be easily converted to a comma–separated string for saving in the
+        database.</para>
+      </section>
     </section>
 
     <section xml:id="com-html">
