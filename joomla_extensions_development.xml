@@ -4043,7 +4043,7 @@ $someView = $this-&gt;getView('Some', 'Administrator', 'Html');</programlisting>
               contacts, extensions, custom data types you add with an asset
               ID, etc also has a record in that table. That's why as a site
               grows in size operations against these records become
-              increasingly slow. </para>
+              increasingly slow.</para>
 
               <para>Unfortunately, this cannot be (easily) solved in Joomla;
               nested assets are a cornerstone of Joomla access control since
@@ -4052,8 +4052,7 @@ $someView = $this-&gt;getView('Some', 'Administrator', 'Html');</programlisting>
               two database server technologies supported by Joomla and widely
               found on commercial hosting, have graph features (they are
               relational databases a.k.a. <link
-              xlink:href="https://en.wikipedia.org/wiki/Relational_database#RDBMS">RDBMS</link>).
-              </para>
+              xlink:href="https://en.wikipedia.org/wiki/Relational_database#RDBMS">RDBMS</link>).</para>
 
               <para>So, if you find yourself in a situation where you need
               nested sets but can't afford the performance hit after adding
@@ -4354,7 +4353,7 @@ class PostTable extends \Joomla\CMS\Table\Table
         </itemizedlist>
 
         <para>This is very naive, late–bound relationship handling (lazy
-        loading) but it's better than nothing. </para>
+        loading) but it's better than nothing.</para>
 
         <para>If you'd like to do eager relationship loading (when loading a
         big list of posts) you'd have to implement it yourself. For starters,
@@ -4529,7 +4528,167 @@ class PostTable extends \Joomla\CMS\Table\Table
     <section xml:id="com-html">
       <title>HTML helper service</title>
 
-      <para/>
+      <para>Joomla has long provided a mechanism for creating your own HTML
+      helper classes. These are meant to provide relatively short methods
+      which return HTML snippets based on data which requires more than a line
+      or two of PHP code to be processed and/or is called frequently enough
+      throughout your component that it makes no sense having to the same
+      thing over and over again. For example, you could have methods which
+      return item associations, format dates, load a layout for presenting
+      user information in backend grid views etc.</para>
+
+      <para>Joomla 4 continues to offer this possibility and further enhances
+      it. Your key take–aways are:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">Joomla 4 HTML helpers are services
+          registered through your extension class</emphasis> instead of pure
+          static classes which had to be registered with
+          <code>\Joomla\CMS\HTML\HTMLHelper::addIncludePath</code>.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Joomla 4 HTML helpers have non–static
+          methods</emphasis> whereas Joomla 3 HTML helpers had static
+          methods.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">In Joomla 4 you can register whichever
+          prefix you want</emphasis>, not necessarily the same as the name of
+          the class(es) providing your HTML helper service(s).</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">You still call your HTML helpers through
+          the <code>\Joomla\CMS\HTML\HTMLHelper::_()</code>
+          method</emphasis>.</para>
+        </listitem>
+      </itemizedlist>
+
+      <bridgehead>How we did things in Joomla 3</bridgehead>
+
+      <para>Back in Joomla 3 we'd create a class file in our
+      <filename>helpers/html</filename> folder, e.g.
+      <filename>administrator/components/helpers/html/example.php</filename>.
+      It would contain a pure static class with a name starting with
+      <code>JHtml</code>, e.g <code>JHtmlExample</code>. Here's a trivial
+      example:</para>
+
+      <programlisting>&lt;?php
+
+class JHtmlExample {
+  public static function hello($who) {
+    $who = htmlspecialchars($who);
+    return "&lt;p&gt;Hello, {$who}!&lt;/p&gt;";
+  }
+}</programlisting>
+
+      <para>Within our component the helper was automatically registered and
+      we could use it like this:</para>
+
+      <programlisting>&lt;?php echo \Joomla\CMS\HTML\HTMLHelper::_('example.hello', 'world') ?&gt;</programlisting>
+
+      <para>This would result in</para>
+
+      <screen>&lt;p&gt;Hello, world!&lt;/p&gt;</screen>
+
+      <para>Outside our component we'd have to remember to register this
+      helper manually: </para>
+
+      <programlisting>\Joomla\CMS\HTML\HTMLHelper::addIncludePath(JPATH_ADMINISTRATOR . 
+  '/components/com_example/helpers/html');</programlisting>
+
+      <para>When we forgot to do that, e.g. in a module of ours? Hilarity
+      ensued…</para>
+
+      <para>This approach also had other problems. What if there are two
+      helpers, one of ours and one of another component, using the same class
+      name? PHP Fatal Error! What happens if we use a name for our helper
+      which “shades” a name used by Joomla itself? We break things! What
+      happens if the service we need to use is not available as a static
+      method? Ugly workarounds! Generally speaking, it was a bad idea but,
+      like most things in older versions of Joomla, was better than nothing
+      which made it good enough.</para>
+
+      <bridgehead>The way to do it in Joomla 4</bridgehead>
+
+      <para>In Joomla 4 we will create a <emphasis>service</emphasis>. It
+      sounds big and scary but... let me tell you a secret. We are just going
+      to create a regular PHP class. It does not extend from anything, it does
+      not have any special requirements. That's right, we are writing the
+      simplest possible PHP class.</para>
+
+      <programlisting>&lt;?php
+namespace Acme\Example\Administrator\Service\Html;
+
+class Example {
+  public function hello($who) {
+    $who = htmlspecialchars($who);
+    return "&lt;p&gt;Hello, {$who}!&lt;/p&gt;";
+  }
+}</programlisting>
+
+      <para>Now we can instantiate it in our component's extension class's
+      boot method.</para>
+
+      <programlisting>&lt;?php
+namespace Acme\Example\Administrator\Extension;
+
+class Example extends MVCComponent implements BootableExtensionInterface {
+	public function boot(ContainerInterface $container)
+	{
+		$this-&gt;getRegistry()-&gt;register('ats', new ATS());
+	}  
+}</programlisting>
+
+      <bridgehead>Pushing services</bridgehead>
+
+      <para>In the Joomla 3 paradigm the HTML helper class was static, meaning
+      that any services it needs would have to be fetched with static or
+      otherwise global calls as well. For example, getting the database driver
+      object would require doing <code>\Joomla\CMS\Factory::getDbo()</code>.
+      In Joomla 4 this kind of static calls is deprecated. So, how do you do
+      it?</para>
+
+      <para>The trick is that you can push services using the HTML helper
+      class's constructor. For example, pushing the database:</para>
+
+      <para><programlisting>&lt;?php
+namespace Acme\Example\Administrator\Service\Html;
+
+class Example {
+  <emphasis role="bold">private $db;</emphasis>
+
+  <emphasis role="bold">public function __construct(\Joomla\Database\DatabaseDriver $dn) {
+    $this-&gt;db = $db;
+  }</emphasis>
+
+  public function hello($who) {
+    $who = htmlspecialchars($who);
+    return "&lt;p&gt;Hello, {$who}!&lt;/p&gt;";
+  }
+}</programlisting>We also need to change the initialisation of our HTML
+      service:</para>
+
+      <programlisting>&lt;?php
+namespace Acme\Example\Administrator\Extension;
+
+class Example extends MVCComponent implements BootableExtensionInterface {
+	public function boot(ContainerInterface $container)
+	{
+		<emphasis role="bold">$db = $container-&gt;get('DatabaseDriver');</emphasis>
+		$this-&gt;getRegistry()-&gt;register('ats', new ATS(<emphasis role="bold">$db</emphasis>));
+	}  
+}</programlisting>
+
+      <para>You can push any service, including your component's MVCFactory
+      service which means that you can get instances of any Model of your
+      component to retrieve database data in your HTML helper. Or, maybe,
+      Joomla's UserFactory service so you can create instances of any user
+      given their ID or username to get and present information about them.
+      You get the idea!</para>
     </section>
 
     <section xml:id="com-categories">
@@ -4557,7 +4716,8 @@ class PostTable extends \Joomla\CMS\Table\Table
     </section>
 
     <section xml:id="com-data-to-frontend">
-      <title>Passing data to the frontend</title>
+      <title>Passing data from the backend to the JavaScript on the
+      page</title>
 
       <para/>
     </section>
