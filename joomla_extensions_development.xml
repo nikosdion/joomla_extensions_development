@@ -4595,7 +4595,7 @@ class JHtmlExample {
       <screen>&lt;p&gt;Hello, world!&lt;/p&gt;</screen>
 
       <para>Outside our component we'd have to remember to register this
-      helper manually: </para>
+      helper manually:</para>
 
       <programlisting>\Joomla\CMS\HTML\HTMLHelper::addIncludePath(JPATH_ADMINISTRATOR . 
   '/components/com_example/helpers/html');</programlisting>
@@ -4692,15 +4692,267 @@ class Example extends MVCComponent implements BootableExtensionInterface {
     </section>
 
     <section xml:id="com-categories">
-      <title>Categories service</title>
+      <title>Categories</title>
 
-      <para/>
+      <para>Sometimes your components may need to use Joomla's Categories
+      feature. I am not talking about using content categories, where articles
+      are placed in. I am talking about having Joomla manage categories for
+      your own items. This is what Joomla itself is doing for its core
+      components like Contacts and Banners.</para>
+
+      <para>Using Joomla's categories instead of inventing your own
+      categorisation has many benefits. The obvious benefit is that users are
+      exposed to a familiar and consistent category management interface.
+      Beyond the obvious, this is the only way you can have nice things such
+      as <link linkend="com-fields">integration with custom
+      fields</link>.</para>
+
+      <section xml:id="com-categories-db">
+        <title>Database schema changes</title>
+
+        <para>Your table which contains the <emphasis>items</emphasis> which
+        go into each category needs to have a few columns:</para>
+
+        <programlisting>`id`          BIGINT(20)    NOT NULL AUTO_INCREMENT COMMENT 'Item unique ID',
+`catid`       BIGINT(20)    NOT NULL COMMENT 'Category ID',
+`state`       TINYINT(3)    NOT NULL DEFAULT '1' COMMENT 'Publish status',</programlisting>
+
+        <para>These fields don't necessarily need to have these names; we can
+        change them in the code. However, these column names are the default
+        used in Joomla and it makes it easier for you to follow third party
+        tutorials and for other people to follow what you are doing with your
+        code.</para>
+      </section>
+
+      <section xml:id="com-categories-manifest">
+        <title>Changes to your XML manifest and forms</title>
+
+        <para>A lot of this integration is, in fact, smoke and mirrors. Users
+        are taken to the core <code>com_categories</code> component to manage
+        categories. <code>com_categories</code> uses a form in our component,
+        in the file
+        <filename>administrator/components/<replaceable>com_example</replaceable>/forms/category.xml</filename>
+        where <replaceable>com_example</replaceable> is our component, to add
+        sections to the category configuration beyond the standard Joomla
+        stuff. The way Joomla's main menu works along with a small change in
+        our XML manifest will make the user think they are still in our
+        component while they are using Joomla's com_categories.</para>
+
+        <para>For the user to have a way to manage categories and maintain the
+        illusion they remain in our extension you have to add the following
+        code in your XML manifest under &lt;extension&gt;,
+        &lt;administration&gt;, &lt;submenu&gt;:</para>
+
+        <programlisting>&lt;menu link="option=com_categories&amp;amp;extension=<replaceable>com_example</replaceable>"&gt;JCATEGORIES&lt;/menu&gt;</programlisting>
+
+        <para>where <replaceable>com_example</replaceable> is the name of your
+        component.</para>
+
+        <para>By default, you'll get a rather barren category edit page with
+        just the bare minimum of information Joomla needs to store about a
+        category (a title, alias and description are required — you can't hide
+        them or remove them in any way). The basic tabs you get in the
+        category editor are Category, Options, Publishing, Fields (if any
+        custom Fields are set up for the category) and Permissions.</para>
+
+        <para>You can display additional tabs with component–specific
+        configuration options by creating the file
+        <filename>administrator/components/<replaceable>com_example</replaceable>/forms/category.xml</filename>
+        where <replaceable>com_example</replaceable> is the name of your
+        component. This is a regular Joomla XML form file. Just remember,
+        every <code>&lt;fieldset&gt;</code> you add becomes a tab in the
+        Category edit page. Neat, huh?</para>
+      </section>
+
+      <section xml:id="com-categories-service">
+        <title>The Category service</title>
+
+        <para>Categories are great and all, but if you need to get their
+        parameters or create SEF routes for nested categories you need to
+        somehow get information on categories. This is what the category
+        service does for us.</para>
+
+        <para>It is customary — or at least I have not found a concrete reason
+        to not be able to do otherwise — that the Category Service is created
+        in the <emphasis>frontend</emphasis> part of your site.</para>
+
+        <para>Assuming our <code>com_example</code> component with the
+        namespace prefix <code>Acme\Example</code>, you need to create the
+        class <classname>Acme\Example\Site\Service\Category</classname> in the
+        file
+        <filename>components/com_example/src/Service/Category.php</filename>
+        like this:</para>
+
+        <programlisting>&lt;?php
+
+namespace Acme\Example\Site\Service;
+
+defined('_JEXEC') or die;
+
+use Joomla\CMS\Categories\Categories;
+
+class Category extends Categories
+{
+	public function __construct($options)
+	{
+		$options = array_merge($options, [
+			'extension'  =&gt; 'com_example',
+			'table'      =&gt; '#__example_items',
+			'field'      =&gt; 'catid',
+			'key'        =&gt; 'id',
+			'statefield' =&gt; 'state',
+		]);
+
+		parent::__construct($options);
+	}
+
+}</programlisting>
+
+        <para>The array in the <methodname>__construct</methodname> method is
+        all you need to customise and it's fairly self–explanatory.</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>extension</term>
+
+            <listitem>
+              <para>The name of your component e.g.
+              <code>com_example</code>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>table</term>
+
+            <listitem>
+              <para>The name of the table holding the category
+              <emphasis>items</emphasis>. As customary in Joomla you use
+              <database>#__</database> to denote the common table name
+              prefix.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>field</term>
+
+            <listitem>
+              <para>The name of the database column which contains the numeric
+              category ID. The default is <code>catid</code>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>key</term>
+
+            <listitem>
+              <para>The name of the database column which contains the item's
+              primary key. The default is <code>id</code>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>statefield</term>
+
+            <listitem>
+              <para>The name of the database column which contains the item's
+              publish state. The default is <code>state</code>.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+
+        <para>Now you see why I told you to use the database table field names
+        customarily used by Joomla; they minimise the code you need to write
+        down to two array keys: <code>extension</code> and
+        <code>table</code>.</para>
+
+        <para>Unlike other services provided by your component, the category
+        service is instantiated directly:</para>
+
+        <programlisting>$catService = new Acme\Example\Site\Service\Category([]);</programlisting>
+
+        <para>The array in the constructor arguments is not just for show. It
+        can help you narrow down the list of categories to be returned with
+        the following keys:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>access</term>
+
+            <listitem>
+              <para>Boolean. When true, Joomla will only return the categories
+              visible to the current user. It does that by only getting from
+              the database the categories whole <database>access</database>
+              field is one of the Joomla viewing access levels the current
+              user has access to.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>published</term>
+
+            <listitem>
+              <para>Integer 0 or 1. When it's 1 it will only return categories
+              which are published. When 0 it will return published,
+              unpublished <emphasis>and trashed</emphasis> categories.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>countItems</term>
+
+            <listitem>
+              <para>Integer 0 or 1. Note the weird capitalisation in the
+              middle of this key's name! When it's 1, Joomla will return the
+              number of items contained in each category at the expense of
+              performance. Use this sparingly and only when you absolutely
+              need it e.g. when displaying paginated views.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+
+        <para>Also keep in mind that Joomla tries to be smart. A bit
+        <emphasis>too</emphasis> smart, maybe. When you are on a multilingual
+        site it will only return categories whose language is either the
+        currently selected language or “All” (denoted by a <code>*</code> in
+        the language column of the <database>#__categories</database> table).
+        If you want to override this behaviour you will need to change your
+        Categories Service constructor like so:</para>
+
+        <programlisting>	public function __construct($options)
+	{
+		$options = array_merge($options, [
+			'extension'  =&gt; 'com_example',
+			'table'      =&gt; '#__example_items',
+			'field'      =&gt; 'catid',
+			'key'        =&gt; 'id',
+			'statefield' =&gt; 'state',
+		]);
+
+		parent::__construct($options);
+
+		$this-&gt;_options['currentlang'] = $options['currentlang'] ?? $this-&gt;_options['currentlang'];
+	}</programlisting>
+
+        <para>If you want the instance of the Categories Service to return all
+        categories regardless of the current language in a multilingual site
+        you can now do:</para>
+
+        <programlisting>$catService = new Acme\Example\Site\Service\Category([
+  'currentlang' =&gt; 0
+]);</programlisting>
+      </section>
     </section>
 
     <section xml:id="com-router">
       <title>Router</title>
 
       <para/>
+
+      <section xml:id="com-router-categories">
+        <title>Routing nested categories</title>
+
+        <para/>
+      </section>
     </section>
 
     <section xml:id="com-dashboard">
