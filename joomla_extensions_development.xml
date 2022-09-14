@@ -6163,7 +6163,283 @@ class <emphasis role="bold">Com_ExampleInstallerScript</emphasis> extends Instal
     <section xml:id="com-installation-script">
       <title>The installation script</title>
 
+      <para>We touched a bit on the installation script when talking about
+      <link linkend="com-dashboard">Dashboards</link>. But what is an
+      installation script?</para>
+
+      <para>When Joomla is installing an extension it gives us, the developers
+      of the extension, the opportunity to run some custom PHP code at
+      different phases of the installer execution using the different methods
+      provided in our installer script (you can see all available methods in
+      the
+      <interfacename>\Joomla\CMS\Installer\InstallerScriptInterface</interfacename>
+      interface):</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>public function preflight(string $type, InstallerAdapter
+          $adapter): bool;</term>
+
+          <listitem>
+            <para>Runs before the component is installed, updated or
+            uninstalled.</para>
+
+            <para>This is where you make basic environment checks and make
+            sure that the installer can proceed. Return boolean false to stop
+            the installer, causing to display an error like “Extension
+            <replaceable>something</replaceable>: Custom install routine
+            failure.”</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>public function install(InstallerAdapter $adapter):
+          bool;</term>
+
+          <listitem>
+            <para>Runs after your extension has been installed. This only
+            happens on a clean installation, i.e. your extension was not
+            previously installed.</para>
+
+            <para>This is where you can run code which only applies to a clean
+            installation, e.g. publishing modules and plugins necessary for
+            your component to work.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>public function update(InstallerAdapter $adapter):
+          bool;</term>
+
+          <listitem>
+            <para>Runs after your extension has been updated.</para>
+
+            <warning>
+              <para>“Updated” is a term used <emphasis>very loosely</emphasis>
+              by Joomla. It merely means that a different version than the one
+              which was previously installed on the site has been installed.
+              It might be <emphasis>the same</emphasis> version (refresh) or
+              even an earlier version (downgrade).</para>
+            </warning>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>public function uninstall(InstallerAdapter $adapter):
+          bool;</term>
+
+          <listitem>
+            <para>Runs after your extension has been successfully
+            uninstalled.</para>
+
+            <para>Use this to perform any necessary cleanup which could not be
+            performed by Joomla removing the files and folders of your
+            extension and running the uninstallation SQL files.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>public function postflight(string $type, InstallerAdapter
+          $adapter): bool;</term>
+
+          <listitem>
+            <para>This runs at the very last end, before Joomla cleans up. It
+            runs after the extension has been installed, updated or
+            uninstalled.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>In the above methods you can see one or two parameters:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term>string $type</term>
+
+          <listitem>
+            <para>Whenever present it tells us which kind of operation is
+            taking place:</para>
+
+            <itemizedlist>
+              <listitem>
+                <para><code>install</code>. The extension is being installed
+                from a package uploaded via the browser, a package downloaded
+                from an HTTP/HTTPS source, the Install via Web feature or from
+                a directory. This is a normal installation from scratch. The
+                extension had not been previously installed.</para>
+              </listitem>
+
+              <listitem>
+                <para><code>discover_install</code>. The extension is being
+                installed using the Discover feature. This means that the
+                files are already placed on the site but there's no guarantee
+                that some files are not missing! Also note that you cannot
+                install a package extension like that. If your component is
+                part of a package it should return <code>false</code> in the
+                preflight method to prevent a broken, non-updatable
+                installation of your component to persist on the site.</para>
+              </listitem>
+
+              <listitem>
+                <para><code>update</code>. Another version of your extension
+                (NOT necessarily older!) was already installed on the site and
+                the user is trying to install a different version.</para>
+              </listitem>
+
+              <listitem>
+                <para><code>uninstall</code>. Your extension is being
+                uninstalled.</para>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term>InstallerAdapter $adapter</term>
+
+          <listitem>
+            <para>This is an instance of the
+            <classname>\Joomla\CMS\Installer\InstallerAdapter</classname>
+            subclass handling the installation, update or uninstallation of
+            your extension. For components, that's actually an instance of the
+            <classname>\Joomla\CMS\Installer\Adapter\ComponentAdapter</classname>
+            class.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>To use an installation script you have to declare it in your
+      extension's XML manifest. For example:</para>
+
+      <programlisting>&lt;scriptfile&gt;script.example.php&lt;/scriptfile&gt;</programlisting>
+
+      <para>The file must be included with your extension's XML manifest at
+      the archive's root.</para>
+
+      <para>The <code>script.example.php</code> file will contain our
+      extension installation script. You are familiar with that; it's been
+      around since Joomla 1.0.</para>
+
+      <para>Since Joomla 3.6 there's a superclass our installation script can
+      extend from. In Joomla 3 it was called
+      <classname>JInstallerScript</classname>, in Joomla 4 it's
+      <classname>Joomla\CMS\Installer\InstallerScript</classname> (the old
+      name will work up to and including Joomla 5.3). When your script extends
+      from this class you can unlock a lot of useful functionality.</para>
+
+      <note>
+        <para>This class is actually a fork of the <link
+        xlink:href="https://github.com/akeeba/fof/blob/fof-2.x/fof/utils/installscript/installscript.php">F0FUtilsInstallscript
+        class</link> I had introduced in FOF since 2014 and maintained until
+        2021, when FOF officially became obsolete and I moved all my
+        development to Joomla core MVC. The fork was contributed by George
+        Wilson in 2016 — he had already asked me for permission to fork some
+        useful bits of FOF 2 as it was going to be EOL in June that year. Just
+        an aside, so that you know that Joomla and 3PDs have a symbiotic
+        relationship; <emphasis>we help each other survive</emphasis>.</para>
+      </note>
+
+      <bridgehead>Minimum Joomla and PHP versions</bridgehead>
+
+      <para>The installation script can automatically enforce a minimum Joomla
+      and / or PHP version for your extension. If the minimum requirements are
+      not met the installation or upgrade will abort with the aforementioned
+      error. You can do that by setting the relevant properties in your
+      class:</para>
+
+      <programlisting>// The extension will only install on PHP 8.0.0 or later
+protected $minimumPhp = '8.0.0';
+
+// The extension will only install on Joomla 4.2.0 or later
+protected $minimumJoomla = '4.2.0';</programlisting>
+
+      <bridgehead>Handling downgrades</bridgehead>
+
+      <para>As mentioned earlier, Joomla uses the term “upgrade” very loosely.
+      If you install any version of your extension while another (or the
+      same!) version is already installed Joomla will happily oblige and call
+      it an “upgrade”. However, most extensions cannot
+      <emphasis>downgrade</emphasis> cleanly, i.e. going from version 2.0.0 to
+      version 1.9.3 may not work at all. This makes perfect sense. You cannot
+      possibly travel back in time to update the installation script of your
+      extension's older versions to make a downgrade possible — if it's even
+      at all possible. Therefore, <emphasis role="bold">by default, the
+      installation script will prevent downgrades</emphasis>. Users can only
+      install the same or a newer version of your software.</para>
+
+      <warning>
+        <para>Preventing downgrades will only work properly if your extension
+        uses <link xlink:href="https://semver.org">Semantic Versioning
+        (SemVer)</link>. Your development / nightly releases must additionally
+        follow <link
+        xlink:href="https://www.php.net/manual/en/function.version-compare.php">PHP's
+        versioning rules</link>. That is to say, a development / nightly
+        release coming after the official release of version 1.2.3 must be
+        named something like 1.2.<emphasis
+        role="bold">4</emphasis>-dev-20220914.</para>
+      </warning>
+
+      <para>There are cases where you might not want to do that. Simpler
+      extensions may support downgrades, or you may have implemented some
+      solution which allows you to perform downgrades (e.g. you may have added
+      a custom file in every new release to handle downgrades to a previous
+      version). Or you may just not use semantic versioning and you'd rather
+      implement your custom logic to determine when something is a downgrade
+      or not. In this case set this in your installer class:</para>
+
+      <programlisting>protected $allowDowngrades = true;</programlisting>
+
+      <bridgehead>Removing obsolete folders and files</bridgehead>
+
+      <para>As we progress through versions of our software we have to contend
+      with the fact that some code becomes obsolete and needs to be removed,
+      Joomla has changed leading to moved files, or we might even need to
+      refactor code and move things around. This means that we have files and
+      folders which need to be removed on upgrade.</para>
+
+      <para>Joomla will automatically remove folders and files explicitly
+      listed in the XML manifest of the installed version but not on the new
+      version's XML manifest. This means that only, for example, top level
+      component folders are removed on update. If you have a few specific
+      files, e.g. some obsolete view template files, or folders deeper inside
+      the directory structure they will not be automatically removed.</para>
+
+      <para>The $deleteFiles and $deleteFolders properties allow you to
+      specify which files and folders need to be removed, if they exist, on
+      update. For example:</para>
+
+      <programlisting>protected $deleteFiles = [
+  JPATH_SITE . '/components/com_example/tmpl/welcome/default_donate.php',
+  JPATH_ADMINISTRATOR . '/components/com_example/tmpl/item/default_phpwarning.php',
+];
+
+protected $deleteFolders = [
+  JPATH_SITE . '/media/com_example/icons',
+];</programlisting>
+    </section>
+
+    <section xml:id="com-menus">
+      <title>Component menus</title>
+
       <para/>
+
+      <section xml:id="com-menus-component">
+        <title>The default component menu</title>
+
+        <para/>
+      </section>
+
+      <section xml:id="com-menus-backend">
+        <title>Backend menu items</title>
+
+        <para/>
+      </section>
+
+      <section xml:id="com-menus-frontend">
+        <title>Frontend menu items</title>
+
+        <para/>
+      </section>
     </section>
 
     <section xml:id="com-events">
