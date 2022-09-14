@@ -3851,8 +3851,8 @@ $someView = $this-&gt;getView('Some', 'Administrator', 'Html');</programlisting>
         subdirectory)!</para>
 
         <para>Knowing this will save you hours of “fun” hitting your head
-        against a brick wall, wondering why it works on your computer but on
-        your server.</para>
+        against a brick wall, wondering why it works on your computer but not
+        on your server.</para>
       </warning>
 
       <para>The bulk of the implementation logic for Joomla 4 MVC Views is the
@@ -4006,22 +4006,23 @@ $someView = $this-&gt;getView('Some', 'Administrator', 'Html');</programlisting>
               </listitem>
 
               <listitem>
-                <para>level. The depth level of the node in the tree.</para>
+                <para><code>level</code>. The depth level of the node in the
+                tree.</para>
               </listitem>
 
               <listitem>
-                <para>lft. The left value of the node for managing its
-                placement in the nested sets tree.</para>
+                <para><code>lft</code>. The left value of the node for
+                managing its placement in the nested sets tree.</para>
               </listitem>
 
               <listitem>
-                <para>rgt. The right value of the node for managing its
-                placement in the nested sets tree.</para>
+                <para><code>rgt</code>. The right value of the node for
+                managing its placement in the nested sets tree.</para>
               </listitem>
 
               <listitem>
-                <para>alias. The alias of this node used to construct the full
-                text path, forward-slash delimited.</para>
+                <para><code>alias</code>. The alias of this node used to
+                construct the full text path, forward-slash delimited.</para>
               </listitem>
             </itemizedlist>
 
