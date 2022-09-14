@@ -5620,20 +5620,17 @@ public function getItemSegment(int $id, array $query): array
           promise.</para>
         </important>
 
-        <para>First, let's make our router database- and
-        MVCFactory-aware.</para>
+        <para>First, let's make our router MVCFactory-aware (it's already
+        database–aware).</para>
 
         <programlisting>&lt;?php
 namespace Acme\Example\Site\Service;
 
 use Joomla\CMS\Component\Router\RouterView;
 use Joomla\CMS\MVC\Factory\MVCFactoryAwareTrait;
-use Joomla\Database\DatabaseAwareInterface;
-use Joomla\Database\DatabaseAwareTrait;
 
-class Router extends RouterView <emphasis role="bold">implements DatabaseAwareInterface</emphasis>
-{
-<emphasis role="bold">	use DatabaseAwareTrait;
+class Router extends RouterView
+{<emphasis role="bold">
 	use MVCFactoryAwareTrait;
 </emphasis>	
 	// ... the rest of the router implementation goes here ...
@@ -5662,50 +5659,107 @@ class RouterFactory extends \Joomla\CMS\Component\Router\RouterFactory
 		$router = parent::createRouter($application, $menu);
 
 		$router-&gt;setMVCFactory($this-&gt;getMVCFactory());
-		$router-&gt;setDatabase($this-&gt;db);
 
 		return $router;
 	}
 }</programlisting>
 
-        <para>Finally, we need to modify our
-        <filename>services/provider.php</filename> service provider file to
-        extend the router factory service (we really don't need to write an
-        entirely new provider if we don't want to!):</para>
+        <para>Now, we need to create a RouterFactory service provider.
+        Unfortunately, Joomla has a bad habit of registering factory objects
+        in the DI container even though they are only going to return exactly
+        one object with no initialisation, like a router. This complicates
+        thing because we cannot extend the DI container definition. We have to
+        do something stupid: copy Joomla's default implementation of the
+        Router Factory Service Provider just so we can change the returned
+        object type and register dependencies on it. Well... I guess it could
+        be worse?</para>
 
-        <para>Now we will create our Router Factory Service Provider so we can
-        inject the MVCFactory:</para>
+        <para>Anyway. Let's create our router factory service provider
+        <classname>\Acme\Example\Administrator\Service\Provider\RouterFactoryProvider</classname>.</para>
 
-        <programlisting>// This part was already here
-$container-&gt;registerServiceProvider(
-  new \Joomla\CMS\Extension\Service\Provider\RouterFactory
-  (
+        <programlisting>&lt;?php
+
+namespace \Acme\Example\Administrator\Service\Provider;
+
+<emphasis role="bold">use Acme\Example\Administrator\Service\RouterFactory;</emphasis>
+use Joomla\CMS\Categories\CategoryFactoryInterface;
+use Joomla\CMS\Component\Router\RouterFactoryInterface;
+use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
+use Joomla\Database\DatabaseInterface;
+use Joomla\DI\Container;
+use Joomla\DI\ServiceProviderInterface;
+
+class RouterFactoryProvider implements ServiceProviderInterface
+{
+/**
+	 * The module namespace
+	 *
+	 * @since   4.0.0
+	 * @var  string
+	 *
+	 */
+	private $namespace;
+
+	/**
+	 * DispatcherFactory constructor.
+	 *
+	 * @param   string  $namespace  The namespace
+	 *
+	 * @since   4.0.0
+	 */
+	public function __construct(string $namespace)
+	{
+		$this-&gt;namespace = $namespace;
+	}
+
+	/**
+	 * Registers the service provider with a DI container.
+	 *
+	 * @param   Container  $container  The DI container.
+	 *
+	 * @return  void
+	 *
+	 * @since   4.0.0
+	 */
+	public function register(Container $container)
+	{
+		$container-&gt;set(
+			RouterFactoryInterface::class,
+			function (Container $container) {
+				$categoryFactory = null;
+
+				if ($container-&gt;has(CategoryFactoryInterface::class))
+				{
+					$categoryFactory = $container-&gt;get(CategoryFactoryInterface::class);
+				}
+
+				$routerFactory = new <emphasis role="bold">RouterFactory</emphasis>(
+					$this-&gt;namespace,
+					$categoryFactory,
+					$container-&gt;get(DatabaseInterface::class)
+				);
+
+				<emphasis role="bold">$routerFactory-&gt;setMVCFactory($container-&gt;get(MVCFactoryInterface::class));</emphasis>
+
+				return $routerFactory;
+			}
+		);
+	}
+}
+</programlisting>
+
+        <para>Our changes to the core code in Joomla are highlighted in bold
+        type.</para>
+
+        <para>Finally, we need to register this router factory service
+        provider in our component's <code>services/provider.php</code>
+        file.</para>
+
+        <programlisting>$container-&gt;registerServiceProvider(
+  new \Acme\Example\Administrator\Service\Provider\RouterFactoryProvider(
     '\\Acme\\Example'
   )
-);
-// This is where we extend the service above.
-<emphasis role="bold">$container-&gt;extend(
-  \Joomla\CMS\Component\Router\RouterFactoryInterface::class,
-  function(RouterFactoryInterface $router, Container $c) {
-    $router-&gt;setMVCFactory(
-      $c-&gt;get(MVCFactoryInterface::class)
-    );
-  }
-);</emphasis></programlisting>
-
-        <note>
-          <para>If you read my extensions' code you will see that I am doing
-          things differently. Part of it is that I started working on my
-          components long before Joomla 4.0 was released and some things were
-          neither ready nor clear. Another part of it is that at the time I
-          was trying to use the Joomla DI Container as a dependency injection
-          container using constructor injection; it took several more months
-          for it to become clear that Joomla is favoring an approach with
-          interfaces, traits and injecting dependencies with public methods
-          instead of constructor arguments.</para>
-
-          <para>Do as I say. Don't do as I do.</para>
-        </note>
+);</programlisting>
       </section>
     </section>
 
@@ -5726,7 +5780,7 @@ $container-&gt;registerServiceProvider(
       manifest file:</para>
 
       <programlisting>&lt;dashboards&gt;
-  &lt;dashboard title="COM_EXAMPLE_DASHBOARD_TITLE" icon="fa fa-beer"&gt;com_example.something&lt;/dashboard&gt;
+  &lt;dashboard title="COM_EXAMPLE_DASHBOARD_TITLE" icon="none fa fa-beer"&gt;com_example.something&lt;/dashboard&gt;
 &lt;/dashboards&gt;</programlisting>
 
       <note>
@@ -5748,7 +5802,27 @@ $container-&gt;registerServiceProvider(
       gives the dashboard page its icon. Joomla 4 loads FontAwesome 5 Free so
       you can use <link
       xlink:href="https://fontawesome.com/v5/search?o=r&amp;m=free">any of its
-      icons</link>.</para>
+      icons</link>. Please remember that Joomla prefixes the value of the
+      <code>icon</code> attribute with the string literal <code>icon-</code>.
+      This does not let you use all FontAwesome icons. To work around that I
+      use the value <code>none fa fa-beer</code> which results in the HTML
+      attribute and value <code>class="icon-none fa fa-beer"</code>. Since
+      <code>icon-none</code> does not display anything, the browser falls back
+      to the next two CSS classes which render FontAwesome's beer mug
+      icon.</para>
+
+      <warning>
+        <para>The Dashboard is not part of your component. It does not load
+        any custom backend CSS you may have. As a result, you cannot display
+        your logo or any custom image in the Dashboard. While you could do
+        that by loading custom CSS in a module you set up in the dashboard, do
+        keep in mind that the user can easily disable (unpublish) that module
+        and then your CSS won't load anymore. If you opt for this trick it's a
+        good idea to provide a fallback to a Joomla system icon class or a
+        FontAwesome icon class to make sure that
+        <emphasis>something</emphasis> is displayed as the Dashboard's title
+        icon.</para>
+      </warning>
 
       <para>The value inside the tag <emphasis>must</emphasis> be in the
       format <code>component.something</code> where component is the name of
@@ -5792,12 +5866,18 @@ $container-&gt;registerServiceProvider(
         </listitem>
 
         <listitem>
-          <para>Add a submenu link in your XML manifest, e.g.</para>
+          <para>Add a submenu item in your XML manifest, e.g.</para>
 
-          <programlisting>&lt;menu
-  link="index.php?option=com_cpanel&amp;amp;view=cpanel&amp;amp;dashboard=<replaceable>com_example.something</replaceable>"&gt;
-<replaceable>COM_EXAMPLE_MENU_TITLE_DASHBOARD</replaceable>
-&lt;/menu&gt;</programlisting>
+          <programlisting>&lt;menu&gt;COM_EXAMPLE&lt;/menu&gt;
+
+&lt;submenu&gt;
+  <emphasis role="bold">&lt;menu
+    link="index.php?option=com_cpanel&amp;amp;view=cpanel&amp;amp;dashboard=<replaceable>com_example.something</replaceable>"&gt;
+<replaceable>    COM_EXAMPLE_MENU_TITLE_DASHBOARD</replaceable>
+  &lt;/menu&gt;</emphasis>
+
+  &lt;!-- more submenu items --&gt;
+&lt;/submenu&gt;</programlisting>
 
           <important>
             <para>Remember that the
@@ -5806,9 +5886,40 @@ $container-&gt;registerServiceProvider(
             <filename>.sys.ini</filename> language file.</para>
           </important>
         </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Super ultra secret stuff!</emphasis>
+          Tell Joomla to display a Dashboard link next to your component's
+          top-level menu entry. In your XML manifest you need to modify your
+          top level menu item like so:</para>
+
+          <programlisting>&lt;menu <emphasis role="bold">params="{&amp;quot;dashboard&amp;quot;: &amp;quot;com_example.example&amp;quot;}"</emphasis>&gt;COM_EXAMPLE&lt;/menu&gt;
+
+&lt;submenu&gt;
+  &lt;!-- your submenu items here… --&gt;
+&lt;/submenu&gt;</programlisting>
+
+          <para>The value of the <code>params</code> attribute in the XML
+          manifest ends up in the <database>#__menu</database> table record's
+          <database>params</database> column. The <code>dashboard</code>
+          parameter key tells Joomla to display a dashboard link next to the
+          menu item's text. The value of the dashboard parameter key tells
+          Joomla <emphasis>which</emphasis> dashboard to link to.</para>
+        </listitem>
       </itemizedlist>
 
-      <bridgehead>A custom menu for your dashboard</bridgehead>
+      <para>It is actually a good idea using a combination of the methods
+      above. The toolbar link can help lost users find their way back to the
+      dashboard. While the <code>params</code> trick is cool, it only works in
+      the default components side menu. If the user has customised the menu,
+      uses an alternative presentation or simply visits the Components
+      Dashboard they won't see the link to your component's custom dashboard,
+      therefore you may need the second method (the submenu link to your
+      dashboard) to cater for these use cases. What can I say? Joomla is
+      customisable. Maybe even a bit <emphasis>too</emphasis>
+      customisable.</para>
+
+      <bridgehead>A custom menu preset for your dashboard</bridgehead>
 
       <para>You may have noticed that all core dashboards seem to have an
       “immutable” area at the top. This is not immutable; it's just a plain
