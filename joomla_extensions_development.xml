@@ -5367,7 +5367,6 @@ class Category extends Categories
         provider before trying to create the component object:</para>
 
         <programlisting>$container-&gt;registerServiceProvider(
-  \Joomla\CMS\Component\Router\RouterFactoryInterface::class,
   new \Joomla\CMS\Extension\Service\Provider\RouterFactory
   (
     '\\Acme\\Example'
@@ -5447,7 +5446,7 @@ class Category extends Categories
 
         <para>This tells Joomla that we have three routable views called
         <code>welcome</code>, <code>item</code> and <code>detail</code>. The
-        <code>detail</code> view is a child of <code>item</code>. </para>
+        <code>detail</code> view is a child of <code>item</code>.</para>
 
         <para>How would Joomla know about which detail is under a specific
         item? We told it that the <code>detail</code>'s <code>itemid</code>
@@ -5469,7 +5468,7 @@ class Category extends Categories
               before the SEF URL is built and, crucially, before Joomla tries
               to figure out the <code>format</code> and <code>Itemid</code>
               URL parameters to send to your component's Router's build
-              method. </para>
+              method.</para>
 
               <para>In Joomla 3 you could get away with trying to figure out
               and change the <code>format</code> and <code>Itemid</code>
@@ -5679,7 +5678,6 @@ class RouterFactory extends \Joomla\CMS\Component\Router\RouterFactory
 
         <programlisting>// This part was already here
 $container-&gt;registerServiceProvider(
-  \Joomla\CMS\Component\Router\RouterFactoryInterface::class,
   new \Joomla\CMS\Extension\Service\Provider\RouterFactory
   (
     '\\Acme\\Example'
@@ -5824,7 +5822,7 @@ $container-&gt;registerServiceProvider(
       for core components. What about our custom component? Well, as it turns
       out, there are no hardcoded presets! Everything you see available in
       mod_submenu is, in fact, file on your site and yes, we can do the same
-      thing for our own component! </para>
+      thing for our own component!</para>
 
       <para>We need to create a custom menu preset for our component by
       creating an XML file under the
@@ -5836,8 +5834,7 @@ $container-&gt;registerServiceProvider(
       <para>The name of your menu preset XML file MUST be unique across all
       components installed in Joomla. For this reason it's recommended to name
       it after your extension. For example, com_example's menu preset would be
-      <filename>administrator/components/com_example/presets/example.xml</filename>.
-      </para>
+      <filename>administrator/components/com_example/presets/example.xml</filename>.</para>
 
       <para>If you need multiple presets in your component it's strongly
       recommended that their file names follow the pattern
@@ -5861,7 +5858,7 @@ $container-&gt;registerServiceProvider(
 
       <para>Here is a sample preset, let's say it's
       <filename>administrator/components/com_example/presets/example.xml</filename>
-      (this means the preset name is <code>example</code>) . </para>
+      (this means the preset name is <code>example</code>) .</para>
 
       <programlisting>&lt;?xml version="1.0"?&gt;
 &lt;menu
@@ -5958,7 +5955,7 @@ $container-&gt;registerServiceProvider(
       <classname>Joomla\CMS\Installer\InstallerScript</classname> (the old
       name will work up to and including Joomla 5.3). We'll get into more
       detail on it <link linkend="com-installation-script">in the installation
-      script section</link>. </para>
+      script section</link>.</para>
 
       <para>Joomla's InstallerScript provides a handy method called
       <methodname>addDashboardMenu</methodname> which creates a
