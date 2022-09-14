@@ -4946,17 +4946,1107 @@ class Category extends Categories
     <section xml:id="com-router">
       <title>Router</title>
 
-      <para/>
+      <para>Most components have a backend and a frontend part. The backend
+      part is used by the site administrators to set up the content being
+      managed by the component and the frontend part is used to display said
+      content to the visitors of the site.</para>
 
-      <section xml:id="com-router-categories">
-        <title>Routing nested categories</title>
+      <section xml:id="com-router-routing-overview">
+        <title>The case for URL routing</title>
 
-        <para/>
+        <para>By default, Joomla's frontend URLs look something like
+        this:</para>
+
+        <para><uri>https://www.example.com/index.php?option=com_example&amp;view=item&amp;id=123&amp;Itemid=456</uri></para>
+
+        <para>This is called a regular or non-SEF URL. The SEF URL — what
+        other CMS may call a “permalink” or a “<emphasis>route</emphasis>” —
+        could be something like</para>
+
+        <para><uri>https://www.example.com/acme-shop/roadrunner-hunting/explosives/tnt-crate.html</uri></para>
+
+        <note>
+          <para><acronym>SEF</acronym> is an acronym which stands for Search
+          Engine Friendly and is called like that for historical reasons —
+          back in 2001 when Joomla's predecessor, Mambo, introduced this
+          feature a human-understandable URL was also helping the primitive
+          search engines of that era to get better context of what the page is
+          about. This stopped being true by the time Joomla emerged as its own
+          software, in 2005.</para>
+
+          <para>Joomla co–founder Brian Teeman coined a better, if not much
+          more British, term: Pub Ear Friendly. The idea being that when you
+          try to give the URL of a page to your mate while downing pints at
+          your local, rather lively, local it's easier to give them a few
+          words they can understand than a long string of alphanumeric
+          characters. For some reason this alternate term never stuck…</para>
+        </note>
+
+        <para>The transformation of the ugly, incomprehensible (at least to
+        non–developers), non-SEF URL into the SEF URL and of the SEF URL back
+        to the ugly non-SEF version (so Joomla can figure out which component
+        to load and what to tell it to do) is called <emphasis role="bold">SEF
+        routing</emphasis> in the Joomla vernacular. Most everywhere else you
+        will see it being called <emphasis role="bold">URL routing</emphasis>.
+        Well, the Joomla vernacular is full of certain historical quirks which
+        makes it harder for newcomers to figure out what is what, but this is
+        neither here nor there.</para>
+
+        <para>URL routing in Joomla is implemented in the core. However, the
+        core code cannot <emphasis>possibly</emphasis> know how your component
+        is supposed to logically structure its content so as to convert this
+        into a human and machine understandable URL. Therefore it delegates
+        that responsibility to the component, namely to our component's
+        Router.</para>
+      </section>
+
+      <section xml:id="com-router-abandon-all-hope">
+        <title>Intermission: abandon all hope ye who enter here</title>
+
+        <para>Before we go on, let's discuss a little bit how Joomla URL
+        routing works. It's long, it's a bit depressing, but read to the end —
+        as you'll see, all problems with the URL routing in Joomla are
+        ultimately <emphasis role="bold">a user education issue</emphasis>,
+        not a coding issue.</para>
+
+        <para>You would expect web software to have have absolutely
+        deterministic, clear routing for URLs. Given a set of URL parameters
+        (the “non-SEF URL”) the URL router (“SEF router”) will spit out the
+        same route (“SEF URL”). In this ideal world we already have nuclear
+        fusion and world peace, we have solved poverty and hunger and… I
+        digress.</para>
+
+        <para>In the imperfect world we live in, web software has to choose
+        one of two evils. URL routing is either extremely technical and
+        inflexible but robust, or it is is user–friendly and flexible but can
+        result in some very weird situations. Joomla chose the latter. It's
+        what allows modules to work the way they do which is one of the many
+        reasons Joomla is an insanely powerful but still user–friendly CMS.
+        But which part of its soul did it have to sell to you–know–who to do
+        that? Let's see…</para>
+
+        <para>URL routing in Joomla operates in two axes. On one hand we have
+        the user–defined menu structure which operates as the first pass of
+        URL routing and is defined by users, who are humans and not very good
+        at managing hierarchies (make that
+        <emphasis>doubleplusungood</emphasis>, Winston). Then you have the SEF
+        router of our component which, unlike users, works in a perfectly
+        logical, orderly fashion.</para>
+
+        <para>The thing is, they are both working at the same time to do URL
+        routing and this can cause some… uh…
+        <emphasis>complications</emphasis>.</para>
+
+        <para>Let's say you have the following data hierarchy:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Category A, alias <code>alpha</code>.</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>Category B, alias <code>bravo</code>.</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>Article C, alias <code>charlie</code></para>
+                  </listitem>
+                </itemizedlist>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+        </itemizedlist>
+
+        <para>And you have the following menu structure (as to why the user
+        chose this seemingly bonkers menu structure, no, they are not trying
+        to sabotage your code, they have a good reason but we'll get back to
+        that later):</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Category item list for Category B, alias <code>bravo</code>.
+            Item ID 123.</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>Single article view for Article C, alias
+                <code>charlie</code>. Item ID 234.</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>Category A, alias <code>alpha</code>. Item ID
+                    345.</para>
+                  </listitem>
+                </itemizedlist>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+        </itemizedlist>
+
+        <para>You would expect that the URL for category A is
+        https://www.example.com/alpha, category B's is
+        https://www.example.com/alpha/bravo and article C's is
+        https://www.example.com/alpha/bravo/charlie.</para>
+
+        <para>Nope.</para>
+
+        <para>The URL for category A is
+        <uri>https://www.example.com/bravo/charlie/alpha</uri> per the menu
+        structure.</para>
+
+        <para>The URL for category B is
+        <uri>https://www.example.com/bravo</uri> per the menu
+        structure.</para>
+
+        <para>The URL for article C is
+        <uri>https://www.example.com/bravo/charlie</uri> per BOTH the menu
+        structure AND the SEF router of com_content.</para>
+
+        <para>However, it's perfectly possible to access article C as
+        https://www.example.com/bravo/charlie/alpha/charlie. The first three
+        parts of the route (/bravo/charlie/alpha) are the menu structure to
+        category A. The rest (bravo/charlie) is handled by the SEF router of
+        com_content.</para>
+
+        <para>*record scratch*</para>
+
+        <para>But, wait, wait a second! How does Joomla know when to use each
+        URL?! I am glad you asked, the answer is the <code>Itemid</code> URL
+        parameter, i.e. the menu item ID for which we are going to be
+        generating a URL for our… something!</para>
+
+        <para>If we are routing the URL to article C using a URL with
+        Itemid=123 Joomla will first figure out that we have a menu item to
+        Article C's parent category (Category B). It will then ask our URL
+        router to route this item in this category which will make our
+        com_content router return <code>charlie</code>. Therefore Joomla will
+        return the relative URL <code>bravo/charlie</code>.</para>
+
+        <para>If we are routing the URL to article C using a URL with
+        Itemid=234 Joomla sees that the Itemid matches exactly what we need to
+        route, therefore it will return the menu structure up to this point,
+        i.e. the relative URL <code>bravo/charlie</code>.</para>
+
+        <para>HOLD ON A SECOND! Both of these methods returned… THE SAME URL!
+        Ah, keen eyed reader, you are right! I can see you despairing. Oh,
+        please, not yet! It's about to get <emphasis>worse</emphasis>. You
+        see, when Joomla parses the URL it prioritises the menu structure over
+        the SEF router of each component. Since <code>bravo/charlie</code> is,
+        indeed, a valid menu structure it will simply return the non-SEF URL
+        index.php?Itemid=234 — in both cases.</para>
+
+        <para>But, but, but… Isn't the Itemid how we tell modules when to
+        display? Why, yes, it is! Oh, you had different modules displaying in
+        menu items 123 and 234? Too bad! You don't get to choose.
+        Sorry.</para>
+
+        <para>Back to routing non-SEF to SEF URLs. If you route article C
+        using a URL with Itemid=345 Joomla tells you that you are on category
+        A. So your SEF route has to find a full path to your article which
+        would be bravo/charlie and this is added to Category A, menu item
+        345's URL of bravo/charlie/alpha to make the entirely confusing URL
+        bravo/charlie/alpha/bravo/charlie which works perfectly.</para>
+
+        <para>What about trying to route article C without an Itemid? Now
+        things get a bit tastier and testier. Joomla will try to find the most
+        relevant route using the segments returned by your SEF router and
+        trying to match them with the menu structure… Which one it is?
+        Frankly, I don't have the foggiest off the top of my head. I'd have to
+        build that site to figure it out. I would think it's the same as using
+        Itemid=345. If all else fails, Joomla will use the Home item's Itemid
+        and all bets are off.</para>
+
+        <para>Of course, this means that the same article can have three URLs,
+        two of which are identical and one of them does not resolve to what
+        you'd expect. But this is normal! And no, forget about getting a
+        canonical URL for article C because there's none.</para>
+
+        <para>This insanity cannot be addressed because it would require
+        decoupling URL routing from Joomla's menu system. However, this would
+        mean that all published modules appear in all pages as there is no
+        longer a way to know which menu item you're in. Of course it's the
+        solution to this problem which broke module display in our example
+        above but this is what you get when the users are “crazy”.</para>
+
+        <para>Or are they?</para>
+
+        <para>While it sounds convoluted and problematic, this method is not
+        the least bit more convoluted and problematic than any other given CMS
+        <emphasis>when you take into account all the possible<footnote>
+            <para>For any given, singular use case and a set of routing
+            algorithms it is very easy to find the one algorithm which is most
+            suitable, meaning the rest are unsuitable. However, every single
+            use case has a different most suitable algorithm. Given a very
+            large number of use cases, like the near infinite uses cases a CMS
+            is called to address, any given routing algorithm would be just as
+            unsuitable for most use cases as every other. Therefore the task
+            of finding the “best” algorithm is reduced to finding an algorithm
+            which fulfils some secondary or tertiary business goals such as
+            making it possible for an end user to easily configure with a GUI
+            or support our vision of having different modules show up in each
+            page. The primary business goal of the “best” routing for the
+            generic use case is, by definition, a bust unless we are willing
+            to drastically reduce the use cases we are willing to
+            support.</para>
+          </footnote>, almost infinite use cases it's called to work
+        with</emphasis>. It works great insofar the user can be trusted to not
+        create psychopathic menu structures which work against the data
+        structure, reusing the same aliases for a good measure of
+        insanity.</para>
+
+        <para>But why would any user even create such a menu structure to
+        begin with?!</para>
+
+        <para>As a matter of fact, the menu structure I presented <emphasis
+        role="bold">is the wrong way to use Joomla</emphasis>. I confess I
+        misdirected you but I did so for a noble reason. What the user most
+        likely wanted was the menu item's <emphasis>visual</emphasis>
+        structure to be what we presented for user experience reasons. They
+        most likely don't care or not even <emphasis>want</emphasis> the crazy
+        URL structure. They would very likely be spending hundreds of Euros
+        every year in various SEF / SEO tools to try and fix their mistake…
+        when they could just be told how to use Joomla the way Joomla was
+        intended to be used to begin with.</para>
+
+        <para>The One True Joomla Way™ is to use a “hidden” menu (a menu
+        without a module to display it) to generate the URL structure in a way
+        that's mostly following the data structure and a shown menu with Alias
+        menu items for the visual display.</para>
+
+        <para>So, in our example, the hidden menu would be:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Category A, alias <code>alpha</code>. Item ID 345.</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>Category item list for Category B, alias
+                <code>bravo</code>. Item ID 123.</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>Single article view for Article C, alias
+                    <code>charlie</code>. Item ID 234.</para>
+                  </listitem>
+                </itemizedlist>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+        </itemizedlist>
+
+        <para>And the visible menu:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Category item list for Category B, alias to menu item
+            123.</para>
+
+            <itemizedlist>
+              <listitem>
+                <para>Single article view for Article C, alias to menu item
+                234.</para>
+
+                <itemizedlist>
+                  <listitem>
+                    <para>Category A, alias <code>alpha</code>, alias to menu
+                    item 345.</para>
+                  </listitem>
+                </itemizedlist>
+              </listitem>
+            </itemizedlist>
+          </listitem>
+        </itemizedlist>
+
+        <para>That's the reason I went through this intentionally
+        provocatively named section. When you are doing end user support you
+        <emphasis role="bold">WILL</emphasis> come up with the atrocious menu
+        structures like the one I presented above.</para>
+
+        <para>Do NOT try to address this in your router code; you will lose
+        your mind and you will never make it work for all of your users.
+        Remember, there is no routing method which is suitable for every use
+        case and you cannot possibly address infinite use cases. Value your
+        sanity as a developer! Learn when to say “no” to users.</para>
+
+        <para>Instead, ask your user what is their <emphasis>use
+        case</emphasis> and is <emphasis>their intention</emphasis> with their
+        menu structure: are they trying to shape the URL structure or just the
+        way things are presented on their site? In 99 out of 100 cases the
+        user intended to affect only the visual presentation of the menu; they
+        have no idea they are shooting their feet by affecting the URL
+        structure. Patiently explain them the trick about hidden menus. You'll
+        get grateful clients for life.</para>
+      </section>
+
+      <section xml:id="com-router-j3-vs-j4">
+        <title>Joomla 3 vs Joomla 4</title>
+
+        <para>In Joomla 3 we would create a router as a
+        <filename>router.php</filename> file in the root of our component's
+        frontend, e.g. <filename>components/com_example/router.php</filename>.
+        That file had two way to implement a router:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Two separate functions whose names consisted of the name of
+            the component without the <code>com_</code> prefix and the
+            suffixes <code>BuildRoute</code> and <code>ParseRoute</code>, e.g.
+            <function>exampleBuildRoute</function> and
+            <function>exampleParseRoute</function>. This was the very old way
+            which was deprecated since Joomla 3.3 released in 2014.</para>
+          </listitem>
+
+          <listitem>
+            <para>As a class extending
+            <classname>JComponentRouterBase</classname> (renamed to
+            <classname>Joomla\CMS\Component\Router\RouterBase</classname> in
+            later Joomla versions) or, more usually,
+            <classname>JComponentRouterView</classname> (introduced in Joomla
+            3.5 and renamed to
+            <classname>Joomla\CMS\Component\Router\RouterView</classname> in
+            later Joomla versions).</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>If you are using the former method you have a lot of work ahead
+        of you to convert it to a Joomla 4 compatible router. If you are using
+        the latter method you are virtually ready, with minimal
+        changes!</para>
+
+        <para>In Joomla 4 the router is implemented as the class
+        <code>Service\Router</code> in the frontend part of our component. So,
+        with a component <code>com_example</code> that has a namespace prefix
+        <code>Acme\Example</code> that would be the class
+        <classname>Acme\Example\Site\Service\Router</classname> in the file
+        <filename>components/com_example/src/Service/Router.php</filename>.
+        That class needs to extend from
+        <classname>Joomla\CMS\Component\Router\RouterBase</classname> or, more
+        typically
+        <classname>Joomla\CMS\Component\Router\RouterView</classname>, just
+        like in Joomla 3.5<footnote>
+            <para>The entire concept of routing using the RouterView has not
+            changed since Joomla 3.5 which was released in 2016. You see, at
+            this point in time development of Joomla 4 had already started and
+            Joomla introduced the new routing to help developers migrate their
+            extensions to the new router before Joomla 4 is released.</para>
+          </footnote> and later versions.</para>
+
+        <para>There is one more difference in Joomla 4 and later versions. By
+        default, the component does not know that it needs to use a
+        router.</para>
+
+        <para>To understand what and why we need to do, let's go backwards.
+        Joomla only knows it needs to use a router factory when the
+        component's extension class implements the
+        <interfacename>\Joomla\CMS\Component\Router\RouterServiceInterface</interfacename>.
+        When this is the case, Joomla knows that it can ask the extension
+        class to return a Router Factory object using the
+        <methodname>createRouter</methodname> method defined in said
+        interface. The component's extension class does not know how to find
+        the router factory object; it is injected into it by the component
+        service provider (<filename>services/provider.php</filename>). In its
+        turn, it asks the component's DI Container for that Router Factory
+        object. The DI Container will only know how to get a Router Factory
+        object is we register a Router Factory service provider in the service
+        provider (<filename>services/provider.php</filename>).</para>
+
+        <para>Unraveling these chained dependencies we see that we need to
+        make changes in just two files.</para>
+
+        <para>Your component's extension class must implement the
+        <interfacename>\Joomla\CMS\Component\Router\RouterServiceInterface</interfacename>
+        interface. The easiest way to provide its implementation is having it
+        use the
+        <classname>\Joomla\CMS\Component\Router\RouterServiceTrait</classname>
+        trait.</para>
+
+        <para>That trait requires your component service provider (e.g.
+        <filename>administrator/components/com_example/services/provider.php</filename>)
+        to do two things. First, it needs to register a Router Factory service
+        provider before trying to create the component object:</para>
+
+        <programlisting>$container-&gt;registerServiceProvider(
+  \Joomla\CMS\Component\Router\RouterFactoryInterface::class,
+  new \Joomla\CMS\Extension\Service\Provider\RouterFactory
+  (
+    '\\Acme\\Example'
+  )
+);</programlisting>
+
+        <para>The
+        <classname>\Joomla\CMS\Extension\Service\Provider\RouterFactory</classname>
+        class is the default Joomla implementation of a component router
+        factory. It needs exactly one configuration parameter in its
+        constructor, the namespace of your component
+        <emphasis>without</emphasis> the <code>Site</code> or
+        <code>Administrator</code> suffix.</para>
+
+        <para>Then, after having created our component extension class'
+        object, we need to inject the Router Factory object into it:</para>
+
+        <programlisting>$container-&gt;set(
+  ComponentInterface::class,
+  function (Container $container) {
+    $component = new ExampleComponent(
+      $container-&gt;get(ComponentDispatcherFactoryInterface::class)
+    );
+
+    // ... other initialisation goes here ...
+
+    // Inject the router factory object
+    <emphasis role="bold">$component-&gt;setRouterFactory(
+      $container-&gt;get(
+         \Joomla\CMS\Component\Router\RouterFactoryInterface::class
+      )
+    );</emphasis>
+   }
+);</programlisting>
+
+        <para>While it looks a bit verbose, it accomplishes two things. First,
+        it's not possible to be surprised by Joomla magically implementing a
+        feature in your component you did not expect. Second, in the case of a
+        router, it allows us to <link
+        linkend="com-router-push-dependencies">push dependencies (services)
+        into our router object</link>.</para>
+      </section>
+
+      <section xml:id="com-router-routerview">
+        <title>Using RouterView</title>
+
+        <para>If you are using a router class extending from
+        <classname>Joomla\CMS\Component\Router\RouterView</classname> it is
+        fairly easy to create a router for most components.</para>
+
+        <para>The constructor of your class tells Joomla which views of your
+        component can be routed in the frontend and the relation to each
+        other. For example:</para>
+
+        <programlisting>public function __construct(SiteApplication $app = null, AbstractMenu $menu = null)
+{
+  $welcome = new \Joomla\CMS\Component\Router\RouterViewConfiguration('welcome');
+  $this-&gt;registerView($welcome);
+
+  $item = (new \Joomla\CMS\Component\Router\RouterViewConfiguration('item'))
+    -&gt;setKey('id')
+    -&gt;addLayout('default')
+    -&gt;addLayout('fancy');
+  $this-&gt;registerView($item);
+
+  $detail = (new \Joomla\CMS\Component\Router\RouterViewConfiguration('detail'))
+    -&gt;setKey('id')
+    -&gt;setParent($item, 'itemid');
+  $this-&gt;registerView($detail);
+
+  parent::__construct($app, $menu);
+
+  $this-&gt;attachRule(new \Joomla\CMS\Component\Router\Rules\MenuRules($this));
+  $this-&gt;attachRule(new \Joomla\CMS\Component\Router\Rules\StandardRules($this));
+  $this-&gt;attachRule(new \Joomla\CMS\Component\Router\Rules\NomenuRules($this));
+}</programlisting>
+
+        <para>This tells Joomla that we have three routable views called
+        <code>welcome</code>, <code>item</code> and <code>detail</code>. The
+        <code>detail</code> view is a child of <code>item</code>. </para>
+
+        <para>How would Joomla know about which detail is under a specific
+        item? We told it that the <code>detail</code>'s <code>itemid</code>
+        property must match the key of the <code>item</code> and the key of
+        the <code>item</code> is called <code>id</code>.</para>
+
+        <para>The last three lines tell Joomla which routing rules to
+        register:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para><classname>MenuRules</classname>. Tries to detect the
+            correct Itemid for a view if none was provided in the non-SEF URL.
+            You should keep that unless you want to implement the
+            <methodname>preprocess</methodname> method yourself.</para>
+
+            <note>
+              <para>The <methodname>preprocess</methodname> method is called
+              before the SEF URL is built and, crucially, before Joomla tries
+              to figure out the <code>format</code> and <code>Itemid</code>
+              URL parameters to send to your component's Router's build
+              method. </para>
+
+              <para>In Joomla 3 you could get away with trying to figure out
+              and change the <code>format</code> and <code>Itemid</code>
+              parameters in your router's <methodname>build</methodname>
+              method. While this was necessary for compatibility with legacy
+              <filename>router.php</filename> files (those using the two
+              distinct functions), <emphasis>this “hack” will no longer work
+              in Joomla 4</emphasis>. You must move that code into the
+              <methodname>preprocess</methodname> method. If you fail to do
+              so, your SEF URLs will not work properly; from your perspective,
+              it will be as if your <code>format</code> and
+              <code>Itemid</code> values overridden in the built method were
+              never taken into account. That's <emphasis>exactly</emphasis>
+              what happens.</para>
+
+              <para>This is actually a good change. It makes the core routing
+              code more efficient and keeps us third party developers in the
+              habit of applying separation of concerns in our code.</para>
+            </note>
+          </listitem>
+
+          <listitem>
+            <para><classname>StandardRules</classname>. Standard non-SEF to
+            SEF URL (and vice-versa) routing. If you omit this you will not
+            get any SEF URL routing which beats the purpose of having a
+            router.</para>
+          </listitem>
+
+          <listitem>
+            <para><classname>NomenuRules</classname>. Process URLs when no
+            Itemid exists for the component. This is necessary to route URLs
+            when no published menu items exist for your component and Joomla
+            needs to create or parse URLs in the format
+            <uri>/component/example/foo/bar.html</uri>.</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>At this point Joomla knows the logical hierarchy of our
+        component's views but it does not know how to convert an id in the
+        non-SEF URL to a SEF URL segment when building the SEF URL (e.g.
+        convert an item ID to its alias) or how to convert a SEF URL segment
+        back to a non-SEF URL's numeric ID when it's parsing the SEF URL (e.g.
+        convert an item alias to its ID). This is up to us.</para>
+
+        <para>We need to provide two methods for each
+        <classname>RouterViewConfiguration</classname> objects we created:
+        <methodname>get<replaceable>Something</replaceable>Segment</methodname>
+        and <methodname>get<replaceable>Something</replaceable>Id</methodname>
+        where <replaceable>Something</replaceable> is the name of the view
+        with its first letter capitalised. Here's what the code for the Item
+        view would look like in our example:</para>
+
+        <programlisting>public function getItemId(string $segment, array $query): bool|int
+{
+  $db = \Joomla\CMS\Factory::getContainer()-&gt;get('DatabaseDriver');
+  $dbQuery = $db-&gt;getQuery(true)
+    -&gt;select($db-&gt;quoteName('id'))
+    -&gt;from($db-&gt;quoteName('#__example_items'))
+    -&gt;where($db-&gt;quoteName('alias') . ' = :alias')
+    -&gt;bind(':alias', $segment);
+
+  return  $db-&gt;setQuery($dbQuery)-&gt;loadResult() ?: false;
+}
+
+public function getItemSegment(int $id, array $query): array
+{
+  $db = \Joomla\CMS\Factory::getContainer()-&gt;get('DatabaseDriver');
+  $dbQuery = $db-&gt;getQuery(true)
+    -&gt;select($db-&gt;quoteName('alias'))
+    -&gt;from($db-&gt;quoteName('#__example_items'))
+    -&gt;where($db-&gt;quoteName('id') . ' = :id')
+    -&gt;bind(':id', $id);
+  
+  $segment = $db-&gt;setQuery($dbQuery)-&gt;loadResult() ?: null;
+
+  if ($segment === null) {
+    return [];
+  }
+
+  return [$segment];
+}</programlisting>
+
+        <para>There is something worth noting here. The
+        <methodname>get<replaceable>Something</replaceable>Segment</methodname>
+        method can return an array with more than one segments. This is useful
+        if you want to somehow return a more complex structure e.g.
+        <uri>item/foo/detail/bar</uri> where <code>item</code> and
+        <code>detail</code> are fixed strings. However, if you do that, you
+        will need to override the <methodname>parse</methodname> method to
+        handle multi–segment views. The default implementation in
+        <classname>StandardRules</classname> assumes that you are using
+        exactly one segment per view and that's why
+        <methodname>get<replaceable>Something</replaceable>Id</methodname>
+        accepts a string, not an array, as its first argument.</para>
+
+        <para>You may wonder, what about our <code>welcome</code> view? Don't
+        we need to create methods for it? No, we don't. Views which do not
+        have a key set for them use the name of the view as the (only) segment
+        for SEF URLs. If there is a naming clash between such a view and an
+        alias of a top–level view (or category, as we will see below) the
+        first <classname>RouterViewConfiguration</classname> object registered
+        “wins” in determining how that segment should be parsed. As a result,
+        you should keep this kind of top–level views to a minimum and either
+        inform users that they cannot use these aliases or actively prevent
+        them with validation rules whenever possible.</para>
+      </section>
+
+      <section xml:id="com-router-push-dependencies">
+        <title>Pushing dependencies to the Router</title>
+
+        <para>You may have noticed that in the sample code above I got the
+        database driver object using the
+        <methodname>Factory::getContainer</methodname> static method. This is
+        not ideal. It's even worse if I'd need to get access to MVC objects
+        such as Models and Tables — having to boot the entire component just
+        to get its MVCFactory is something to use only if there is no other
+        way, not something to do by default.</para>
+
+        <para>Fortunately, Joomla gives us the option to push any services we
+        need — such as the database driver object and the component's
+        MVCFactory — into the router. Unfortunately, it's a bit
+        non-obvious.</para>
+
+        <para>To inject services into the Router service object they need to
+        be injected into the object after it is created by the Router Factory
+        object. The Router Factory object needs to have access to these
+        services to inject them. This means injecting these services to the
+        Router Factory object from the Router Factory Service Provider. The
+        Router Factory Service Provider can get any of the dependencies
+        (services) it needs since it has access to the component's service
+        provider.</para>
+
+        <para>Therefore we need to create the two missing pieces of the puzzle
+        (Router Factory and its service provider) and register the latter with
+        our component's service provider.</para>
+
+        <important>
+          <para>The component's service provider
+          (<filename>services/provider.php</filename>) lives in the backend
+          portion of your component. Therefore. it makes sense that the Router
+          Factory and the Router Factory Service Provider also live in the
+          backend of your component <emphasis>even though the Router is only
+          used in the frontend of the site</emphasis>.</para>
+
+          <para>Yup. It sounds backwards. You can definitely create them in
+          the frontend but, if you do, <emphasis>you</emphasis> and everyone
+          else reading your code might get confused. Don't over-think it, just
+          do what I tell you to do. There's method in this madness, I
+          promise.</para>
+        </important>
+
+        <para>First, let's make our router database- and
+        MVCFactory-aware.</para>
+
+        <programlisting>&lt;?php
+namespace Acme\Example\Site\Service;
+
+use Joomla\CMS\Component\Router\RouterView;
+use Joomla\CMS\MVC\Factory\MVCFactoryAwareTrait;
+use Joomla\Database\DatabaseAwareInterface;
+use Joomla\Database\DatabaseAwareTrait;
+
+class Router extends RouterView <emphasis role="bold">implements DatabaseAwareInterface</emphasis>
+{
+<emphasis role="bold">	use DatabaseAwareTrait;
+	use MVCFactoryAwareTrait;
+</emphasis>	
+	// ... the rest of the router implementation goes here ...
+}</programlisting>
+
+        <para>Now, let's create a Router Factory
+        (<classname>\Acme\Example\Administrator\Service\RouterFactory</classname>).
+        The default Joomla implementation is already database-aware. I am just
+        extending it to also know about the MVCFactory so we can inject it to
+        our router.</para>
+
+        <programlisting>&lt;?php
+namespace Acme\Example\Administrator\Service;
+
+use Joomla\CMS\Application\CMSApplicationInterface;
+use Joomla\CMS\Component\Router\RouterInterface;
+use Joomla\CMS\Menu\AbstractMenu;
+use Joomla\CMS\MVC\Factory\MVCFactoryAwareTrait;
+
+class RouterFactory extends \Joomla\CMS\Component\Router\RouterFactory
+{
+	use MVCFactoryAwareTrait;
+
+	public function createRouter(CMSApplicationInterface $application, AbstractMenu $menu): RouterInterface
+	{
+		$router = parent::createRouter($application, $menu);
+
+		$router-&gt;setMVCFactory($this-&gt;getMVCFactory());
+		$router-&gt;setDatabase($this-&gt;db);
+
+		return $router;
+	}
+}</programlisting>
+
+        <para>Finally, we need to modify our
+        <filename>services/provider.php</filename> service provider file to
+        extend the router factory service (we really don't need to write an
+        entirely new provider if we don't want to!):</para>
+
+        <para>Now we will create our Router Factory Service Provider so we can
+        inject the MVCFactory:</para>
+
+        <programlisting>// This part was already here
+$container-&gt;registerServiceProvider(
+  \Joomla\CMS\Component\Router\RouterFactoryInterface::class,
+  new \Joomla\CMS\Extension\Service\Provider\RouterFactory
+  (
+    '\\Acme\\Example'
+  )
+);
+// This is where we extend the service above.
+<emphasis role="bold">$container-&gt;extend(
+  \Joomla\CMS\Component\Router\RouterFactoryInterface::class,
+  function(RouterFactoryInterface $router, Container $c) {
+    $router-&gt;setMVCFactory(
+      $c-&gt;get(MVCFactoryInterface::class)
+    );
+  }
+);</emphasis></programlisting>
+
+        <note>
+          <para>If you read my extensions' code you will see that I am doing
+          things differently. Part of it is that I started working on my
+          components long before Joomla 4.0 was released and some things were
+          neither ready nor clear. Another part of it is that at the time I
+          was trying to use the Joomla DI Container as a dependency injection
+          container using constructor injection; it took several more months
+          for it to become clear that Joomla is favoring an approach with
+          interfaces, traits and injecting dependencies with public methods
+          instead of constructor arguments.</para>
+
+          <para>Do as I say. Don't do as I do.</para>
+        </note>
       </section>
     </section>
 
     <section xml:id="com-dashboard">
       <title>Dashboard</title>
+
+      <para>There is a new feature starting with Joomla 4: Dashboards.</para>
+
+      <para>Dashboards are sort of virtual pages, displayed by means of the
+      com_cpanel core component, <link
+      xlink:href="https://magazine.joomla.org/all-issues/april-2021/joomla-4-customising-admin-dashboards">which
+      allow the developer and the site owners to publish modules to customise
+      them</link>.</para>
+
+      <bridgehead>Define a dashboard</bridgehead>
+
+      <para>You can define one or more dashboards in your component's XML
+      manifest file:</para>
+
+      <programlisting>&lt;dashboards&gt;
+  &lt;dashboard title="COM_EXAMPLE_DASHBOARD_TITLE" icon="fa fa-beer"&gt;com_example.something&lt;/dashboard&gt;
+&lt;/dashboards&gt;</programlisting>
+
+      <note>
+        <para><code>&lt;dashboards&gt;</code> is a top–level tag, directly
+        under the <code>&lt;extension&gt;</code> root tag. Yes, even though it
+        only applies in the component's administration (backend) section. If
+        your Dashboard does not work first check that you have not
+        accidentally put that tag under <code>&lt;administration&gt;</code>.
+        It's the most common mistake!</para>
+      </note>
+
+      <para>The <code>title</code> attribute's value is a language string
+      defined in your extension's backend INI language file. It's customary
+      for its string to end with the word “Dashboard”, e.g.</para>
+
+      <programlisting>COM_EXAMPLE_DASHBOARD_TITLE="Example Dashboard"</programlisting>
+
+      <para>The value of the <code>icon</code> attribute is a CSS class which
+      gives the dashboard page its icon. Joomla 4 loads FontAwesome 5 Free so
+      you can use <link
+      xlink:href="https://fontawesome.com/v5/search?o=r&amp;m=free">any of its
+      icons</link>.</para>
+
+      <para>The value inside the tag <emphasis>must</emphasis> be in the
+      format <code>component.something</code> where component is the name of
+      your component (e.g. <code>com_example</code>) and something is a unique
+      identifier for the dashboard among all dashboards defined in your
+      component. For example, we could have the dashboard
+      <code>com_example.something</code>.</para>
+
+      <important>
+        <para>Your component manifest MUST ALSO follow the naming convention
+        <filename>bareComponent.xml</filename> and be placed in the backend
+        folder of your component. For example, <code>com_example</code>'s XML
+        manifest MUST be called <filename>example.xml</filename> and be found
+        in
+        administrator/components/com_example/<filename>example.xml</filename>.</para>
+
+        <para>Keep in mind that Joomla automatically copies your component's
+        XML manifest to the backend of your site when installing the
+        component. You will only ever have to do it manually — if ever — when
+        developing a component locally.</para>
+      </important>
+
+      <para>The value of the tag after the dot is also important. All modules
+      published to the module position
+      <code>cpanel-<replaceable>com_example</replaceable>-<replaceable>something</replaceable></code>
+      will appear in this dashboard <code>com_example.something</code>.</para>
+
+      <bridgehead>Display a link to your dashboard in the component's
+      submenu</bridgehead>
+
+      <para>The dashboard is cool… but how do you even display it? As it turns
+      out there are exactly two ways:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Put a link (e.g. a Toolbar link button) in your extension
+          pointing the browser to
+          <uri>index.php?index.php?option=com_cpanel&amp;view=cpanel&amp;dashboard=<replaceable>com_example.something</replaceable></uri>
+          where <replaceable>com_example.something</replaceable> is your
+          custom dashboard.</para>
+        </listitem>
+
+        <listitem>
+          <para>Add a submenu link in your XML manifest, e.g.</para>
+
+          <programlisting>&lt;menu
+  link="index.php?option=com_cpanel&amp;amp;view=cpanel&amp;amp;dashboard=<replaceable>com_example.something</replaceable>"&gt;
+<replaceable>COM_EXAMPLE_MENU_TITLE_DASHBOARD</replaceable>
+&lt;/menu&gt;</programlisting>
+
+          <important>
+            <para>Remember that the
+            <replaceable>COM_EXAMPLE_MENU_TITLE_DASHBOARD</replaceable>
+            language string must be defined in your component's
+            <filename>.sys.ini</filename> language file.</para>
+          </important>
+        </listitem>
+      </itemizedlist>
+
+      <bridgehead>A custom menu for your dashboard</bridgehead>
+
+      <para>You may have noticed that all core dashboards seem to have an
+      “immutable” area at the top. This is not immutable; it's just a plain
+      old module of the type <code>mod_submenu</code> set to display in the
+      module style <code>none</code> (that's why you don't see the cogs button
+      to edit it in the dashboard). You can of course edit this module like
+      any other module in Content, Administrator Modules.</para>
+
+      <para>It's useful that we can also do the same for our own component and
+      its dashboard. However, you may notice that mod_submenu only has presets
+      for core components. What about our custom component? Well, as it turns
+      out, there are no hardcoded presets! Everything you see available in
+      mod_submenu is, in fact, file on your site and yes, we can do the same
+      thing for our own component! </para>
+
+      <para>We need to create a custom menu preset for our component by
+      creating an XML file under the
+      <filename>administrator/components/com_example/presets</filename>
+      folder. To get an idea of what you can do, take a look at a core preset
+      such as
+      <filename>administrator/componetns/com_users/presets/users.xml</filename>.</para>
+
+      <para>The name of your menu preset XML file MUST be unique across all
+      components installed in Joomla. For this reason it's recommended to name
+      it after your extension. For example, com_example's menu preset would be
+      <filename>administrator/components/com_example/presets/example.xml</filename>.
+      </para>
+
+      <para>If you need multiple presets in your component it's strongly
+      recommended that their file names follow the pattern
+      <filename>component_something.xml</filename>, e.g.
+      <filename>administrator/components/com_example/presets/example_alternate.xml</filename>.</para>
+
+      <tip>
+        <para>Per-component menu presets can be overridden in the same way as
+        view templates. For example, if you want to override the default core
+        Users menu preset
+        (<filename>administrator/componetns/com_users/presets/users.xml</filename>),
+        copy it to
+        <filename>administrator/templates/atum/html/com_menus/presets/users.xml</filename>
+        and edit away!</para>
+
+        <para>Since all overrides live under the same
+        <filename>com_menus/presets</filename> override folder you now
+        understand why their name needs to be unique across all components
+        installed on your site.</para>
+      </tip>
+
+      <para>Here is a sample preset, let's say it's
+      <filename>administrator/components/com_example/presets/example.xml</filename>
+      (this means the preset name is <code>example</code>) . </para>
+
+      <programlisting>&lt;?xml version="1.0"?&gt;
+&lt;menu
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="urn:joomla.org"
+        xsi:schemaLocation="urn:joomla.org menu.xsd"
+&gt;
+    &lt;menuitem
+            title="COM_EXAMPLE_MENUS_CONTENT"
+            type="heading"
+            icon="none fa-feather-alt"
+    &gt;
+        &lt;menuitem
+                title="JCATEGORIES"
+                type="component"
+                element="com_categories"
+                link="index.php?option=com_categories&amp;amp;view=categories&amp;amp;extension=com_example"
+                quicktask="index.php?option=com_categories&amp;amp;extension=com_example&amp;amp;task=category.add"
+                quicktask-title="COM_EXAMPLE_MENUS_NEW_CATEGORY"
+        /&gt;
+
+        &lt;menuitem
+                title="COM_EXAMPLE_MENUS_ITEMS"
+                type="component"
+                element="com_example"
+                link="index.php?option=com_example&amp;amp;view=items"
+                quicktask="index.php?option=com_example&amp;amp;task=item.add"
+                quicktask-title="COM_EXAMPLE_MENUS_NEW_ITEM"
+        /&gt;
+    &lt;/menuitem&gt;
+&lt;/menu&gt;</programlisting>
+
+      <para>Here are some <emphasis role="bold">practical</emphasis>
+      tips:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The icon attribute sets the CSS class for the heading by
+          combining the literal string <code>icon-</code> with the value of
+          the attribute. The number of icons available that way is minuscule
+          compared to the plethora of icons available in FontAwesome 5 Free.
+          This is why I use values for this attribute in the form <code>none
+          fa-something</code>. This results in the CSS class being set to
+          <code>icon-none fa-something</code>. There is no such thing as an
+          <code>icon-none</code> CSS class, so that part does nothing. The
+          next part, the <code>fa-something</code>, is where I tell the
+          browser to use one of the available FontAwesome icons.</para>
+        </listitem>
+
+        <listitem>
+          <para>The <code>quicktask</code> and <code>quicktask-title</code>
+          attributes set up the little quick action icon next to the menu item
+          text. By default, this is a plus icon, implying that you can add an
+          item. You can customise that icon using the attribute
+          <code>menu-quicktask-icon</code> which works in the exact same way
+          as a heading's <code>icon</code> attribute.</para>
+
+          <para>Why would you want to customise it? Well, let's say you have a
+          security component with a view called Automatically Blocked IP
+          Addresses. It would not make sense to manually add a new entry —
+          since they are <emphasis>automatically</emphasis> blocked — but it
+          would totally make sense to have a quick action to
+          <emphasis>unblock</emphasis> an accidentally blocked IP address. In
+          this case a more appropriate icon would be
+          <code>fa-unlock</code>.</para>
+        </listitem>
+      </itemizedlist>
+
+      <bridgehead>Creating and publishing the custom dashboard menu module,
+      automatically</bridgehead>
+
+      <para>All right. We have a dashboard. We have a menu item to access it.
+      We have a custom menu to display in a mod_submenu module inside the
+      dashboard. But how exactly do we get to create this kind of module? We
+      can't possibly ask our users to create it manually, that would
+      suck!</para>
+
+      <para>The answer is that Joomla gives us ALMOST everything we need to
+      create that module in our component's installation script.</para>
+
+      <para>First, let's make sure our component does use an installation
+      script. In the XML manifest we need to add a line like this, as we're
+      familiar from Joomla 3:</para>
+
+      <programlisting>&lt;scriptfile&gt;script.example.php&lt;/scriptfile&gt;</programlisting>
+
+      <para>The <code>script.example.php</code> will contain our component
+      installation script. You are familiar with that; it's been around since
+      Joomla 1.0.</para>
+
+      <para>What you may not have picked up is that since Joomla 3.6 there's a
+      superclass our installation script can extend from. In Joomla 3 it was
+      called <classname>JInstallerScript</classname>, in Joomla 4 it's
+      <classname>Joomla\CMS\Installer\InstallerScript</classname> (the old
+      name will work up to and including Joomla 5.3). We'll get into more
+      detail on it <link linkend="com-installation-script">in the installation
+      script section</link>. </para>
+
+      <para>Joomla's InstallerScript provides a handy method called
+      <methodname>addDashboardMenu</methodname> which creates a
+      <code>mod_submenu</code> module to a specific dashboard using a specific
+      menu preset. However, the way it is written it assumes that it will only
+      ever be executed once, the first time you install a component. What
+      about hundreds of third party components which have been around long
+      before Joomla 4? Don't worry, we have a solution! We will install the
+      module if and only if it's missing, regardless of whether this is a new
+      installation or an update.</para>
+
+      <para>Here's how to do that:</para>
+
+      <programlisting>&lt;?php
+defined('_JEXEC') || die;
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\Installer\Adapter\PackageAdapter;
+use Joomla\CMS\Installer\InstallerScript;
+
+class <emphasis role="bold">Com_ExampleInstallerScript</emphasis> extends InstallerScript
+{
+	/**
+	 * Called after any type of installation / uninstallation action.
+	 *
+	 * @param   string          $type    Which action is happening (install|uninstall|discover_install|update)
+	 * @param   PackageAdapter  $parent  The object responsible for running this script
+	 *
+	 * @return  bool
+	 * @since   1.0.0
+	 */
+	public function postflight(string $type, PackageAdapter $parent): bool
+	{
+		// Do not run on uninstall.
+		if ($type === 'uninstall')
+		{
+			return true;
+		}
+
+		// Install the dashboard module if necessary
+		$this-&gt;conditionalInstallDashboard(<emphasis role="bold">'com_example-example', 'example'</emphasis>);
+
+		return true;
+	}
+
+	private function conditionalInstallDashboard(string $dashboard, string $preset): void
+	{
+		$position = 'cpanel-' . $dashboard;
+
+		/** @var \Joomla\Database\DatabaseDriver $db */
+		$db = Factory::getContainer()-&gt;get('DatabaseDriver');
+		$query = $db-&gt;getQuery(true)
+		            -&gt;select('COUNT(*)')
+		            -&gt;from($db-&gt;quoteName('#__modules'))
+		            -&gt;where([
+			            $db-&gt;quoteName('module') . ' = ' . $db-&gt;quote('mod_submenu'),
+			            $db-&gt;quoteName('client_id') . ' = ' . $db-&gt;quote(1),
+			            $db-&gt;quoteName('position') . ' = :position',
+		            ])
+		            -&gt;bind(':position', $position);
+
+		$modules = $db-&gt;setQuery($query)-&gt;loadResult() ?: 0;
+
+		if ($modules == 0)
+		{
+			$this-&gt;addDashboardMenu($dashboard, $preset);
+		}
+	}
+
+}</programlisting>
+
+      <para>The <methodname>postflight</methodname> method is called whenever
+      Joomla has finished trying to install <emphasis>or uninstall</emphasis>
+      (in Joomla 3 it was only after installation!) our component and before
+      it cleans up. At this point we can check if there is a module already
+      installed. If not, we let Joomla's code install it.</para>
+
+      <para>The only two things you need to change above are the parts in bold
+      type: the class name to match your component's name and the parameters
+      to the <methodname>conditionalInstallDashboard</methodname> method. The
+      parameters are fairly obvious: the name of the dashboard (replacing the
+      dot with a dash!) and the name of your menu preset which typically is
+      the same as your component's name without the <code>com_</code>
+      prefix.</para>
+    </section>
+
+    <section xml:id="com-installation-script">
+      <title>The installation script</title>
 
       <para/>
     </section>
