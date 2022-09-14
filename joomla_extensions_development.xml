@@ -5893,18 +5893,24 @@ class RouterFactoryProvider implements ServiceProviderInterface
           top-level menu entry. In your XML manifest you need to modify your
           top level menu item like so:</para>
 
-          <programlisting>&lt;menu <emphasis role="bold">params="{&amp;quot;dashboard&amp;quot;: &amp;quot;com_example.example&amp;quot;}"</emphasis>&gt;COM_EXAMPLE&lt;/menu&gt;
+          <programlisting>&lt;menu&gt;
+  <emphasis role="bold">&lt;params&gt;
+    &lt;dashboard&gt;com_example.something&lt;/dashboard&gt;
+  &lt;/params&gt;</emphasis>
+  COM_EXAMPLE
+&lt;/menu&gt;
 
 &lt;submenu&gt;
   &lt;!-- your submenu items here… --&gt;
 &lt;/submenu&gt;</programlisting>
 
-          <para>The value of the <code>params</code> attribute in the XML
-          manifest ends up in the <database>#__menu</database> table record's
-          <database>params</database> column. The <code>dashboard</code>
-          parameter key tells Joomla to display a dashboard link next to the
-          menu item's text. The value of the dashboard parameter key tells
-          Joomla <emphasis>which</emphasis> dashboard to link to.</para>
+          <para>The contents of the <code>params</code> menu subkey in the XML
+          manifest goes through Joomla's Registry object and ends up,
+          serialised as JSON, in the <database>#__menu</database> table
+          record's <database>params</database> column. The
+          <code>dashboard</code> key tells Joomla to display a dashboard link
+          next to the menu item's text. Its value tells Joomla
+          <emphasis>which</emphasis> dashboard to link to.</para>
         </listitem>
       </itemizedlist>
 
