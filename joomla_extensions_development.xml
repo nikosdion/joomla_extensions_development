@@ -68,7 +68,7 @@
       published is Akeeba Ticket System — even the free of charge version uses
       most of the features I am describing in this book.</para>
 
-      <para>Hopefully, you will find my approach pragmatic and result–driven
+      <para>Hopefully, you will find my approach pragmatic and result-driven
       instead of a dry, technical document. If you have suggestions for
       improvement or would like to sponsor this work feel free to contact me
       through the Contact Us page on <link
@@ -96,7 +96,7 @@
 
       <para>I've been using Joomla as a site integrator and extensions
       developer since it was called Mambo, back in 2004. I wrote my first
-      mass–distributed extension called JoomlaPack in October 2006 while
+      mass-distributed extension called JoomlaPack in October 2006 while
       taking a two week break from my day job at the time as a business
       consultant. One thing led to another, JoomlaPack became Akeeba Backup
       and I gave up on business consultancy and mechanical engineering to
@@ -122,7 +122,7 @@
       needed changes. Unfortunately, a year into its release you'd be hard
       pressed to find any kind of documentation of what these are and how they
       can impact your software development practices. I will try to give you
-      the 30,000–feet overview of what <emphasis>I</emphasis> found to be the
+      the 30,000-feet overview of what <emphasis>I</emphasis> found to be the
       most important changes.</para>
 
       <para><link linkend="concepts-namespaces"><emphasis
@@ -265,7 +265,7 @@
       users to select which tasks they want to be executed, when to execute
       them and even configure their execution parameters — all within the
       familiar Joomla user interface. It even lets the task scheduler to be
-      executed three ways: with a command line CRON job, a URL–based CRON job
+      executed three ways: with a command line CRON job, a URL-based CRON job
       or automatically based on visitor traffic (lazy scheduling). The end
       user has to set up just the one CRON job or, if they are using lazy
       scheduling, just flip a switch.</para>
@@ -286,7 +286,7 @@
       things around their site.</para>
 
       <para><link linkend="com-api"><emphasis role="bold">API
-      Application</emphasis></link>. Joomla has historically been an HTML–only
+      Application</emphasis></link>. Joomla has historically been an HTML-only
       application. Yes, sure, you can have JSON, XML, Feed and Raw views but
       they feel bolted onto the HTML application; they are not a real API to
       your component. Joomla 4 introduced a brand-new application, the
@@ -304,7 +304,7 @@
       <para><emphasis role="bold">Dashboards</emphasis>. Between Joomla 1.0
       and 3.10 inclusive Joomla only ever offered one dashboard, the main
       Control Panel page which loaded when you logged into your site's
-      backend. In Joomla 1.0 to 1.6 it was hard–coded and inflexible. I added
+      backend. In Joomla 1.0 to 1.6 it was hard-coded and inflexible. I added
       the ability to use plugins to render custom action buttons in Joomla
       1.7, based on my experience with my software. Starting with Joomla 3.0
       you could now publish <emphasis>modules</emphasis> to add information
@@ -339,7 +339,7 @@
       However, this was controlled by the Media component's
       (<code>com_media</code>) settings. This was great if your extension only
       ever needed static media files to be uploaded. If you wanted to allow
-      your users to upload non–media files, or files otherwise not acceptable
+      your users to upload non-media files, or files otherwise not acceptable
       anywhere else <code>com_media</code> was exposed, such as ZIP, 7Z, and
       RAR files in a helpdesk component, you had to modify the Media options,
       allowing these files <emphasis>everywhere</emphasis>. The unfortunate
@@ -419,7 +419,7 @@
       way</emphasis> using <code>com_content</code>'s Article model, it was
       nearly impossible: if you tried doing that on a page which had already
       loaded the front-end ContentModelArticle class you could no longer load
-      the same–named but entirely differently operating backend class.</para>
+      the same-named but entirely differently operating backend class.</para>
 
       <para>The way to solve that would be to <emphasis>namespace</emphasis>
       the extensions' code. A com_example extension could have the namespace
@@ -548,7 +548,7 @@ class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
         <listitem>
           <para><emphasis role="bold">Template</emphasis>. Well, Joomla does
           NOT register a namespace for templates. You are encouraged to use
-          namespaces for any template–specific code (you certainly have some
+          namespaces for any template-specific code (you certainly have some
           helpers, don't you?) BUT Joomla won't facilitate you with any
           autoloading. You will have to register your template's namespace
           directly with the <code>JLoader::registerPrefix</code> method. It is
@@ -570,11 +570,11 @@ class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
 
       <para>Joomla had historically been quite a mess, architecturally
       speaking. Its saving grace was that it was a far smaller mess than
-      WordPress and much more approachable to non–expert coders than Drupal.
+      WordPress and much more approachable to non-expert coders than Drupal.
       This let it carve a niche for itself: people who wanted a very powerful
       site without having to first acquire a PhD in Computer Science and/or
       have a team of dozens of developers under them. In short, Joomla's
-      bad–but–not–too–bad architecture let it be used by small web design
+      bad-but-not-too-bad architecture let it be used by small web design
       firms, freelance site integrators and small but serious software
       development firms.</para>
 
@@ -908,7 +908,7 @@ Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
   -&gt;useScript('com_example.backend.items');</programlisting>
 
       <para>(note that useStyle and useScript return the WAM object which
-      means they can be chain–called)</para>
+      means they can be chain-called)</para>
 
       <para>However, this runs the same risk as loading assets the
       old-fashioned way. What happens if we decide that the Items page needs
@@ -994,9 +994,9 @@ Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
       your JSON file since Joomla will not do that by default for
       plugins.</para>
 
-      <para>Finally, the WAM is a much less error–prone method to injecting
+      <para>Finally, the WAM is a much less error-prone method to injecting
       static assets to Joomla. All Joomla document classes have a WAM, even
-      when they are not HTML; it just follows that if it's a non–HTML document
+      when they are not HTML; it just follows that if it's a non-HTML document
       adding an asset through WAM does nothing. Compare that with what happens
       if you try to use the HTMLHelper or the addScript / addStyle document
       methods when your document is not HTML. Yup, these old ways of adding
@@ -1086,7 +1086,7 @@ Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
 
       <para>The Model is the workhorse of the component. It has the
       <emphasis>business logic</emphasis>, i.e. it knows how to get things
-      done. In most cases it is a data–aware model which means that it knows
+      done. In most cases it is a data-aware model which means that it knows
       how to get stuff from the database, put stuff back to the database and
       perform other auxiliary functions with the database data. It does NOT
       handle any presentation logic, i.e. it will NOT output any HTML. It
@@ -1144,7 +1144,7 @@ Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
       please create some data when we have nothing to show them) or an error
       page if something has gone so bad we don't know what to do. It is also
       responsible for setting up the page metadata (frontend) or the page's
-      Title and Toolbar (backend) which is View–related stuff in the same way
+      Title and Toolbar (backend) which is View-related stuff in the same way
       that making coffee is related to hosting an in-person meeting: not
       really your job but people would be really upset if nobody did
       it.</para>
@@ -1220,7 +1220,7 @@ Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
       in your service locator. At the very least, Joomla expects you to set up
       the <link linkend="com-extension">extension class</link> of your
       component. Unfortunately, even simple components need to have a service
-      provider as there is no convention–over–configuration in Joomla 4's
+      provider as there is no convention-over-configuration in Joomla 4's
       component DIC.</para>
 
       <para><link linkend="com-extension"><emphasis role="bold">Extension
@@ -1241,7 +1241,7 @@ Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
       linkend="com-dispatcher">Dispatcher</link> which is where the execution
       of your component starts. For very simple components you can even use
       the core MVCComponent class as your extension class, without
-      sub–classing. See, for example, what the core
+      sub-classing. See, for example, what the core
       <code>com_actionlogs</code> component does.</para>
 
       <para><emphasis role="bold"><link
@@ -1250,13 +1250,13 @@ Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
       <filename>controller.php</filename> file in the root of your component's
       directory structure. This was a front-controller, supposed to figure out
       which controller to use to handle the specified view and task in the
-      request. This was a bit gimmicky and error–prone, especially if you had
+      request. This was a bit gimmicky and error-prone, especially if you had
       components capable of displaying more than one discrete types of
       information, e.g. a downloads repository would be able to display
       categories, releases in a category and files in a release which made for
       three discrete content types which had to be handled by the same front
       controller. The new Dispatcher does the same job, it works without
-      sub–classing it for most simple extensions and benefits greatly the more
+      sub-classing it for most simple extensions and benefits greatly the more
       complex extensions which need more involved request processing.</para>
 
       <para><emphasis role="bold"><link linkend="com-html">HTML helper</link>
@@ -1453,7 +1453,7 @@ $componentDispatcher-&gt;dispatch();</programlisting>What Joomla does is ask
       follows, assuming it's called <code>com_example</code> and has the
       namespace prefix <code>\Acme\Example</code>. Directories are suffixed
       with <filename>/</filename>. Please note that capitalisation matters
-      (directory and file names are case–sensitive).</para>
+      (directory and file names are case-sensitive).</para>
 
       <itemizedlist>
         <listitem>
@@ -1754,11 +1754,11 @@ $componentDispatcher-&gt;dispatch();</programlisting>What Joomla does is ask
               for your backend views.</para>
 
               <important>
-                <para>All the sub–directories are in <emphasis role="bold">all
+                <para>All the sub-directories are in <emphasis role="bold">all
                 lowercase</emphasis>. This is VERY important!</para>
 
                 <para>Be careful if you are developing on Windows or macOS
-                (which use case–insensitive filesystems). You might
+                (which use case-insensitive filesystems). You might
                 accidentally use MixedCase or Uppercasefirst folder names.
                 While this will work fine on Windows and macOS it will
                 <emphasis>fail</emphasis> on the Linux servers most sites run
@@ -1920,7 +1920,7 @@ $componentDispatcher-&gt;dispatch();</programlisting>What Joomla does is ask
 
             <listitem>
               <para><filename>tmpl/</filename> Required. The view templates
-              for your backend views. All the sub–directories are in <emphasis
+              for your backend views. All the sub-directories are in <emphasis
               role="bold">all lowercase</emphasis>.</para>
             </listitem>
           </itemizedlist>
@@ -2227,7 +2227,7 @@ return new class implements ServiceProviderInterface {
         </listitem>
 
         <listitem>
-          <para>Let Joomla associate items between languages on multi–language
+          <para>Let Joomla associate items between languages on multi-language
           sites.</para>
 
           <para>Your component must have a class extending the
@@ -2306,7 +2306,7 @@ return new class implements ServiceProviderInterface {
 
         <para>For that, let's consider this. Let's say we have a news site and
         we are building a system plugin which checks every day for newly
-        published articles, auto–generating a daily summary blog post using
+        published articles, auto-generating a daily summary blog post using
         the intro text of these articles and some preset template (maybe even
         some judicious use of a GPT-3–based AI). This plugin would need to
         publish an article. You could of course just instantiate the
@@ -2629,7 +2629,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
 
         <para>Fixing the hot mess of class and file naming in component's MVC
         was one of the priorities in Joomla 4. Having a CMS in 2020 (when
-        Joomla 4 was released) still use a half–finished and proven
+        Joomla 4 was released) still use a half-finished and proven
         problematic architecture from 2006 would just not cut it.</para>
 
         <para>The first step was to add <link
@@ -2665,7 +2665,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
         <para>Note that this is the common namespace prefix for your entire
         component. Your component has a different part for each of the three
         web applications in Joomla: frontend (site), backend (administrator)
-        and api (the brand–new JSON API; this is optional).</para>
+        and api (the brand-new JSON API; this is optional).</para>
 
         <para>Here is how namespace prefixes work across different types of
         extensions, assuming a common namespace prefix
@@ -2818,12 +2818,12 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
       <para>Having to call a static method to get an object is bad
       architecture since the superclass where the static method lives in
       becomes a God Object — it knows way too much about how everything works
-      in the entire CMS! Moreover, having the ability to auto–load classes
+      in the entire CMS! Moreover, having the ability to auto-load classes
       only under certain circumstances, and having the object returned depend
       on both the application running under and magic configuration supplied
       by static method calls made it impossible to know what will be returned
       every time. The fact that backend and frontend classes had the exact
-      same Fully Qualified Name made it impossible to double–check something
+      same Fully Qualified Name made it impossible to double-check something
       didn't go awry. This loopy behaviour was a constant source of
       bugs.</para>
 
@@ -2994,7 +2994,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
       the same as in Joomla 3 MVC.</para>
 
       <para>The Model classes extend from one of the base Joomla MVC Model
-      super–classes:</para>
+      super-classes:</para>
 
       <variablelist>
         <varlistentry>
@@ -3041,14 +3041,14 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
 
               <para>Speaking of which, <emphasis>always</emphasis> validate
               the data type and values of your model state in your code.
-              Writing secure code requires you to adopt a “trust no–one”
-              stance against any data which is not hard–coded into your
+              Writing secure code requires you to adopt a “trust no-one”
+              stance against any data which is not hard-coded into your
               extension's code! Do not assume that the data will be safe
               because (you think that) only a Super User can access a specific
               view. First of all, your assumption may be wrong. Moreover, your
               Model may be used outside the View you have in mind, even by
               third party components, plugins and modules integrating with
-              your extension. Trust no–one, not even your own
+              your extension. Trust no-one, not even your own
               assumptions!</para>
             </tip>
           </listitem>
@@ -3073,7 +3073,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
             <code>$this-&gt;getCacheControllerFactory()</code> (Joomla 4.2 and
             later).</para>
 
-            <para>This is the most used type of model super–class, either
+            <para>This is the most used type of model super-class, either
             having your models directly extend it or indirectly extend it by
             using one of its descendant classes.</para>
           </listitem>
@@ -3136,7 +3136,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
             <para>It also supports automatic integration with content plugins
             and implements the methods you need to save new/existing records,
             reorder records, change record associations, batch process
-            records, check–in and check–out records to the database, change
+            records, check-in and check-out records to the database, change
             the publish / trash state, and permanently delete records. Yup,
             this type of Model basically handles nearly everything you need to
             manage records in the backend of a site
@@ -3165,7 +3165,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
               1.6 we had to maintain backwards compatibility to Joomla 1.5,
               thereby causing a class naming mayhem. You know what are the two
               hardest things in software development? Handling dates, managing
-              backwards compatibility and off–by–one errors!</para>
+              backwards compatibility and off-by-one errors!</para>
             </note>
           </listitem>
         </varlistentry>
@@ -3204,7 +3204,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
           <listitem>
             <para>This class extends from the DatabaseModel and has the
             ability to manage forms (you need them for Search Tools a.k.a.
-            list filters) and, crucially, to provide pagination–aware list of
+            list filters) and, crucially, to provide pagination-aware list of
             records from a database table.</para>
 
             <para>You know how the main Joomla backend user interface pattern
@@ -3214,7 +3214,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
             <tip>
               <para>In the frontend of your component you will very frequently
               find yourself needing to list a bunch of items in
-              pagination–aware lists. The traditional Joomla code pattern was
+              pagination-aware lists. The traditional Joomla code pattern was
               to create a frontend Model which extended from BaseDatabaseModel
               and have the same code to list items copied over from the
               backend.</para>
@@ -3436,7 +3436,7 @@ class ItemModel extends AdminModel
       <tip>
         <para>The kind of MVC practiced by Joomla and described above is a bit
         “dirty”; all views share a common DisplayController for displaying.
-        This is fine with Joomla's one–trick–pony components, only able to
+        This is fine with Joomla's one-trick-pony components, only able to
         display one kind of information.</para>
 
         <para>When you have something more complex this may not be at all
@@ -3457,7 +3457,7 @@ class ItemModel extends AdminModel
       </tip>
 
       <para>The Controller classes extend from one of the base Joomla MVC
-      Controller super–classes:</para>
+      Controller super-classes:</para>
 
       <variablelist>
         <varlistentry>
@@ -3467,7 +3467,7 @@ class ItemModel extends AdminModel
             <para>The most basic controller you can get. It is mainly used to
             power the <code>DisplayController</code> of the component or
             whenever you want to create custom controllers to display stuff
-            and perform non–administrative actions (e.g. in the
+            and perform non-administrative actions (e.g. in the
             frontend).</para>
 
             <warning>
@@ -3639,7 +3639,7 @@ $results = $event-&gt;getArgument('result', []);</programlisting>
         core Joomla events will correspond to concrete event objects in Joomla
         5.0, meaning that you will be able to add typehinting and have your
         IDE (e.g. phpStorm, Visual Studio Code, NetBeans, Eclipse, ...)
-        auto–complete the argument names when manipulating an event.</para>
+        auto-complete the argument names when manipulating an event.</para>
 
         <para>The real Events implemented in Joomla 4 and later, unlike plain
         old plugin handlers we had in Joomla 1.0 to 3.10, can prevent some of
@@ -3755,7 +3755,7 @@ $someView = $this-&gt;getView('Some', 'Administrator', 'Html');</programlisting>
         consistent and easier.</para>
 
         <para>Second, we notice that the <code>$prefix</code> argument is no
-        longer something component–specific (such as
+        longer something component-specific (such as
         <code>ExampleModel</code>) but simply the side of the application
         (Site, Administrator or Api) that we want to get the MVC object
         from.</para>
@@ -3831,10 +3831,10 @@ $someView = $this-&gt;getView('Some', 'Administrator', 'Html');</programlisting>
       <warning>
         <para><emphasis role="bold">Folder and file name case
         matters</emphasis>. You may not notice it when developing on a Windows
-        or macOS machine with a case–insensitive filesystem but you will
+        or macOS machine with a case-insensitive filesystem but you will
         <emphasis>definitely</emphasis> suffer if you mix it up when deploying
-        your component on a Linux–based server where the filesystem is
-        virtually guaranteed to be case–sensitive.</para>
+        your component on a Linux-based server where the filesystem is
+        virtually guaranteed to be case-sensitive.</para>
 
         <para>Let's say you have a view which is called Foobar.</para>
 
@@ -3859,7 +3859,7 @@ $someView = $this-&gt;getView('Some', 'Administrator', 'Html');</programlisting>
       same as in Joomla 3 MVC.</para>
 
       <para>The View classes extend from one of the base Joomla MVC View
-      super–classes:</para>
+      super-classes:</para>
 
       <variablelist>
         <varlistentry>
@@ -4136,7 +4136,7 @@ $table = $app-&gt;bootComponent('com_example')
         <para>You can override that method in your custom Table classes to add
         custom validation. At the very least you should validate the data type
         and that the data is within an accepted range of values. The latter is
-        domain–specific, i.e. you need to know how your database table and
+        domain-specific, i.e. you need to know how your database table and
         component work to write that code. That's why Joomla doesn't offer
         much in the way of automatic data validation.</para>
       </section>
@@ -4168,9 +4168,9 @@ $table = $app-&gt;bootComponent('com_example')
         implied public properties in objects which do not extend directly from
         <code>\stdClass</code>.</para>
 
-        <para>This means that when you get a Table object and type–hint it
+        <para>This means that when you get a Table object and type-hint it
         correctly, like the example below, your IDE will not offer any
-        auto–completion suggestions or type hints for the database table
+        auto-completion suggestions or type hints for the database table
         columns supported by your table class.</para>
 
         <programlisting>/** @var \Acme\Example\Administrator\Table\ItemTable **/
@@ -4224,7 +4224,7 @@ $table = $this-&gt;getMVCFactory()-&gt;createTable('Item', 'Administrator');</pr
  * @property int    $locked_by     ID of the user who locked the record
  */</programlisting>
 
-        <para>Now you get full auto–completion, type hinting and inline
+        <para>Now you get full auto-completion, type hinting and inline
         documentation for your table columns. You're welcome!</para>
       </section>
 
@@ -4353,7 +4353,7 @@ class PostTable extends \Joomla\CMS\Table\Table
           </listitem>
         </itemizedlist>
 
-        <para>This is very naive, late–bound relationship handling (lazy
+        <para>This is very naive, late-bound relationship handling (lazy
         loading) but it's better than nothing.</para>
 
         <para>If you'd like to do eager relationship loading (when loading a
@@ -4443,7 +4443,7 @@ class PostTable extends \Joomla\CMS\Table\Table
 
         <para>Finally, your <code>bind()</code> method needs to be overwritten
         so you can call the <code>$this-&gt;setRules()</code> method against
-        the raw, JSON–encoded permissions data stored in the database table.
+        the raw, JSON-encoded permissions data stored in the database table.
         Saving rules is automatic; you don't have to handle it
         yourself.</para>
       </section>
@@ -4479,7 +4479,7 @@ class PostTable extends \Joomla\CMS\Table\Table
           <listitem>
             <para>Storing data. The store() method needs the data in the
             record to be in a format which can be stored in the database table
-            as–is. The plan here is to convert the array data to JSON before
+            as-is. The plan here is to convert the array data to JSON before
             this method executes and convert out data back to array data right
             before this method returns.</para>
           </listitem>
@@ -4521,7 +4521,7 @@ class PostTable extends \Joomla\CMS\Table\Table
 
         <para>Another practical example is multi-select form fields, e.g.
         selecting one or more usergroups. The resulting array of integers can
-        be easily converted to a comma–separated string for saving in the
+        be easily converted to a comma-separated string for saving in the
         database.</para>
       </section>
     </section>
@@ -4539,7 +4539,7 @@ class PostTable extends \Joomla\CMS\Table\Table
       user information in backend grid views etc.</para>
 
       <para>Joomla 4 continues to offer this possibility and further enhances
-      it. Your key take–aways are:</para>
+      it. Your key take-aways are:</para>
 
       <itemizedlist>
         <listitem>
@@ -4550,7 +4550,7 @@ class PostTable extends \Joomla\CMS\Table\Table
         </listitem>
 
         <listitem>
-          <para><emphasis role="bold">Joomla 4 HTML helpers have non–static
+          <para><emphasis role="bold">Joomla 4 HTML helpers have non-static
           methods</emphasis> whereas Joomla 3 HTML helpers had static
           methods.</para>
         </listitem>
@@ -4756,7 +4756,7 @@ class Example extends MVCComponent implements BootableExtensionInterface {
         category editor are Category, Options, Publishing, Fields (if any
         custom Fields are set up for the category) and Permissions.</para>
 
-        <para>You can display additional tabs with component–specific
+        <para>You can display additional tabs with component-specific
         configuration options by creating the file
         <filename>administrator/components/<replaceable>com_example</replaceable>/forms/category.xml</filename>
         where <replaceable>com_example</replaceable> is the name of your
@@ -4810,7 +4810,7 @@ class Category extends Categories
 }</programlisting>
 
         <para>The array in the <methodname>__construct</methodname> method is
-        all you need to customise and it's fairly self–explanatory.</para>
+        all you need to customise and it's fairly self-explanatory.</para>
 
         <variablelist>
           <varlistentry>
@@ -4975,7 +4975,7 @@ class Category extends Categories
           about. This stopped being true by the time Joomla emerged as its own
           software, in 2005.</para>
 
-          <para>Joomla co–founder Brian Teeman coined a better, if not much
+          <para>Joomla co-founder Brian Teeman coined a better, if not much
           more British, term: Pub Ear Friendly. The idea being that when you
           try to give the URL of a page to your mate while downing pints at
           your local, rather lively, local it's easier to give them a few
@@ -4984,7 +4984,7 @@ class Category extends Categories
         </note>
 
         <para>The transformation of the ugly, incomprehensible (at least to
-        non–developers), non-SEF URL into the SEF URL and of the SEF URL back
+        non-developers), non-SEF URL into the SEF URL and of the SEF URL back
         to the ugly non-SEF version (so Joomla can figure out which component
         to load and what to tell it to do) is called <emphasis role="bold">SEF
         routing</emphasis> in the Joomla vernacular. Most everywhere else you
@@ -5019,15 +5019,15 @@ class Category extends Categories
 
         <para>In the imperfect world we live in, web software has to choose
         one of two evils. URL routing is either extremely technical and
-        inflexible but robust, or it is is user–friendly and flexible but can
+        inflexible but robust, or it is is user-friendly and flexible but can
         result in some very weird situations. Joomla chose the latter. It's
         what allows modules to work the way they do which is one of the many
-        reasons Joomla is an insanely powerful but still user–friendly CMS.
-        But which part of its soul did it have to sell to you–know–who to do
+        reasons Joomla is an insanely powerful but still user-friendly CMS.
+        But which part of its soul did it have to sell to you-know-who to do
         that? Let's see…</para>
 
         <para>URL routing in Joomla operates in two axes. On one hand we have
-        the user–defined menu structure which operates as the first pass of
+        the user-defined menu structure which operates as the first pass of
         URL routing and is defined by users, who are humans and not very good
         at managing hierarchies (make that
         <emphasis>doubleplusungood</emphasis>, Winston). Then you have the SEF
@@ -5559,7 +5559,7 @@ public function getItemSegment(int $id, array $query): array
         <uri>item/foo/detail/bar</uri> where <code>item</code> and
         <code>detail</code> are fixed strings. However, if you do that, you
         will need to override the <methodname>parse</methodname> method to
-        handle multi–segment views. The default implementation in
+        handle multi-segment views. The default implementation in
         <classname>StandardRules</classname> assumes that you are using
         exactly one segment per view and that's why
         <methodname>get<replaceable>Something</replaceable>Id</methodname>
@@ -5569,10 +5569,10 @@ public function getItemSegment(int $id, array $query): array
         we need to create methods for it? No, we don't. Views which do not
         have a key set for them use the name of the view as the (only) segment
         for SEF URLs. If there is a naming clash between such a view and an
-        alias of a top–level view (or category, as we will see below) the
+        alias of a top-level view (or category, as we will see below) the
         first <classname>RouterViewConfiguration</classname> object registered
         “wins” in determining how that segment should be parsed. As a result,
-        you should keep this kind of top–level views to a minimum and either
+        you should keep this kind of top-level views to a minimum and either
         inform users that they cannot use these aliases or actively prevent
         them with validation rules whenever possible.</para>
       </section>
@@ -5622,7 +5622,7 @@ public function getItemSegment(int $id, array $query): array
         </important>
 
         <para>First, let's make our router MVCFactory-aware (it's already
-        database–aware).</para>
+        database-aware).</para>
 
         <programlisting>&lt;?php
 namespace Acme\Example\Site\Service;
@@ -5785,7 +5785,7 @@ class RouterFactoryProvider implements ServiceProviderInterface
 &lt;/dashboards&gt;</programlisting>
 
       <note>
-        <para><code>&lt;dashboards&gt;</code> is a top–level tag, directly
+        <para><code>&lt;dashboards&gt;</code> is a top-level tag, directly
         under the <code>&lt;extension&gt;</code> root tag. Yes, even though it
         only applies in the component's administration (backend) section. If
         your Dashboard does not work first check that you have not
@@ -6421,24 +6421,672 @@ protected $deleteFolders = [
     <section xml:id="com-menus">
       <title>Component menus</title>
 
-      <para/>
+      <para>When we are talking about component menus, what comes in mind?
+      Usually it's just the user's ability to create menu items to specific
+      views of your component in the frontend of the site.</para>
+
+      <para>Joomla components are much more than that. To begin with, the XML
+      manifest defines the default component menu and its submenu items. As
+      we've already learned, this can be augmented with customisable
+      Dashboards (introduced in Joomla 4.0) to help site integrators tailor
+      the backend experience of their clients as they wish. Ever <link
+      xlink:href="https://www.joomla.org/announcements/release-news/5664-joomla-3-6-is-here.html">since
+      Joomla 3.6</link> it's possible to apply permissions (ACL rules) to
+      backend menu items to modify the submenu items in a way which makes more
+      sense depending on who is logged in.</para>
+
+      <para>Moreover, ever <link
+      xlink:href="https://www.joomla.org/announcements/release-news/5703-joomla-3-7-is-here.html">since
+      Joomla 3.7</link>, it is possible to have a custom backend menus. This
+      is one more way for site integrators to fully customise the backend
+      experience of their clients, using menu titles which make sense in the
+      business context they are going to be used instead of the much drier,
+      purely functional and very technical language core Joomla and us third
+      party developers use.</para>
+
+      <para>All these features are linked to and defined by the components
+      installed on the site, core and third party. Let's see how you can make
+      the magic happen.</para>
 
       <section xml:id="com-menus-component">
         <title>The default component menu</title>
 
-        <para/>
+        <para>The default component menu is what appears in Joomla's main menu
+        (the sidebar) under the Components menu item. You define this menu in
+        your component's XML manifest, under the
+        <code>&lt;administration&gt;</code> section. Joomla <link
+        xlink:href="https://docs.joomla.org/Manifest_files#Menu_Links_and_Submenus">has
+        some partial documentation</link> on how that works.</para>
+
+        <para>At the very least, every component needs to have the top level
+        item, a <code>&lt;menu&gt;</code> tag directly under the
+        <code>&lt;administration&gt;</code> section. This controls how your
+        component will appear in the <guimenu>Components</guimenu> menu.
+        </para>
+
+        <para>If you want a sub-menu under your top level item you need to
+        also add a <code>&lt;submenu&gt;</code> tag at the same level as the
+        <code>&lt;menu&gt;</code> tag. Unlike the menu tag, this one does not
+        have any attributes. However, it can contains one or more
+        <code>&lt;menu&gt;</code> tags, one per sub-menu item.</para>
+
+        <important>
+          <para>If you define a sub-menu then the top level menu item becomes
+          a toggle for the sub-menu and cannot be clicked. For this reason you
+          will have to duplicate the top level link as a sub-menu item.</para>
+        </important>
+
+        <note>
+          <para>It is possible to have third (or more) level sub-menus by
+          nesting <code>&lt;menu&gt;</code> tags. <emphasis>Just because you
+          can doesn't mean you should</emphasis>. Multi-level menus are
+          user-hostile, especially when the available width to display their
+          label is ever shrinking the deeper you go into the menu structure.
+          </para>
+
+          <para>If you find yourself even considering a multi-level menu,
+          you're doing something wrong. Try creating a dashboard instead or
+          otherwise group the functionality of your component so it doesn't
+          rely on a byzantine menu structure.</para>
+        </note>
+
+        <para>A very simple extension menu would look like this in your XML
+        manifest (as per the Joomla documentation):</para>
+
+        <programlisting>	&lt;menu&gt;COM_EXAMPLE&lt;/menu&gt;
+	&lt;submenu&gt;
+		&lt;!--
+			Note that all &amp; must be escaped to &amp;amp; for the file to be valid
+			XML and be parsed by the installer
+		--&gt;
+		&lt;menu link="anoption=avalue&amp;amp;anoption1=avalue1"&gt;COM_EXAMPLE_SUBMENU_ANOPTION&lt;/menu&gt;
+		&lt;menu view="viewname"&gt;COM_EXAMPLE_SUBMENU_VIEWNAME&lt;/menu&gt;
+	&lt;/submenu&gt;</programlisting>
+
+        <para>This does not tell you the whole truth and is actually a
+        partial, confusing and harmful representation of what Joomla can do.
+        Here is a more realistic example:</para>
+
+        <programlisting>&lt;menu&gt;
+  &lt;params&gt;
+    &lt;dashboard&gt;com_example.something&lt;/dashboard&gt;
+  &lt;/params&gt;
+  COM_EXAMPLE
+&lt;/menu&gt;
+
+&lt;submenu&gt;
+&lt;!--
+  Note that all &amp; must be escaped to &amp;amp; for the file to be valid
+  XML and be parsed by the installer
+--&gt;
+  &lt;menu view="welcome"&gt;COM_EXAMPLE_MENUS_WELCOME&lt;/menu&gt;
+
+  &lt;menu link="index.php?option=com_categories&amp;amp;extension=com_example"&gt;
+    &lt;params&gt;
+      &lt;menu-permission&gt;core.manage;com_categories&lt;/menu-permission&gt;
+      &lt;menu-quicktask&gt;index.php?option=com_categories&amp;amp;task=category.add&amp;amp;extension=com_example&lt;/menu-quicktask&gt;
+      &lt;menu-quicktask-title&gt;COM_EXAMPLE_MENUS_ADD_CATEGORY&lt;/menu-quicktask-title&gt;
+      &lt;menu-quicktask-permission&gt;core.create;com_categories&lt;/menu-quicktask-permission&gt;
+    &lt;/params&gt;
+    JCATEGORIES
+  &lt;/menu&gt;
+
+  &lt;menu view="items"&gt;
+    &lt;params&gt;
+      &lt;menu-permission&gt;core.manage;com_example&lt;/menu-permission&gt;
+      &lt;menu-quicktask&gt;index.php?option=com_example&amp;amp;task=item.add&lt;/menu-quicktask&gt;
+      &lt;menu-quicktask-title&gt;COM_EXAMPLE_MENUS_ADD_ITEM&lt;/menu-quicktask-title&gt;
+      &lt;menu-quicktask-permission&gt;core.create;com_example&lt;/menu-quicktask-permission&gt;
+    &lt;/params&gt;
+    COM_EXAMPLE_MENUS_ITEMS
+  &lt;/menu&gt;
+&lt;/submenu&gt;</programlisting>
+
+        <para>Woah! It's pretty substantially different. This is a better
+        example because it shows you all the interesting and insanely powerful
+        things you can do with the humble component menu. Let's take it easy,
+        break it down to individual bits and pieces and it will all become
+        crystal clear, I promise!</para>
+
+        <bridgehead>An x-ray of the <code>&lt;menu&gt;</code> tag</bridgehead>
+
+        <para>Every <code>&lt;menu&gt;</code> tag consist of:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Zero or more attributes. These determine what kind of link
+            the rendered menu item will produce.</para>
+          </listitem>
+
+          <listitem>
+            <para>A single, but optional ,<code>&lt;params&gt;</code> element
+            with one or more child elements. These are menu parameters which
+            are used to define menu item access (ACL permissions), whether the
+            menu item should display a Dashboard link and whether the menu
+            item should display a quick action button next to it. </para>
+          </listitem>
+
+          <listitem>
+            <para>Text content, e.g. <code>COM_EXAMPLE_MENUS_WELCOME</code>.
+            This is a language string which is used to translate the menu
+            item's title in the user's language.</para>
+
+            <note>
+              <para>The language strings for the component menu items' titles
+              are in the backend system language file, i.e.
+              <filename>com_example.sys.ini</filename> for a
+              <code>com_example</code> component.</para>
+            </note>
+
+            <warning>
+              <para>Do <emphasis role="bold">not</emphasis> use
+              <code>&lt;img&gt;</code> or <code>&lt;span&gt;</code> tags in
+              your language strings to display icons. <emphasis>Some major
+              Joomla extension developers should know better than do that, and
+              yet…</emphasis></para>
+
+              <para>There are the <code>menu_icon</code> and
+              <code>menu_image</code> parameters to do that correctly, if you
+              really need to. Using a tag at the beginning of your language
+              string breaks alphabetical sorting of the Components menu,
+              making it much harder for end users to navigate it. Finally, as
+              we will see further below, using iconography in menus is a bad
+              idea anyway.</para>
+            </warning>
+          </listitem>
+        </itemizedlist>
+
+        <bridgehead>The <code>&lt;menu&gt;</code> attributes</bridgehead>
+
+        <para>Each menu tag can have a combination of the following
+        attributes:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>type</term>
+
+            <listitem>
+              <para>Normally not set. You can set it to
+              <code>separator</code>. In this case do <emphasis
+              role="bold">not</emphasis> set a <code>link</code> or
+              <code>view</code> attribute; the text content of the menu item
+              will be rendered as a non-linked header in the menu
+              structure.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>target</term>
+
+            <listitem>
+              <para>Only applies if you are using the <code>link</code>
+              attribute. Corresponds to the <code>&lt;a&gt;</code> HTML tag's
+              <code>target</code> attribute. Useful if you want to create a
+              menu item linking to an external site and you'd like to open it
+              in a new tab / window; in this case set
+              <code>target="_blank"</code>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>link</term>
+
+            <listitem>
+              <para>A link the browser will navigate to. You should ideally
+              only use this to point to pages of components other than yours,
+              e.g.
+              <uri>index.php?option=com_categories&amp;extension=com_example</uri>
+              to display the categories management interface through Joomla's
+              <code>com_categories</code> core component.</para>
+
+              <para>Note that a link pointing to another page in the site's
+              backend is relative to <uri>/administrator</uri>. <emphasis>Do
+              not</emphasis> put <uri>/administrator</uri> in front, though;
+              this would break the menu for sites which are installed in
+              subdirectories.</para>
+
+              <para>This attribute is mutually exclusive with
+              <code>view</code>. If both are set, <code>link</code> will be
+              applied.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>view</term>
+
+            <listitem>
+              <para>The view of the current component you want to link to.
+              </para>
+
+              <para>For example, if we are in the XML manifest of the
+              <code>com_example</code> component and you set
+              <code>view="welcome"</code> it's the same as if you had used
+              <code>link="index.php?option=com_example&amp;view=welcome"</code>.</para>
+
+              <para>This attribute is mutually exclusive with
+              <code>link</code>. If both are set, <code>link</code> will be
+              applied.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>ajaxbadge</term>
+
+            <listitem>
+              <para>While you will normally only see that in menu presets used
+              in Dashboards, this is perfectly supported in the component's
+              menu as well.</para>
+
+              <para>When set, a badge will appear net to the title. Joomla
+              will perform an AJAX request to the URL provided in the value of
+              this attribute. This URL is supposed to return a JSON document
+              with the following keys:</para>
+
+              <programlisting>{
+  "success": true,
+  "error": "",
+  "data": "something"
+}</programlisting>
+
+              <para>If the <code>success</code> key is true Joomla will take
+              the <code>data</code> key's value, sanitise its HTML (only
+              allowing a subset of tags and attributes you can find in the
+              <filename>build/media_source/system/js/core.es6.js</filename>
+              file in Joomla's repository) and put that sanitised HTML in the
+              badge.</para>
+
+              <para>This is typically used to display the number of items
+              which require attention.</para>
+
+              <warning>
+                <para>Do not go overboard with this feature! This AJAX request
+                will run on every page of your site's backend, slowing
+                everything down. I have not yet seen a
+                <emphasis>practical</emphasis> use case where this is even
+                remotely acceptable.</para>
+              </warning>
+            </listitem>
+          </varlistentry>
+        </variablelist>
+
+        <para>Despite what the Joomla documentation wants you to believe,
+        there is neither an <code>alt</code> nor an <code>img</code>
+        attribute; these existed in Joomla 2.5 and earlier. But there are so
+        many more attributes not mentioned in there.</para>
+
+        <bridgehead>The &lt;menu&gt; parameters</bridgehead>
+
+        <para>As we mentioned earlier, the <code>&lt;menu&gt;</code> tag can
+        include an optional <code>&lt;params&gt;</code> tag which, in its
+        turn, contains a number of tags. Everything under
+        <code>&lt;params&gt;</code> is parsed as parameters to the menu item.
+        The tag name is the parameter key and its contents is the parameter's
+        value.</para>
+
+        <para>Here are the supported tag names I've discovered by
+        reverse-engineering the code of the backend <code>mod_menu</code>
+        module:</para>
+
+        <variablelist>
+          <varlistentry>
+            <term>dashboard</term>
+
+            <listitem>
+              <para>If set, it creates a dashboard icon next to the menu
+              item's title, linking to the named dashboard.</para>
+
+              <para>Example:
+              <code>&lt;dashboard&gt;com_example.example&lt;/dashboard&gt;</code>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>menu-permission</term>
+
+            <listitem>
+              <para>The Joomla ACL permission the user needs to have to see
+              this menu item (and all its sub-items, if any).</para>
+
+              <para>To use global permissions (set in the Permissions tab of
+              Global Configuration) use the format
+              <code>&lt;menu-permission&gt;core.manage&lt;/menu-permission&gt;</code></para>
+
+              <para>To use component-level permissions (set in the Permissions
+              tab of a component) use the format
+              <code>&lt;menu-permission&gt;core.manage;com_example&lt;/menu-permission&gt;</code></para>
+
+              <para>You can NOT ask Joomla to combine multiple permissions
+              i.e. you cannot ask it to only display a menu item if two or
+              more permissions are simultaneously granted; or if one of
+              several permissions is granted. The reason for that can be found
+              in the code of
+              <code>\Joomla\Module\Submenu\Administrator\Menu\Menu::preprocess</code>.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>menu-quicktask</term>
+
+            <listitem>
+              <para>Menu items can have an optional “quick task” shown next to
+              them. This is a small button with an icon and no visible text
+              (the text is only made available to users of assistive
+              technologies for accessibility reasons). The value of this
+              parameter is the URL to visit when the quick task button is
+              used. It follows the same rules as the <code>link</code>
+              attribute.</para>
+
+              <para>Example:
+              <code>&lt;menu-quicktask&gt;index.php?option=com_example&amp;amp;task=item.add&lt;/menu-quicktask&gt;</code></para>
+
+              <note>
+                <para>While this is <emphasis>typically</emphasis> used to
+                render a [+] icon button to add new items, this is not
+                necessary. You can use whatever action feels right in context
+                and whichever icon you think is appropriate for the
+                action.</para>
+              </note>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>menu-quicktask-icon</term>
+
+            <listitem>
+              <para>The icon class for the quick task. If it's not specified
+              it will default to <code>plus</code>.</para>
+
+              <para>The contents of this parameter are prefixed with the
+              string literal <code>icon-</code> to create the HTML
+              <code>class</code> attribute. For example,
+              <code>&lt;menu-quicktask-icon&gt;cog&lt;/menu-quicktask-icon&gt;</code>
+              will result in <code>class="icon-cog"</code> which displays a
+              cog wheel icon.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>menu-quicktask-title</term>
+
+            <listitem>
+              <para>A language string which describes the quick task to users
+              of assistive technologies (e.g. screen readers, Braille
+              displays, …). If not defined, the language string
+              <code>MOD_MENU_QUICKTASK_NEW</code> (New Item) will be
+              used.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>menu-quicktask-permission</term>
+
+            <listitem>
+              <para>Equivalent to menu-permission but applies to the quick
+              task instead. Use this to limit who should be able to view the
+              quick task icon.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>menu_image</term>
+
+            <listitem>
+              <para>The (relative) URL to an image file to use for the menu
+              item.</para>
+
+              <para>This is mutually exclusive with the <code>menu-icon</code>
+              parameter.</para>
+
+              <note>
+                <para>It is generally bad form using images for menu
+                items.</para>
+
+                <para>Images, especially raster (bitmap) images, may not
+                display very well and make the backend of the site look cheap
+                and unprofessional.</para>
+
+                <para>Images, unlike language strings, are untranslatable and
+                cannot be replaced for different languages and cultures.
+                Iconography with vector images may have radically different
+                meanings depending on the cultural context and personal
+                circumstances. For example, an open palm facing the user with
+                fingers spread out means "stop" in the USA but is a vulgar
+                gesture in Greece and Cyprus (it literally means “I spread
+                feces on your face”). A beer mug is a relatively inoffensive
+                icon unless you're putting that in front of Muslims who are
+                required to abstain from alcohol per their religion or
+                recovering alcoholics (or those who've lost a loved one to a
+                DUI fatal accident) who may find that iconography
+                triggering.</para>
+
+                <para>You <emphasis role="bold">MUST NOT</emphasis> use an
+                icon instead of human-readable text content for the title of
+                the menu item. This is inaccessible to people with
+                disabilities such as hard-of-seeing or blind people, people
+                with cognitive disabilities etc.</para>
+              </note>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>menu_icon</term>
+
+            <listitem>
+              <para>When provided it will set the menu item's icon class to
+              the string literal <code>class-</code> followed by the contents
+              of this parameter. For example,
+              <code>&lt;menu-image&gt;cog&lt;menu-image&gt;</code> will result
+              in <code>class="icon-cog"</code> being applied to the menu
+              item's icon <code>&lt;span&gt;</code> tag.</para>
+
+              <para>This is mutually exclusive with the
+              <code>menu_image</code> parameter.</para>
+            </listitem>
+          </varlistentry>
+
+          <varlistentry>
+            <term>text_separator</term>
+
+            <listitem>
+              <para>Only applies when the <code>type="separator"</code>
+              attribute is used. When set to 1 it will render the separator as
+              an <code>&lt;hr&gt;</code> tag instead of text.</para>
+            </listitem>
+          </varlistentry>
+        </variablelist>
       </section>
 
       <section xml:id="com-menus-backend">
         <title>Backend menu items</title>
 
-        <para/>
+        <para>Joomla 3.7 and later allow site integrators to create custom
+        backend menus. This lets them fully customise the backend experience
+        of Joomla for their clients, e.g. using terms which are more in-line
+        with the purpose the menu items will be used instead of the more
+        functional and technical terms the Joomla core and us third party
+        developers use.</para>
+
+        <para>If you do not do anything else, Joomla will simply list all of
+        your <link linkend="com-menus-component">component's default menu
+        items</link>, as they are defined in your XML manifest. This is the
+        simplest way to do things, but it's not very configurable. Menu items
+        created like that just take the user to the relevant view of your
+        component.</para>
+
+        <para>The other option you have is to create menu item configuration
+        XML files in your backend <filename>tmpl</filename> folder's
+        sub-folders. This is a lot like managing <link
+        linkend="com-menus-frontend">frontend menu items</link>, with a few
+        extra features.</para>
+
+        <bridgehead>View XML files location and name</bridgehead>
+
+        <para>Your view XML files are placed in the sub-folders of your
+        <filename>tmpl</filename> folder and they are named after the view
+        template file. For example, if you have a component
+        <code>com_example</code>, a view named <code>welcome</code> and a view
+        template for that view named <code>default</code> the view XML file
+        would be
+        <filename>administrator/componetns/com_example/tmpl/welcome/default.xml</filename>.</para>
+
+        <bridgehead>View XML file structure</bridgehead>
+
+        <para>A view XML file has the following overall structure:</para>
+
+        <programlisting>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;metadata&gt;
+    &lt;layout title="COM_EXAMPLE_WELCOME_VIEW_DEFAULT_TITLE"&gt;
+        &lt;message&gt;COM_EXAMPLE_WELCOME_VIEW_DEFAULT_DESC&lt;/message&gt;
+    &lt;/layout&gt;
+    &lt;!-- Add fields to the request variables for the layout. --&gt;
+    &lt;fields name="request"&gt;
+        &lt;fieldset
+                name="request"
+        &gt;
+            &lt;field
+                name="something"
+                type="text"
+                label="COM_EXAMPLE_WELCOME_VIEW_OPTION_SOMETHING_LABEL"
+                description="COM_EXAMPLE_WELCOME_VIEW_OPTION_SOMETHING_DESC"
+            /&gt;
+        &lt;/fieldset&gt;
+    &lt;/fields&gt;
+    &lt;fields name="params"&gt;
+        &lt;fieldset name="basic"&gt;
+            &lt;field
+                    name="menu-quicktask"
+                    type="radio"
+                    label="MOD_MENU_FIELD_SHOWNEW"
+                    layout="joomla.form.field.radio.switcher"
+            &gt;
+                &lt;option value=""&gt;JHIDE&lt;/option&gt;
+                &lt;option value="index.php?option=com_example&amp;amp;task=item.add"&gt;JSHOW&lt;/option&gt;
+            &lt;/field&gt;
+
+            &lt;field
+                    name="menu-quicktask-title"
+                    type="hidden"
+                    default="COM_EXAMPLE_MENUS_NEW_ITEM"
+            /&gt;
+        &lt;/fieldset&gt;
+    &lt;/fields&gt;
+&lt;/metadata&gt;
+</programlisting>
+
+        <para>The root tag of the XML document is always
+        <code>&lt;metadata&gt;</code>. The <code>&lt;layout&gt;</code> section
+        is mandatory. The <code>&lt;fields&gt;</code> sections are
+        optional.</para>
+
+        <bridgehead>The <code>&lt;layout&gt;</code> section</bridgehead>
+
+        <para>This section tells Joomla how to display the available menu item
+        type to the site integrator when they are creating a custom backend
+        menu item.</para>
+
+        <para>The <code>title</code> attribute contains a language string
+        which appears as the title of the menu type selector and in the
+        <guilabel>Menu Item Type</guilabel> option of the menu item's edit
+        page. Keep it short and to the point. Do not include the component's
+        name in it unless it's absolutely necessary for disambiguation. In
+        this case, you may want to use something like “Clear Cache (Example)”,
+        i.e. put the component's name in parentheses after the view
+        title.</para>
+
+        <note>
+          <para>When writing messages keep in mind the constraints of the
+          human working memory. Short, to the point messages work best.
+          There's less for the human operator to keep in their working memory.
+          Put the important part first (message front-loading). That's why it
+          makes sense to put the component name in parentheses at the end of
+          the title; it's not as important as <emphasis>what the menu item
+          does</emphasis>.</para>
+        </note>
+
+        <para>The content of the <code>&lt;layout&gt;</code> tag can either be
+        empty or contain of exactly one <code>&lt;message&gt;</code> tag with
+        a text content which is also a language string key<footnote>
+            <para>Core components put the language string key inside a
+            <code>&lt;![CDATA[…]]&gt;</code> wrapper. This is not necessary
+            since Joomla 1.6. Language string keys are meant to only consist
+            of uppercase, unaccented Latin letters without diacritics and
+            underscores. These characters are allowed as the text value of an
+            XML node. The CDATA wrapper is a leftover from Joomla 1.5 when the
+            language string key was an entire English phrase, possibly
+            containing characters not allowed in an XML document without being
+            converted to entities.</para>
+          </footnote>. This is a slightly longer description of what the view
+        does. It is displayed in the view type selector right under the title.
+        If you need to provide a description keep it short and do not repeat
+        what can already be obviously inferred by reading the view
+        title.</para>
+
+        <bridgehead>The request &lt;fields&gt; section</bridgehead>
+
+        <para>The XML file can have one or more <code>&lt;fields&gt;</code>
+        sections. The first section we see in the example above are the
+        request fields, wrapped in a <code>&lt;fields
+        name="request"&gt;</code> tag. These define configuration parameters
+        which will be present in the menu item's URL as GET parameters (i.e.
+        part of the URL itself). The name of the URL parameter is the
+        <code>name</code> attribute of the field tag and its value will be the
+        URL parameter's value as well.</para>
+
+        <para>This section contains exactly one <code>&lt;fieldset&gt;</code>
+        tag with <code>name="request"</code>. The fields in this set will be
+        displayed in the <guilabel>Details</guilabel> tab of the menu item
+        edit page.</para>
+
+        <para>Remember that if you do not define any fields or omit this
+        section altogether the resulting link will be
+        <uri>index.php?option=com_example&amp;view=something&amp;layout=default</uri>
+        where <code>com_example</code> is the name of your component,
+        <code>something</code> is the name of the view (the name of the
+        subfolder the XML file is in) and <code>default</code> is the name of
+        the XML file without the .xml extension.</para>
+
+        <tip>
+          <para>If you want to provide GET URL parameters the user cannot
+          modify use field tags with <code>type="hidden"</code>.</para>
+        </tip>
+
+        <bridgehead>The parameters &lt;fields&gt; section</bridgehead>
+
+        <para>The next optional section is wrapped in a <code>&lt;fields
+        name="params"&gt;</code> tag and has one or more
+        <code>&lt;fieldset&gt;</code> tags, each one rendered as tabs in the
+        menu item edit page. If you do not specify a title and name your field
+        set <code>basic</code> it will render as a tab labelled
+        <guilabel>Options</guilabel>.</para>
+
+        <para>While the request fields modify the URL generated by the menu
+        link, the parameter fields modify how Joomla will display the menu
+        item itself in the backend menu. The are the same as the
+        <code>&lt;params&gt;</code> tags in the component's menu and, in fact,
+        have the same names — so we're not copying the documentation here
+        again.</para>
       </section>
 
       <section xml:id="com-menus-frontend">
         <title>Frontend menu items</title>
 
-        <para/>
+        <para>Creating menu item types for frontend menus is pretty much the
+        same <link linkend="com-menus-backend">as with backend menus</link>
+        with a few key differences:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>The files go into the frontend view templates' directories
+            e.g.
+            <filename>components/com_example/tmpl/welcome/default.xml</filename>.</para>
+          </listitem>
+
+          <listitem>
+            <para>The frontend menu item parameters do not control the display
+            of the menu item, they are passed to the View object and have
+            component-specific meaning.</para>
+          </listitem>
+        </itemizedlist>
       </section>
     </section>
 
