@@ -6461,8 +6461,8 @@ protected $deleteFolders = [
         <para>At the very least, every component needs to have the top level
         item, a <code>&lt;menu&gt;</code> tag directly under the
         <code>&lt;administration&gt;</code> section. This controls how your
-        component will appear in the <guimenu>Components</guimenu> menu.
-        </para>
+        component will appear in the <guimenu>Components</guimenu>
+        menu.</para>
 
         <para>If you want a sub-menu under your top level item you need to
         also add a <code>&lt;submenu&gt;</code> tag at the same level as the
@@ -6481,8 +6481,8 @@ protected $deleteFolders = [
           nesting <code>&lt;menu&gt;</code> tags. <emphasis>Just because you
           can doesn't mean you should</emphasis>. Multi-level menus are
           user-hostile, especially when the available width to display their
-          label is ever shrinking the deeper you go into the menu structure.
-          </para>
+          label is ever shrinking the deeper you go into the menu
+          structure.</para>
 
           <para>If you find yourself even considering a multi-level menu,
           you're doing something wrong. Try creating a dashboard instead or
@@ -6563,7 +6563,7 @@ protected $deleteFolders = [
             with one or more child elements. These are menu parameters which
             are used to define menu item access (ACL permissions), whether the
             menu item should display a Dashboard link and whether the menu
-            item should display a quick action button next to it. </para>
+            item should display a quick action button next to it.</para>
           </listitem>
 
           <listitem>
@@ -6655,8 +6655,8 @@ protected $deleteFolders = [
             <term>view</term>
 
             <listitem>
-              <para>The view of the current component you want to link to.
-              </para>
+              <para>The view of the current component you want to link
+              to.</para>
 
               <para>For example, if we are in the XML manifest of the
               <code>com_example</code> component and you set
@@ -7090,17 +7090,71 @@ protected $deleteFolders = [
       </section>
     </section>
 
-    <section xml:id="com-events">
-      <title>Dispatching events (calling plugins)</title>
-
-      <para/>
-    </section>
-
     <section xml:id="com-data-to-frontend">
       <title>Passing data from the backend to the JavaScript on the
       page</title>
 
-      <para/>
+      <para>Back in the early Joomla 3 days we used to send data to the
+      frontend JavaScript code using inline JavaScript fragments. For
+      example:</para>
+
+      <programlisting>JFactory::getDocument()-&gt;addScriptDeclaration(&lt;&lt;&lt;JS
+var comExampleSomething = "{$foobar}";
+JS
+);</programlisting>
+
+      <para>On the client side (JavaScript) you'd just use this JavaScript
+      variable.</para>
+
+      <para>This is bad for a number of reasons. To begin with, the inline
+      script declaration must definitely be parsed before any other code —
+      including JavaScript files — which make use of it. Back when all scripts
+      were loaded in the document's <code>&lt;head&gt;</code> that was a
+      given. However, this code broke spectacularly when met with any plugin
+      or third party solution (such as CloudFlare RocketLoader) which moved
+      the scripts at the bottom of the HTML <code>&lt;body&gt;</code> or
+      lazy-loaded them. There was no guaranteed script execution
+      anymore.</para>
+
+      <para>The variable being passed (in our example, <code>$foobar</code>)
+      would have to be properly escaped to make it valid JavaScript or the
+      client-side could break or, worse, we'd introduce a security
+      vulnerability!</para>
+
+      <para>Moreover, this solution pollutes the JavaScript global scope and
+      slows down the page as the browser has to stop parsing the DOM and
+      rendering the page to evaluate the JavaScript.</para>
+
+      <para>Ever since Joomla 3.5 you had the option to instead push script
+      options through the document:</para>
+
+      <programlisting>\Joomla\CMS\Factory::getDocument()-&gt;addScriptOptions(
+  'com_example',
+  [
+    'foo' =&gt; $foobar,
+    'bar' =&gt; SOME_CONSTANT,
+  ]
+);</programlisting>
+
+      <para>This embeds a JSON document into the HTML which does not need to
+      be parsed by the browser as JavaScript. Instead, when the core
+      JavaScript loads it will parse it and make it available to our
+      client-side code:</para>
+
+      <programlisting>var comExampleOptions = Joomla.getOptions('com_example');
+var distance = comExampleOptions.foo * comExampleOptions.bar;</programlisting>
+
+      <para>But how can we be sure that our code loads after the core Joomla
+      JavaScript? Well, this is trivial in Joomla 4 and later by using the
+      <link linkend="concepts-webassetmanager">WebAssetManager</link> and
+      adding <code>core</code> as a dependency. We also need to set our script
+      to have the option <code>"defer": true</code> in our
+      <filename>joomla.asset.json</filename> file so it loads deferred, i.e.
+      after the browser parses the DOM — just like the core JavaScript does.
+      This way we can be sure that our file executes after
+      <code>Joomla.getOptions</code> is available in JavaScript and we no
+      longer need to add special code to execute our code after the page has
+      finished loading; both conditions are guaranteed.</para>
     </section>
 
     <section xml:id="com-lang">
