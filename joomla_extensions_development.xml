@@ -3839,9 +3839,9 @@ $someView = $this-&gt;getView('Some', 'Administrator', 'Html');</programlisting>
         <para>Let's say you have a view which is called Foobar.</para>
 
         <para>Your HTML View class file path relative to your component's root
-        MUST be <filename>src/View/Foobar/Html.php</filename>. It can NOT be
-        <filename>src/View/FooBar/Html.php</filename> (mixed case in the
-        subdirectory) or <filename>src/View/Foobar/HTML.php</filename> (wrong
+        MUST be <filename>src/View/Foobar/HtmlView.php</filename>. It can NOT be
+        <filename>src/View/FooBar/HtmlView.php</filename> (mixed case in the
+        subdirectory) or <filename>src/View/Foobar/HTMLVIEW.php</filename> (wrong
         case for the filename)!</para>
 
         <para>Your view <filename>default.php</filename> view template file
