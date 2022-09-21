@@ -3839,10 +3839,10 @@ $someView = $this-&gt;getView('Some', 'Administrator', 'Html');</programlisting>
         <para>Let's say you have a view which is called Foobar.</para>
 
         <para>Your HTML View class file path relative to your component's root
-        MUST be <filename>src/View/Foobar/HtmlView.php</filename>. It can NOT be
-        <filename>src/View/FooBar/HtmlView.php</filename> (mixed case in the
-        subdirectory) or <filename>src/View/Foobar/HTMLVIEW.php</filename> (wrong
-        case for the filename)!</para>
+        MUST be <filename>src/View/Foobar/HtmlView.php</filename>. It can NOT
+        be <filename>src/View/FooBar/HtmlView.php</filename> (mixed case in
+        the subdirectory) or <filename>src/View/Foobar/HTMLVIEW.php</filename>
+        (wrong case for the filename)!</para>
 
         <para>Your view <filename>default.php</filename> view template file
         path relative to your component's root MUST be
@@ -7160,17 +7160,315 @@ var distance = comExampleOptions.foo * comExampleOptions.bar;</programlisting>
     <section xml:id="com-lang">
       <title>Language files</title>
 
+      <para>The Joomla language files have not really changed much since
+      Joomla 1.0. Joomla is using the <link
+      xlink:href="https://en.wikipedia.org/wiki/INI_file">INI format</link>
+      with a few twists:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The keys must always be in UPPERCASE. You cannot have keys in
+          lowercase or MixedCase.</para>
+        </listitem>
+
+        <listitem>
+          <para>The values to the right of the equals sign must be enclosed in
+          double quotes (<code>"</code>).</para>
+        </listitem>
+
+        <listitem>
+          <para>If you want to use double quotes inside your values you need
+          to escape them as <code>\"</code>.</para>
+        </listitem>
+
+        <listitem>
+          <para>Some language strings are used in JavaScript code using a
+          legacy method. They do not support escaped double quotes. Use single
+          quotes (<code>'</code>) instead, even for HTML attributes (yes, HTML
+          allows you to do things like <code>&lt;a
+          href='https://www.example.com'&gt;example&lt;/a&gt;</code> even
+          though attribute values <emphasis>should</emphasis> use double
+          quotes for compatibility with XHTML). If you want to put quotes
+          around human-readable text you can also use calligraphic quotes:
+          <code>“ ” ‘ ’</code> and so on.</para>
+        </listitem>
+
+        <listitem>
+          <para>You can comment a line by putting a semicolon (<code>;</code>)
+          as its first character. Do not put semicolons at the end of strings,
+          they might be parsed as part of the value.</para>
+        </listitem>
+      </itemizedlist>
+
+      <bridgehead>No more language tags in filenames</bridgehead>
+
+      <para>There is a pretty big change for language file
+      <emphasis>naming</emphasis> in Joomla 4 and beyond: <emphasis
+      role="bold">you must not use the language prefix</emphasis>.</para>
+
+      <para>In Joomla 1.5 to 3.10 inclusive language files were named like
+      <filename>en-GB.com_example.ini</filename> (British English),
+      <filename>de-DE.com_example.ini</filename> (German, Germany) and
+      <filename>de-AT.com_example.ini</filename> (German, Austria). </para>
+
+      <para>However, that naming was highly redundant as starting with Joomla
+      1.6 in 2010 the language files had to be placed in a folder whose name
+      was the language tag itself! Inside a language folder you'd have the
+      relative filepaths <filename>en-GB/en-GB.com_example.ini</filename>,
+      <filename>de-DE/de-DE.com_example.ini</filename> and
+      <filename>de-AT/de-AT.com_example.ini</filename>. Having the same
+      language tag appear twice in a pathname didn't make sense. Therefore in
+      Joomla 4 and beyond we no longer use the language tag prefix!</para>
+
+      <para>The files are now simply named similar to
+      <filename>com_example.ini</filename>. The language of the file is
+      inferred from the folder name it's in. For example, the filepath
+      <filename>en-GB/com_example.ini</filename> obviously refers to British
+      English.</para>
+
+      <bridgehead>Component language files</bridgehead>
+
+      <para>A component has multiple different language files. The base name
+      of all files is the name of the Joomla component extension, e.g.
+      <code>com_example</code>:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Backend <filename>com_example.sys.ini</filename> — System
+          language file. Required. Used to render the backend menu items and
+          menu item types (for both front- and backend menu items).</para>
+        </listitem>
+
+        <listitem>
+          <para>Backend <filename>com_example.ini</filename> — Backend
+          language file. Required. Used to render the backend interface and
+          the component's Options page.</para>
+        </listitem>
+
+        <listitem>
+          <para>Frontend <filename>com_example.ini</filename> — Frontend
+          language file. Optional (only if your component has a frontend
+          part).</para>
+        </listitem>
+
+        <listitem>
+          <para>API <filename>com_example.ini</filename> — API application
+          language file. Optional (only if your component has an API
+          application integration).</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The language files are placed in the respective application's
+      <filename>language</filename> subdirectory. For example, the backend
+      language files for British English are placed in
+      <filename>administrator/language/en-GB</filename>. Moreover, Joomla will
+      fall back to the language subdirectory under your component. For
+      example, the backend language files for British English are also sought
+      for in
+      <filename>administrator/components/com_example/language/en-GB</filename>.
+      If files exist in both locations then <emphasis>only</emphasis> the one
+      in the application's directory will be loaded.</para>
+
+      <bridgehead>Language file autoloading</bridgehead>
+
+      <para>Unlike previous versions of Joomla, you do NOT have to load your
+      language files manually. Joomla loads your component's language files
+      automatically.</para>
+
+      <para>Since Joomla 3.3 (based on my recollection, +/- 1 minor version…)
+      Joomla will load language files in this order:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>(Only if Debug Language is disabled). The language file for
+          the site's default language (<code>en-GB</code>, unless a third
+          party extension has changed it).</para>
+        </listitem>
+
+        <listitem>
+          <para>The currently active language's normative INI file (e.g.
+          <code>com_example.ini</code>) or legacy INI file (e.g.
+          <code>en-GB.com_example.ini</code>).</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Joomla will first look in the current application's language
+      folder i.e. <filename>administrator/language</filename> for the backend,
+      <filename>language</filename> for the frontend and
+      <filename>api/language</filename> for the API application.</para>
+
+      <para>If neither the current language's, nor the default language's
+      files have been found Joomla will fall back to your component's
+      <filename>language</filename> directory. That is to say, your
+      component's language directory is a last resort and not guaranteed to be
+      used!</para>
+
+      <para>You may wonder: why does Joomla load both the default language
+      (British English in most cases) <emphasis>and</emphasis> my current
+      language (e.g. Canadian French) files? The reason is simple. All
+      components are required to provide a complete language file for the
+      default language which for Joomla is British English<footnote>
+          <para>Joomla started as a fork of another CMS called Mambo back in
+          2005. Mambo was originally developed by an Australian company.
+          Australian and British English use the same spelling and are mostly
+          the same, so that company chose to make British English the default
+          language for Mambo. When Joomla forked off Mambo it retained the
+          default language despite the fact that the majority of its
+          co-founders were not even native English speakers.</para>
+
+          <para>For the longest time Joomla's default language files were a
+          mix of British, American and mangled English (most contributors are
+          NOT native English speakers) but as of Joomla 3.9 a lot of effort
+          has been put in British English being actually
+          <emphasis>British</emphasis> English. There are separate language
+          packages for US American English (for those who prefer ‘colored
+          trash cans’ to ‘coloured rubbish bins’, for example) and other
+          English spellings / dialects.</para>
+        </footnote> (<code>en-GB</code>). Translation to other languages are
+      optional and often incomplete. Sometime around 2012 we decided that it
+      makes far more sense to show an English, human-readable string to
+      non-English speakers they can look up in the dictionary or their
+      favorite translation tool than an incomprehensible language key like
+      <code>COM_EXAMPLE_ITEMS_SELECT_CATEGORY_DEFAULT_LABEL</code>. Of course
+      this makes it harder for translators. That's why the Debug Language
+      feature was simultaneously introduced. When enabled, the default
+      language is not enabled and untranslated strings are marked clearly in
+      the output.</para>
+
+      <bridgehead>Defining language files in your XML manifest</bridgehead>
+
+      <para>Your XML manifest needs one set of <tag>&lt;languages&gt;</tag>
+      tags per target application.</para>
+
+      <para>For the backend language files, you need to list them under the
+      <tag>&lt;administration&gt;</tag> tag:</para>
+
+      <programlisting>&lt;administration&gt;
+  &lt;!-- … --&gt;
+  &lt;languages folder="languages/admin"&gt;
+    &lt;language tag="en-GB"&gt;en-GB/com_example.ini&lt;/language&gt;
+    &lt;language tag="en-GB"&gt;en-GB/com_example.sys.ini&lt;/language&gt;
+    &lt;language tag="de-DE"&gt;de-DE/com_example.ini&lt;/language&gt;
+    &lt;language tag="de-DE"&gt;de-DE/com_example.sys.ini&lt;/language&gt;
+  &lt;/languages&gt;
+  &lt;!-- … --&gt;
+&lt;/administration&gt;</programlisting>
+
+      <para>This copies the files from the
+      <filename>languages/admin</filename> folder in your package to Joomla's
+      admin language folder, e.g. the
+      <filename>languages/admin/en-GB/com_example.ini</filename> file in your
+      package to
+      <filename>administrator/language/en-GB/com_example.ini</filename> file
+      on your site.</para>
+
+      <para>For the frontend language files, if you have any, you need to list
+      them directly under the <tag>&lt;extension&gt;</tag> tag:</para>
+
+      <programlisting>&lt;extension&gt;
+  &lt;!-- … --&gt;
+  &lt;languages folder="languages/site"&gt;
+    &lt;language tag="en-GB"&gt;en-GB/com_example.ini&lt;/language&gt;
+    &lt;language tag="de-DE"&gt;de-DE/com_example.ini&lt;/language&gt;
+  &lt;/languages&gt;
+  &lt;!-- … --&gt;
+&lt;/extension&gt;</programlisting>
+
+      <para>This copies the files from the <filename>languages/site</filename>
+      folder in your package to Joomla's admin language folder, e.g. the
+      <filename>languages/site/en-GB/com_example.ini</filename> file in your
+      package to <filename>language/en-GB/com_example.ini</filename> file on
+      your site.</para>
+
+      <para>For the API application language files, if you have any, you need
+      to list them under the <tag>&lt;api&gt;</tag> tag:</para>
+
+      <programlisting>&lt;api&gt;
+  &lt;!-- … --&gt;
+  &lt;languages folder="languages/api"&gt;
+    &lt;language tag="en-GB"&gt;en-GB/com_example.ini&lt;/language&gt;
+    &lt;language tag="de-DE"&gt;de-DE/com_example.ini&lt;/language&gt;
+  &lt;/languages&gt;
+  &lt;!-- … --&gt;
+&lt;/api&gt;</programlisting>
+
+      <para>This copies the files from the <filename>languages/api</filename>
+      folder in your package to Joomla's admin language folder, e.g. the
+      <filename>languages/api/en-GB/com_example.ini</filename> file in your
+      package to <filename>api/language/en-GB/com_example.ini</filename> file
+      on your site.</para>
+
+      <bridgehead>Languages and CLI</bridgehead>
+
+      <para>CLI commands do <emphasis>not</emphasis> load any language files
+      automatically. You can either supply your language strings in the
+      <code>console</code> plugin which registers the commands or, more
+      commonly, include them in your backend language file and have the plugin
+      load that language file when registering the commands.</para>
+
+      <bridgehead>Custom language files</bridgehead>
+
+      <para>Beyond the regular <filename>.ini</filename> /
+      <filename>.sys.ini</filename> files you can have any other language file
+      you want. For example, you could have a
+      <filename>com_example.alt.ini</filename> file which is only loaded when
+      a specific option is enabled in your component. You can do that in your
+      component's <link linkend="com-dispatcher">Dispatcher</link>. For
+      example:</para>
+
+      <programlisting>$this-&gt;app-&gt;getLanguage()-&gt;load($this-&gt;option . '.alt', JPATH_BASE)
+  || $this-&gt;app-&gt;getLanguage()-&gt;load($this-&gt;option . '.alt', JPATH_COMPONENT)</programlisting>
+
+      <bridgehead>Language overrides</bridgehead>
+
+      <para>Language overrides are loaded <emphasis>before</emphasis> any of
+      your language files, at the initialisation of the CMSApplication object,
+      namely when the Language object is constructed. They are stored in the
+      file
+      <filename>language/overrides/<replaceable>LANGUAGE_TAG</replaceable>.override.ini</filename>
+      under the application's root (site root for the frontend,
+      <filename>administrator</filename> for the backend,
+      <filename>api</filename> for the API application) where
+      <replaceable>LANGUAGE_TAG</replaceable> is the current language's tag,
+      e.g. <code>en-GB</code> for British English.</para>
+
+      <para>The way it works is that your language file is loaded and then the
+      <emphasis>overridden</emphasis> strings are replaced into the language
+      file <emphasis>if and only if</emphasis> they are already defined in the
+      language file. </para>
+
+      <caution>
+        <para>This means that the language overrides cannot be used for
+        language keys not defined in your language files, unlike Joomla
+        3.</para>
+
+        <para>Since this was a widely popular “trick” to allow your users to
+        customise the display of your components you now have to take that
+        explicitly into account. For example, given an item with an alias
+        <code>foobar</code> you might be looking for the language string
+        <code>COM_EXAMPLE_ITEM_OVERRIDE_FOOBAR_TITLE</code> to override the
+        title field of your item for display in different languages. This
+        worked in Joomla 3 but will NOT work in Joomla 4 or later. </para>
+
+        <para>You will need to provide an alternative mechanism for your users
+        to provide custom translations. Remember the custom files I described
+        just above? That's the alternative mechanism you can provide. DO NOT
+        ship that file with your component. Just tell users to create it under
+        their language folder and put their custom translations in there. It's
+        far less user friendly than language overrides, unless of course you
+        provide your own user interface for managing the contents of this
+        file.</para>
+      </caution>
+    </section>
+
+    <section xml:id="com-layouts">
+      <title>Layouts</title>
+
       <para/>
     </section>
 
     <section xml:id="com-mailtemplates">
       <title>Mail Templates</title>
-
-      <para/>
-    </section>
-
-    <section xml:id="com-layouts">
-      <title>Layouts</title>
 
       <para/>
     </section>
