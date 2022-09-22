@@ -7209,7 +7209,7 @@ var distance = comExampleOptions.foo * comExampleOptions.bar;</programlisting>
       <para>In Joomla 1.5 to 3.10 inclusive language files were named like
       <filename>en-GB.com_example.ini</filename> (British English),
       <filename>de-DE.com_example.ini</filename> (German, Germany) and
-      <filename>de-AT.com_example.ini</filename> (German, Austria). </para>
+      <filename>de-AT.com_example.ini</filename> (German, Austria).</para>
 
       <para>However, that naming was highly redundant as starting with Joomla
       1.6 in 2010 the language files had to be placed in a folder whose name
@@ -7435,7 +7435,7 @@ var distance = comExampleOptions.foo * comExampleOptions.bar;</programlisting>
       <para>The way it works is that your language file is loaded and then the
       <emphasis>overridden</emphasis> strings are replaced into the language
       file <emphasis>if and only if</emphasis> they are already defined in the
-      language file. </para>
+      language file.</para>
 
       <caution>
         <para>This means that the language overrides cannot be used for
@@ -7448,7 +7448,7 @@ var distance = comExampleOptions.foo * comExampleOptions.bar;</programlisting>
         <code>foobar</code> you might be looking for the language string
         <code>COM_EXAMPLE_ITEM_OVERRIDE_FOOBAR_TITLE</code> to override the
         title field of your item for display in different languages. This
-        worked in Joomla 3 but will NOT work in Joomla 4 or later. </para>
+        worked in Joomla 3 but will NOT work in Joomla 4 or later.</para>
 
         <para>You will need to provide an alternative mechanism for your users
         to provide custom translations. Remember the custom files I described
@@ -7461,16 +7461,282 @@ var distance = comExampleOptions.foo * comExampleOptions.bar;</programlisting>
       </caution>
     </section>
 
-    <section xml:id="com-layouts">
-      <title>Layouts</title>
-
-      <para/>
-    </section>
-
     <section xml:id="com-mailtemplates">
       <title>Mail Templates</title>
 
-      <para/>
+      <para>Joomla 4 introduced a new core component, Mail Templates
+      (<code>com_mails</code>). You can access it from the System
+      dashboard.</para>
+
+      <para>This component allows you to manage email templates used by the
+      different components which make use of Joomla's new Mail Templates
+      feature. The user can choose to customise the plain text email's
+      contents or even provide a full HTML email — or both. This is a much
+      better user experience than language overrides, especially when it comes
+      to HTML email.</para>
+
+      <para>Using this feature is recommended, but not required. If you decide
+      to use it for your components there's a bit of trouble you need to get
+      through.</para>
+
+      <bridgehead>Installing mail templates</bridgehead>
+
+      <para>Mail templates live in the database, in the
+      <database>#__mail_templates</database> table. The fields for each mail
+      template are as follows:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term><database>template_id</database></term>
+
+          <listitem>
+            <para>The unique identifier of your mail template in the form
+            <code>com_example.<replaceable>something</replaceable></code>
+            where <code>com_example</code> is your component and
+            <replaceable>something</replaceable> is a key consisting of just
+            lowercase alphanumeric characters and underscores (a-z, 0-9 and
+            _). This is a hard requirement; language string keys will be
+            created using the <database>template_id</database>. This ID is
+            what you will use when you want to send emails with this email
+            template.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><database>language</database></term>
+
+          <listitem>
+            <para>The language tag of the mail template, e.g.
+            <code>en-GB</code> for British English.</para>
+
+            <important>
+              <para>The default mail template should have an empty string as
+              its language to apply to all languages. This is very different
+              from literally everything else in Joomla which uses a
+              <code>*</code> as the catch-all language.</para>
+            </important>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><database>subject</database></term>
+
+          <listitem>
+            <para>The language string with the subject line of the email. The
+            content of the language string can use variables (see
+            <database>params</database> below).</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><database>body</database></term>
+
+          <listitem>
+            <para>The language string with the body of the plain text version
+            of the email. The content of the language string can use variables
+            (see <database>params</database> below).</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><database>htmlbody</database></term>
+
+          <listitem>
+            <para>The language string with the body of the HTML version of the
+            email. The content of the language string can use variables (see
+            <database>params</database> below).</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><database>attachments</database></term>
+
+          <listitem>
+            <para/>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><database>extension</database></term>
+
+          <listitem>
+            <para>The name of your extension, e.g. <code>com_example</code>.
+            </para>
+
+            <note>
+              <para>You may wonder, if my template_id already contains this
+              why is this a separate column? You are right, it doesn't make
+              sense. Joomla could have just used an index on the template_id
+              column with the same performance results or, if it was actually
+              concerned about performance, use the numeric extension ID in
+              this column. It doesn't make anysense; it is what it is.</para>
+            </note>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><database>params</database></term>
+
+          <listitem>
+            <para>A JSON-serialised object with the parameters to the mail
+            template. What is most important for us is its <code>tags</code>
+            property. For example, you may have this
+            <database>params</database> content:</para>
+
+            <programlisting>{
+  "tags": [
+    "FOO", "BAR", "BAZ"
+  ]
+}</programlisting>
+
+            <para>This tells Mail Templates that you can use the variables
+            <code>{FOO}</code>, <code>{BAR}</code> and <code>{BAZ}</code> in
+            the subject, body and HTML body of the mail templates — and let
+            users know that in the user interface. When sending e-mails via
+            the Mail Templates feature you will have to provide the values for
+            these variables. The variable names MUST always consist of
+            uppercase letters, dashes, underscores and colons.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <para>Moreover, you will need to supply a few language strings in you
+      backend INI language file (e.g.
+      <filename>administrator/languages/en-GB/com_example.ini</filename>).</para>
+
+      <para>You need to provide a language string whose key is the uppercase
+      version of your extension name, e.g.</para>
+
+      <programlisting>COM_EXAMPLE="Example component"</programlisting>
+
+      <para>This is used in the Mail Templates drop-down for selecting a
+      component to filter by.</para>
+
+      <para>For each email template you will need to provide a few “magic”
+      language strings <emphasis>on top of</emphasis> the language strings you
+      defined in the <database>subject</database>, <database>body</database>,
+      and <database>htmlbody</database> columns. Assuming a
+      <database>template_id</database> <code>com_example.foo_bar</code> you
+      will need to provide the following language strings:</para>
+
+      <variablelist>
+        <varlistentry>
+          <term><code><replaceable>COM_EXAMPLE</replaceable>_MAIL_<replaceable>FOO_BAR</replaceable>_TITLE</code></term>
+
+          <listitem>
+            <para>A long title for your email template, displayed in the user
+            interface. The content of this language string should be something
+            similar to “My Component Name: When This Mail Template Is
+            Sent”.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><code><replaceable>COM_EXAMPLE</replaceable>_MAIL_<replaceable>FOO_BAR</replaceable>_SHORT</code></term>
+
+          <listitem>
+            <para>A short title for your email template. I am not sure when
+            this is used.</para>
+          </listitem>
+        </varlistentry>
+
+        <varlistentry>
+          <term><code><replaceable>COM_EXAMPLE</replaceable>_MAIL_<replaceable>FOO_BAR</replaceable>_DESC</code></term>
+
+          <listitem>
+            <para>A short description of your email template, displayed in the
+            user interface.</para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <bridgehead>Using mail templates</bridgehead>
+
+      <para>The Mail Templates feature does NOT send e-mails. It only provides
+      you with a pre-configured Joomla Mailer object you will use to send
+      e-mails with.</para>
+
+      <para>This is how you use it:</para>
+
+      <programlisting>/**
+ * @var string $templateId The template ID you want to use, e.g. com_example.foo_bar
+ * @var string $langTag The language tag for your email, e.g. 'en-GB'
+ */
+$template = new \Joomla\CMS\Mail\MailTemplate($templateId, $langTag);
+
+// Add the contents of your variables here
+$template-&gt;addTemplateData([
+	'FOO' =&gt; 'Contents of the {FOO} variable',
+	'BAR' =&gt; 'Contents of the {BAR} variable',
+	'BAZ' =&gt; 'Contents of the {BAZ} variable',
+]);
+
+/**
+ * @var string $emailAddress The email address of the recipient, e.g. jane@example.com
+ * @var string $recipientName The full name of your recipient, e.g. "Jane Doe"
+ */
+$template-&gt;addRecipient($emailAddress, $recipientName);
+
+// Send the email
+$template-&gt;Send();</programlisting>
+
+      <para>If you want to customise the Joomla Mailer object used by the
+      <classname>MailTemplate</classname> class —for example to set custom
+      headers, add inline images or attachments which cannot be handled by
+      MailTemplate, etc— you can pass it as the third parameter to its
+      constructor, e.g.</para>
+
+      <programlisting>$mailer = \Joomla\CMS\Factory::getMailer();
+$mailer-&gt;addCustomHeader('X-Vanity-Header', 'Joomla! Rocks');
+
+$template = new \Joomla\CMS\Mail\MailTemplate($templateId, $langTag, $mailer);</programlisting>
+
+      <para>Do keep in mind that each email template may have its own
+      configuration about the sender address and sending method (e.g. SMTP
+      information). These settings will override the same settings in your
+      custom mailer object when you call
+      <methodname>Send()</methodname>.</para>
+
+      <tip>
+        <para>The above will error out if MailTemplate cannot find a suitable
+        template. You can check if a suitable template exists by doing this
+        before any of the code above:</para>
+
+        <programlisting>$template = Joomla\CMS\Mail\MailTemplate::getTemplate($templateId, $langTag);</programlisting>
+
+        <para>If $template is empty do NOT go through MailTemplate. You can
+        simply not send the email, provide an alternative, throw an error or
+        otherwise handle this condition in a way appropriate for your
+        application.</para>
+      </tip>
+
+      <bridgehead>Caveats</bridgehead>
+
+      <para>Users can, and <emphasis>will</emphasis>, mess up the Mail
+      Templates. If they just mess up the subject, plain text body or HTML
+      body they can recover easily by using the respective reset button in the
+      user interface.</para>
+
+      <para>If they create a specific language version of a mail template they
+      cannot remove it without messing with the database.</para>
+
+      <para>If you update a mail template, adding more tags (variables) in its
+      parameters you will need to write update SQL which updates all entries
+      with the relevant template_id <emphasis role="bold">BUT</emphasis> you
+      should note that by overwriting the contents of the
+      <database>params</database> column you will be resetting the user's
+      preferences about the mailer itself (sender, sending method, credentials
+      etc). Therefore updating mail templates <emphasis>actually</emphasis>
+      requires writing PHP code in your extension's installation script to run
+      on update, read all mail templates with the affected
+      <database>template_id</database>, decode the
+      <database>params</database>, update the tags and write everything back
+      to the database. It's a big old pain in the posterior.</para>
+
+      <para>A final word of caution. The MailTemplate class has some static
+      methods such as <methodname>createTemplate</methodname> and
+      <methodname>updateTemplate</methodname>. <emphasis role="bold">Don't use
+      them</emphasis>. They will error out.</para>
     </section>
 
     <section xml:id="com-cli">
@@ -7685,6 +7951,12 @@ var distance = comExampleOptions.foo * comExampleOptions.bar;</programlisting>
 
     <section xml:id="tpl-subtemplates">
       <title>Sub-templates</title>
+
+      <para/>
+    </section>
+
+    <section xml:id="tpl-errorpages">
+      <title>Error pages</title>
 
       <para/>
     </section>
