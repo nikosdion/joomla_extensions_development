@@ -7560,8 +7560,8 @@ var distance = comExampleOptions.foo * comExampleOptions.bar;</programlisting>
           <term><database>extension</database></term>
 
           <listitem>
-            <para>The name of your extension, e.g. <code>com_example</code>.
-            </para>
+            <para>The name of your extension, e.g.
+            <code>com_example</code>.</para>
 
             <note>
               <para>You may wonder, if my template_id already contains this
@@ -7742,7 +7742,466 @@ $template = new \Joomla\CMS\Mail\MailTemplate($templateId, $langTag, $mailer);</
     <section xml:id="com-cli">
       <title>The CLI application</title>
 
-      <para/>
+      <para>In Joomla 3 we could create CLI scripts for Joomla by extending
+      the <classname>JApplicationCli</classname> class (later renamed to
+      <classname>Joomla\CMS\Application\CliApplication</classname>) in a new
+      file which we'd place in Joomla's <filename>cli</filename> directory.
+      While that was a useful way to get access to all Joomla resources and
+      API from our CLI it created a problem: there were too many files in the
+      <filename>cli</filename> directory and it was not always clear which
+      component they belong to. It also put a burden on third party developers
+      like us to provide a <code>files</code> package with these CLI scripts
+      and make sure that it gets updated together with our main extension
+      package. There was also a lot of boilerplate code that had to go into
+      each file, potentially different for each Joomla version we
+      supported.</para>
+
+      <para>In Joomla 4 we can still do that (but it's deprecated) or we can
+      use the new <emphasis role="bold">Joomla CLI Application</emphasis>.
+      This lives in <filename>cli/joomla.php</filename>. It is an extensible
+      application using a CMSApplication class which uses the Symfony Console
+      — much like Composer, WP-CLI and Drush. Unlike the aforementioned
+      applications, it is not standalone. It is part of your site, making it
+      the fourth official Joomla application bundled with the Joomla CMS (the
+      other three being the frontend a.k.a. site application, the backend
+      a.k.a. administrator application and the API application).</para>
+
+      <section xml:id="com-cli-commands">
+        <title>Command classes</title>
+
+        <para>Like all Symfony Console applications, the Joomla CLI
+        Application is extended with Command classes. The Joomla command
+        classes need to extend from the
+        <classname>\Joomla\Console\Command\AbstractCommand</classname>
+        class.</para>
+
+        <para><bridgehead>Where do command classes live?</bridgehead></para>
+
+        <para>There are no hard rules about where you should put your command
+        classes. There are two possibilities which make the most sense, as far
+        as I can see.</para>
+
+        <orderedlist>
+          <listitem>
+            <para>Inside the <code>console</code> plugin which registers the
+            commands to the Joomla CLI Application.</para>
+
+            <para>It makes sense because the plugin contains the code to the
+            commands and registers them to the CLI application. However, it is
+            possible that someone may disable or uninstall your component but
+            not the console plugin. This would mean that the commands, or even
+            their registration, will fail due to the component no longer being
+            bootable. You will need to add special code to address that.
+            Furthermore, there's the small but real risk that the user ends up
+            with a console plugin that's older or newer than the installed
+            component version, potentially causing havoc when the CLI commands
+            are used.</para>
+          </listitem>
+
+          <listitem>
+            <para>Inside the backend part of your component.</para>
+
+            <para>This is the way I prefer to do things and what I will show
+            you. The commands are in the <code>CliCommand</code> leaf
+            namespace of my component. For example, with a component that has
+            the namespace prefix <code>Acme\Example</code> I would put my
+            commands in the <code>Acme\Example\Administrator\CliCommand</code>
+            namespace i.e. the folder
+            <code>administrator/components/com_example/src/CliCommand</code>.
+            </para>
+
+            <para>The plugin does not need to check if the component is
+            bootable; if it's not, the PSR-4 autoloader for its namespace
+            won't be loaded and the command classes cannot be found. Therefore
+            I just need to check if the command classes exist. Mixing the
+            versions of the plugin and the component is not a problem either;
+            the plugin will load the command classes it knows of and if some
+            of them do not exist (the plugin is from a newer version) we
+            simply skip it over.</para>
+          </listitem>
+        </orderedlist>
+
+        <bridgehead>A sample command class</bridgehead>
+
+        <programlisting>&lt;?php
+namespace Acme\Example\Administrator\CliCommand;
+
+defined('_JEXEC') or die;
+
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\MVC\Factory\MVCFactoryAwareTrait;
+use Joomla\CMS\MVC\Model\DatabaseAwareTrait;
+use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
+use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Style\SymfonyStyle;
+
+class ItemsList extends \Joomla\Console\Command\AbstractCommand
+{
+	use MVCFactoryAwareTrait;
+	use DatabaseAwareTrait;
+
+	/**
+	 * The default command name
+	 *
+	 * @var    string
+	 */
+	protected static $defaultName = 'example:items:list';
+
+	/**
+	 * @var   SymfonyStyle
+	 */
+	private $ioStyle;
+
+	/**
+	 * @var   InputInterface
+	 */
+	private $cliInput;
+
+	/**
+	 * @inheritDoc
+	 */
+	protected function doExecute(InputInterface $input, OutputInterface $output): int
+	{
+		// Configure the Symfony output helper
+		$this-&gt;configureSymfonyIO($input, $output);
+
+		// Collect the options
+		$search = $input-&gt;getOption('search') ?? null;
+
+		// Get the items, using the backend model
+		/** @var \Joomla\CMS\MVC\Model\BaseDatabaseModel $itemsModel */
+		$itemsModel = $this-&gt;getMVCFactory()-&gt;createModel('Items', 'Administrator');
+
+		if ($search)
+		{
+			$itemsModel-&gt;setState('filter.search', $search);
+		}
+
+		$items = $itemsModel-&gt;getItems();
+
+		// If no items are found show a warning and set the exit code to 1.
+		if (empty($items))
+		{
+			$this-&gt;ioStyle-&gt;warning('No items found matching your criteria');
+
+			return 1;
+		}
+
+		// Reshape the items into something humans can read.
+		$items = array_map(
+			function (object $item): array
+			{
+				return [
+					$item-&gt;id,
+					$item-&gt;title,
+					$item-&gt;published ? Text::_('JYES') : Text::_('JNO')
+				];
+			},
+			$items
+		);
+
+		// Display the items in a table and set the exit code to 0
+		$this-&gt;ioStyle-&gt;table(
+			[
+				Text::_('COM_EXAMPLE_FIELD_HEADER_ID'),
+				Text::_('JGLOBAL_TITLE'),
+				Text::_('JPUBLISHED'),
+			],
+			$items
+		);
+
+		return 0;
+	}
+
+	/**
+	 * Configure the command.
+	 *
+	 * @return  void
+	 */
+	protected function configure(): void
+	{
+		$this-&gt;setDescription(Text::_('COM_EXAMPLE_CLI_ITEMS_LIST_DESC'));
+		$this-&gt;setHelp(Text::_('COM_EXAMPLE_CLI_ITEMS_LIST_HELP'));
+
+		$this-&gt;addOption('search', 's', InputOption::VALUE_OPTIONAL, Text::_('COM_EXAMPLE_CLI_CONFIG_SEARCH'));
+	}
+
+	/**
+	 * Configure the IO.
+	 *
+	 * @param   InputInterface   $input   The input to inject into the command.
+	 * @param   OutputInterface  $output  The output to inject into the command.
+	 *
+	 * @return  void
+	 */
+	private function configureSymfonyIO(InputInterface $input, OutputInterface $output)
+	{
+		$this-&gt;cliInput = $input;
+		$this-&gt;ioStyle  = new SymfonyStyle($input, $output);
+	}
+
+}</programlisting>
+
+        <para><bridgehead>The command name
+        (<code>$defaultName</code>)</bridgehead></para>
+
+        <para>A command class needs to provide a name for the command being
+        executed. In Joomla 4 ,third party extensions should use the
+        convention <option>component:command</option> and
+        <option>component:command:subcommand</option> where
+        <replaceable>component</replaceable> is the name of the component
+        without <command>com_</command>. The command part is the name of your
+        command. If you need to implement subcommands you can add a third,
+        fourth etc part in your command name, all separated with colons. For
+        example we could have the following names:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para><command>example:email</command> Process an email
+            queue</para>
+          </listitem>
+
+          <listitem>
+            <para><command>example:items:list</command> Produce a list of
+            items</para>
+          </listitem>
+
+          <listitem>
+            <para><command>example:items:delete</command> Delete an
+            item</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>The name of the command goes into the command class'
+        <code>$defaultName</code> static property.</para>
+
+        <para><bridgehead>Command configuration</bridgehead></para>
+
+        <para>Each command needs a bit of configuration so that Joomla knows
+        how to display it in a list of commands (<code>php joomla.php
+        list</code>), provide help for a command (e.g. <code>php joomla.php
+        example:items:list --help</code>) and parse the arguments and options
+        to the command. This is done in the
+        <methodname>configure()</methodname> method.</para>
+
+        <para>Calling setDescription sets the short help text which appears
+        next to the command in the list of available commands.</para>
+
+        <para>Calling setHelp sets the longer help text which appears in the
+        per-command help page.</para>
+
+        <para>The rest of the method body defines the arguments and options to
+        the commands, whether they are required or optional, their default
+        values and their associated help text. This is explained in detail in
+        the Symfony Console documentation article “<link
+        xlink:href="https://symfony.com/doc/current/console/input.html">Console
+        Input (Arguments &amp; Options)</link>”.</para>
+
+        <para><bridgehead>Command implementation</bridgehead></para>
+
+        <para>The implementation of your command, the code which executes when
+        you call it, is in the <methodname>doExecute</methodname>
+        method.</para>
+
+        <para>The first thing we do is get a SymfonyStyle object to facilitate
+        the formatting our command's output. It has all sorts of useful
+        things, from titles and success / warning / error blocks to progress
+        bars and tables. You can read more about it in the Symfony Console
+        documentation article <link
+        xlink:href="https://symfony.com/doc/current/console/style.html">How to
+        Style a Console Command</link>.</para>
+
+        <para>The rest of the code is pretty straightforward; it's standard
+        Joomla stuff. What you need to note is that we always return an
+        integer. This MUST be an integer from 0 to 255 (inclusive). It is used
+        as the command line application's <link
+        xlink:href="https://www.redhat.com/sysadmin/linux-shell-command-exit-codes">exit
+        code</link>. It is very strongly recommended that you use a different
+        exit code for each result state of your command <emphasis>and document
+        it</emphasis>. This can be used in automation scenarios, e.g. someone
+        using your CLI commands in an Ansible playbook or a custom shell
+        script.</para>
+
+        <note>
+          <para>You may see that I've used the MVCFactoryAwareTrait and
+          DatabaseAwareTrait traits. We will be using these traits to pass our
+          component's MVCFactory and the Joomla database object when creating
+          objects out of our command classes, before registering them to the
+          Joomla CLI application, in our <code>console</code> plugin.</para>
+
+          <para>While we could skip that and just fetch these
+          <emphasis>dependencies</emphasis> directly in our console class,
+          please do keep in mind that Joomla is trying to get us to use
+          <emphasis>dependency injection</emphasis>, i.e. the object should be
+          pushed the dependencies into it rather than having it to pull them
+          from somewhere else. If there's a big architectural change in Joomla
+          it's far easier to change things at the singular injection point
+          rather than hunting down all places where we might be pulling
+          dependencies. That's one of the many reasons Dependency Injection is
+          used: it makes refactoring easier.</para>
+        </note>
+      </section>
+
+      <section xml:id="com-cli-plugins">
+        <title>Console plugins</title>
+
+        <para>The Joomla CLI Application needs to somehow know about our
+        custom CLI command classes. The way Joomla decided to implement this
+        is with <emphasis>plugins</emphasis>. This makes perfect sense! The
+        “One True Joomla Way” for implementing extensible features is with
+        plugins. </para>
+
+        <para>We need to create a new plugin in the <code>console</code> group
+        which will register our commands to the Joomla CLI application. This
+        plugin must follow the Joomla 4 conventions<footnote>
+            <para>We'll learn more about creating plugins in the <link
+            linkend="plg">Plugins</link> section of this book.</para>
+          </footnote> as it will be handling an event.</para>
+
+        <bridgehead>The service provider</bridgehead>
+
+        <para>Joomla 4 plugins do need a service provider. We are going to use
+        the service provider to also get ahold of the MVCFactory object of our
+        component, pass it to the plugin object which can then pass it to our
+        command class.</para>
+
+        <programlisting>defined('_JEXEC') || die;
+
+use Joomla\CMS\Extension\PluginInterface;
+use Joomla\CMS\Extension\Service\Provider\MVCFactory;
+use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\DI\Container;
+use Joomla\DI\ServiceProviderInterface;
+use Joomla\Event\DispatcherInterface;
+use Joomla\Plugin\Console\ATS\Extension\ATS;
+
+return new class implements ServiceProviderInterface {
+	public function register(Container $container)
+	{
+		$container-&gt;registerServiceProvider(new MVCFactory('Acme\\Example'));
+
+		$container-&gt;set(
+			PluginInterface::class,
+			function (Container $container) {
+				$config     = (array) PluginHelper::getPlugin('console', 'example');
+				$subject    = $container-&gt;get(DispatcherInterface::class);
+				$mvcFactory = $container-&gt;get(MVCFactoryInterface::class);
+				$plugin     = new Example($subject, $config)
+
+				$plugin-&gt;setMVCFactory($mvcFactory);
+
+				return $plugin;
+			}
+		);
+	}
+};</programlisting>
+
+        <bridgehead>The plugin class</bridgehead>
+
+        <para>The plugin class only listens to one event, the
+        <classname>\Joomla\Application\ApplicationEvents::BEFORE_EXECUTE</classname>
+        one. This event is an
+        <classname>\Joomla\Application\Event\ApplicationEvent</classname>
+        which is raised by the Joomla CLI Application before it tries to
+        execute the user's instructions.</para>
+
+        <para>To make things easier, and our example reusable in the real
+        world with minimal modifications, we have a private static variable
+        which lists the class names of the command classes to register. The
+        <methodname>registerCLICommands</methodname> method iterates through
+        them, creates a command object and adds it to the CLI
+        application.</para>
+
+        <programlisting>&lt;?php
+
+namespace Joomla\Plugin\Console\Example\Extension;
+
+defined('_JEXEC') or die;
+
+use Acme\Example\Administrator\CliCommand\ItemsList;
+use Joomla\Application\ApplicationEvents;
+use Joomla\Application\Event\ApplicationEvent;
+use Joomla\CMS\MVC\Factory\MVCFactoryAwareTrait;
+use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\Event\SubscriberInterface;
+use Throwable;
+
+class Example extends CMSPlugin implements SubscriberInterface
+{
+	use MVCFactoryAwareTrait;
+
+	private static $commands = [
+		ItemsList::class,
+	];
+
+	protected $autoloadLanguage = true;
+
+	public static function getSubscribedEvents(): array
+	{
+		return [
+			ApplicationEvents::BEFORE_EXECUTE =&gt; 'registerCLICommands',
+		];
+	}
+
+	public function registerCLICommands(ApplicationEvent $event)
+	{
+		foreach (self::$commands as $commandFQN)
+		{
+			try
+			{
+				if (!class_exists($commandFQN))
+				{
+					continue;
+				}
+
+				$command = new $commandFQN();
+
+				if (method_exists($command, 'setMVCFactory'))
+				{
+					$command-&gt;setMVCFactory($this-&gt;getMVCFactory());
+				}
+
+				$this-&gt;getApplication()-&gt;addCommand($command);
+			}
+			catch (Throwable $e)
+			{
+				continue;
+			}
+		}
+	}
+}</programlisting>
+
+        <para>As you can see, after creating the command object we push the
+        MVCFactory into it — if it supports that feature, i.e. is it is using
+        the <classname>MVCFactoryAwareTrait</classname> itself.</para>
+
+        <para>We could do the same for the database object. We'll let you
+        figure it out. For the solution, you can read the footnote<footnote>
+            <para>At the top of the plugin object define the <code>$db</code>
+            property to let Joomla push the database object into the plugin
+            object.</para>
+
+            <programlisting>protected $db;</programlisting>
+
+            <para>In the registerCLICommand method, right after pushing the
+            MVCFactory, push the database object:</para>
+
+            <programlisting>if (method_exists($command, 'setDbo'))
+{
+	$command-&gt;setDbo($this-&gt;db);
+}</programlisting>
+          </footnote>.</para>
+
+        <para>Remember to not just install this plugin, but also publish it.
+        You can publish the plugin automatically in the <code>install</code>
+        section of your package's installation script. Remember, that code
+        only runs on a new installation. If you want to enable this plugin
+        also on updates you will need to do the same in the
+        <code>update</code> section as well. Yes, it's a bit of a kludge but
+        in practice it works very well.</para>
+      </section>
     </section>
 
     <section xml:id="com-api">
@@ -7763,26 +8222,8 @@ $template = new \Joomla\CMS\Mail\MailTemplate($templateId, $langTag, $mailer);</
       <para/>
     </section>
 
-    <section xml:id="tags">
-      <title>Tags</title>
-
-      <para/>
-    </section>
-
     <section xml:id="com-hmvc">
       <title>HMVC (sort of)</title>
-
-      <para/>
-    </section>
-
-    <section xml:id="com-rector">
-      <title>Using Rector</title>
-
-      <para/>
-    </section>
-
-    <section xml:id="com-migration">
-      <title>Migration strategy</title>
 
       <para/>
     </section>
