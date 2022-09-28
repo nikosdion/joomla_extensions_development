@@ -6114,7 +6114,7 @@ class <emphasis role="bold">Com_ExampleInstallerScript</emphasis> extends Instal
 		}
 
 		// Install the dashboard module if necessary
-		$this-&gt;conditionalInstallDashboard(<emphasis role="bold">'com_example-example', 'example'</emphasis>);
+		$this-&gt;conditionalInstallDashboard(<emphasis role="bold">'com-example-example', 'example'</emphasis>);
 
 		return true;
 	}
@@ -6155,9 +6155,28 @@ class <emphasis role="bold">Com_ExampleInstallerScript</emphasis> extends Instal
       type: the class name to match your component's name and the parameters
       to the <methodname>conditionalInstallDashboard</methodname> method. The
       parameters are fairly obvious: the name of the dashboard (replacing the
-      dot with a dash!) and the name of your menu preset which typically is
-      the same as your component's name without the <code>com_</code>
-      prefix.</para>
+      underscore and dot with a dash!) and the name of your menu preset which
+      typically is the same as your component's name without the
+      <code>com_</code> prefix.</para>
+
+      <tip>
+        <para>You can publish modules to your Dashboards by assigning them to
+        a module position named something like
+        <code>cpanel-com-<replaceable>example</replaceable>-<replaceable>something</replaceable></code>
+        where <replaceable>example</replaceable> is the name of your component
+        without <code>com_</code> and <replaceable>something</replaceable> is
+        the name of your custom dashboard without the component prefix. The
+        aforementioned example module corresponds to the dashboard
+        <code>com_example.something</code>.</para>
+
+        <para>Likewise, Quick Icon modules can be assigned to a custom
+        dashboard by publishing them to the module position
+        <code>icon-com-<replaceable>example</replaceable>-<replaceable>something</replaceable></code>
+        following the same convention as above (you just replace
+        <code>cpanel</code> with <code>icon</code>). Remember that Quick Icon
+        modules are displayed <emphasis>above</emphasis> the other dashboard
+        modules.</para>
+      </tip>
     </section>
 
     <section xml:id="com-installation-script">
@@ -7807,8 +7826,7 @@ $template = new \Joomla\CMS\Mail\MailTemplate($templateId, $langTag, $mailer);</
             the namespace prefix <code>Acme\Example</code> I would put my
             commands in the <code>Acme\Example\Administrator\CliCommand</code>
             namespace i.e. the folder
-            <code>administrator/components/com_example/src/CliCommand</code>.
-            </para>
+            <code>administrator/components/com_example/src/CliCommand</code>.</para>
 
             <para>The plugin does not need to check if the component is
             bootable; if it's not, the PSR-4 autoloader for its namespace
@@ -8050,7 +8068,7 @@ class ItemsList extends \Joomla\Console\Command\AbstractCommand
         custom CLI command classes. The way Joomla decided to implement this
         is with <emphasis>plugins</emphasis>. This makes perfect sense! The
         “One True Joomla Way” for implementing extensible features is with
-        plugins. </para>
+        plugins.</para>
 
         <para>We need to create a new plugin in the <code>console</code> group
         which will register our commands to the Joomla CLI application. This
