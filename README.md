@@ -12,7 +12,7 @@ Please keep in mind that I am writing this book on my own time, without any kind
 
 ## How to read this book
 
-Download [the EPUB file](joomla_extensions_development.epub) and open it in your favorite e-book reader.
+An [HTML version of the book](html/index.html) is included in this repository. 
 
 ## “Developing” the book
 
@@ -26,5 +26,3 @@ The book can be converted to GitHub-flavored Markdown and EPUB formats using [Pa
 pandoc -f docbook -t epub --toc -N joomla_extensions_development.xml -o joomla_extensions_development.epub
 pandoc -f docbook -t gfm -s joomla_extensions_development.xml -o joomla_extensions_development.md
 ```
-
-The first command is what I use to generate the ePUB version you see in this repository.

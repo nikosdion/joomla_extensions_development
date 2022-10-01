@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" width="24" height="24" shape-rendering="geometricPrecision" text-rendering="geometricPrecision" image-rendering="optimizeQuality" fill-rule="nonzero" clip-rule="evenodd" viewBox="0 0 10240 10240" xmlns:xlink="http://www.w3.org/1999/xlink">
+	<title>nav_up icon</title>
+	<desc>nav_up icon from the IconExperience.com O-Collection. Copyright by INCORS GmbH (www.incors.com).</desc>
+	<path id="curve1" fill="#737b99" d="M2747 4348l2147 -2147c124,-124 328,-124 452,0l2147 2147c124,124 187,276 187,452l0 1159c0,66 -38,122 -99,148 -61,25 -127,12 -174,-35l-1647 -1647 0 3255c0,176 -144,320 -320,320l-640 0c-176,0 -320,-144 -320,-320l0 -3255 -1647 1647c-47,47 -113,60 -174,35 -61,-26 -99,-82 -99,-148l0 -1159c0,-176 63,-328 187,-452z"/>
+	<path id="curve0" fill="#737b99" d="M9600 5120c0,2474 -2006,4480 -4480,4480 -2474,0 -4480,-2006 -4480,-4480 0,-2474 2006,-4480 4480,-4480 2474,0 4480,2006 4480,4480zm-4480 3840c2121,0 3840,-1719 3840,-3840 0,-2121 -1719,-3840 -3840,-3840 -2121,0 -3840,1719 -3840,3840 0,2121 1719,3840 3840,3840z"/>
+</svg>
