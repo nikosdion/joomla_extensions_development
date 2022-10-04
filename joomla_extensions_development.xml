@@ -2980,7 +2980,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
           </listitem>
 
           <listitem>
-            <para>Name is the name of the specific MVC class with its first
+            <para><code>Name</code> is the name of the specific MVC class with its first
             letter in uppercase, e.g. <code>Item</code>.</para>
           </listitem>
         </itemizedlist>
@@ -3185,7 +3185,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
           </listitem>
 
           <listitem>
-            <para>Name is the name of the specific MVC class with its first
+            <para><replaceable>Name</replaceable> is the name of the specific MVC class with its first
             letter in uppercase, e.g. <code>Item</code>.</para>
           </listitem>
 
@@ -3199,10 +3199,10 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
 
         <para>View classes are placed under your <filename>src</filename>
         directory following PSR-4. So, a backend class
-        <code>\Acme\Example\Administrator\View\Item\Html</code> for a
+        <code>\Acme\Example\Administrator\View\Item\HtmlView</code> for a
         component <code>com_example</code> whose common namespace prefix is
         <code>\Acme\Example</code> is placed in the file
-        <filename>administrator/components/com_example/src/View/Item/Html.php</filename>.</para>
+        <filename>administrator/components/com_example/src/View/Item/HtmlView.php</filename>.</para>
 
         <para>Right away you can see how namespaces are benefiting us. A
         controller, model, or view in the frontend, backend and api
@@ -3331,7 +3331,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
             <programlisting>$myModel = $this-&gt;getMVCFactory()
   -&gt;createModel('Item', 'Administrator');</programlisting>
 
-            <para>The first argument is the name of the controller. The second
+            <para>The first argument is the name of the model. The second
             argument is the application type (<code>Site</code>,
             <code>Administrator</code>, or <code>Api</code>).</para>
           </listitem>
@@ -3346,7 +3346,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
             <programlisting>$myView = $this-&gt;getMVCFactory()
   -&gt;createView('Item', 'Administrator', 'Html');</programlisting>
 
-            <para>The first argument is the name of the controller. The second
+            <para>The first argument is the name of the view. The second
             argument is the application type (<code>Site</code>,
             <code>Administrator</code>, or <code>Api</code>). The third
             argument is the view type which corresponds to the
@@ -3363,7 +3363,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
             <programlisting>$myTable = $this-&gt;getMVCFactory()
   -&gt;createTable('Item', 'Administrator');</programlisting>
 
-            <para>The first argument is the name of the controller. The second
+            <para>The first argument is the name of the table. The second
             argument is the application type (<code>Site</code>,
             <code>Administrator</code>, or <code>Api</code>).</para>
 
@@ -5087,7 +5087,7 @@ namespace Acme\Example\Administrator\Service\Html;
 class Example {
   <emphasis role="bold">private $db;</emphasis>
 
-  <emphasis role="bold">public function __construct(\Joomla\Database\DatabaseDriver $dn) {
+  <emphasis role="bold">public function __construct(\Joomla\Database\DatabaseDriver $db) {
     $this-&gt;db = $db;
   }</emphasis>
 
@@ -7819,7 +7819,7 @@ var distance = comExampleOptions.foo * comExampleOptions.bar;</programlisting>
 &lt;/extension&gt;</programlisting>
 
       <para>This copies the files from the <filename>languages/site</filename>
-      folder in your package to Joomla's admin language folder, e.g. the
+      folder in your package to Joomla's site language folder, e.g. the
       <filename>languages/site/en-GB/com_example.ini</filename> file in your
       package to <filename>language/en-GB/com_example.ini</filename> file on
       your site.</para>
@@ -7837,7 +7837,7 @@ var distance = comExampleOptions.foo * comExampleOptions.bar;</programlisting>
 &lt;/api&gt;</programlisting>
 
       <para>This copies the files from the <filename>languages/api</filename>
-      folder in your package to Joomla's admin language folder, e.g. the
+      folder in your package to Joomla's api language folder, e.g. the
       <filename>languages/api/en-GB/com_example.ini</filename> file in your
       package to <filename>api/language/en-GB/com_example.ini</filename> file
       on your site.</para>
