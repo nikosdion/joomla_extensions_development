@@ -8675,29 +8675,663 @@ class Example extends CMSPlugin implements SubscriberInterface
   <chapter xml:id="plg">
     <title>Plugins</title>
 
-    <para/>
+    <para>Plugins are the fundamental building blocks of Joomla!. They let us
+    execute code when something interesting happens. Unsurprisingly, plugins
+    are extremely powerful and the cornerstone of implementing complex
+    features which alter or add features in Joomla without having to modify
+    core files (“hack core”) as is usual in other CMS. This lets us have very
+    powerful, <emphasis>easily maintainable</emphasis>, sites.</para>
 
     <section xml:id="plg-forms">
       <title>The many forms of a Joomla plugin</title>
 
-      <para/>
+      <para>Joomla plugins have been around for a very long time. In fact,
+      they've been around since before Joomla forked off Mambo in August 2005.
+      They were called ‘mambots’ back then. Having such a fundamental feature
+      for over two decades understandably means that there are many forms of
+      plugins possible.</para>
 
       <section xml:id="plg-forms-legacy">
         <title>Legacy (Joomla 1.x to 3.x)</title>
 
-        <para/>
+        <para>It might come to you as a surprise, but the original way plugins
+        were implemented in Joomla 1.0 back in 2005 is still supported in
+        Joomla 4. This support will be removed in Joomla 6, scheduled for
+        release in 2025, two decades after it first appeared. Sure, there have
+        been refinements but the core concept still applies.</para>
+
+        <important>
+          <para>Even though Joomla uses this form of plugin for most of its
+          core plugins in Joomla 4 (and possibly Joomla 5), this is a form of
+          plugin which has been deprecated and will most likely go away in
+          Joomla 6.</para>
+
+          <para>This form of plugin is only recommended if you are writing a
+          version of your software which is meant to run on both Joomla 3 and
+          Joomla 4 / 5, to facilitate people trying to migrate their sites
+          over to a newer Joomla version.</para>
+
+          <para>If you are writing software native to Joomla 4 and beyond you
+          should use the <link
+          linkend="plg-forms-j4-subscriberinterface">Joomla 4 with
+          SubscriberInterface</link> form of plugins explained further
+          below.</para>
+
+          <para>The only exception to this rule are, at the time of this
+          writing, plugins in the editors-xtd folder because they are not
+          real, pure Joomla plugins. Their class is instantiated directly by
+          Joomla and the <methodname>onDisplay</methodname> method called
+          directly.</para>
+        </important>
+
+        <para>Legacy plugins consist of a single class which is named
+        PlgTypeName where Type is the plugin type a.k.a. folder (e.g. system,
+        user, console, …) and Name is the name of the plugin. For example, we
+        could have PlgSystemExample for a system plugin named
+        <code>example</code> and which lives in
+        <filename>plugins/system/example/example.php</filename>. The class
+        always extends from
+        <classname>\Joomla\CMS\Plugin\CMSPlugin</classname> or one of its
+        sub-classes typically defined in a component (e.g. finder plugins
+        extend from
+        <classname>\Joomla\Component\Finder\Administrator\Indexer\Adapter</classname>
+        which extends from
+        <classname>\Joomla\CMS\Plugin\CMSPlugin</classname>).</para>
+
+        <para>Any <emphasis role="bold">public</emphasis> method whose name
+        starts with <code>on</code> is registered as an event listener.
+        Therefore a method called <methodname>onFooBar</methodname> is
+        registered as a legacy plugin event listener for an event called
+        <code>onFooBar</code>.</para>
+
+        <para>There's a small caveat when it comes to Joomla 4 and 5. If the
+        method accepts only one parameter which is either named
+        <code>$event</code> OR is type-hinted as a class implementing
+        <interfacename>\Joomla\Event\EventInterface</interfacename> then the
+        method is registered as an event listener, a new type of listener. See
+        <link linkend="plg-forms-j4-listener-types">Legacy vs Event Listener
+        methods</link>. This is a deliberate design choice which lets you
+        write plugins which can simultaneously handle legacy events when
+        running under Joomla 3 and modern events when running under Joomla 4
+        and 5. This lets you provide a version of your plugin which acts as a
+        “bridge” for people migrating from Joomla 3 to 4 and 5: the same
+        plugin can run on both versions of Joomla without breaking the
+        site.</para>
       </section>
 
       <section xml:id="plg-forms-j4-classic">
         <title>Joomla 4 classic</title>
 
-        <para/>
+        <para>As noted earlier, Joomla 4 introduced <link
+        linkend="concepts-container">Dependency Injection and service
+        providers</link> for all extensions, of course including plugins. It
+        should come as no surprise then that the second plugin variant we get
+        is similar to the <link linkend="plg-forms-legacy">legacy
+        plugins</link> but with namespaces and service providers.</para>
+
+        <para>The first difference you will notice is that the XML manifest
+        goes from this:</para>
+
+        <programlisting>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;extension type="plugin" group="system" method="upgrade"&gt;
+	&lt;name&gt;plg_system_example&lt;/name&gt;
+	&lt;author&gt;Joomla! Project&lt;/author&gt;
+	&lt;creationDate&gt;2022-10&lt;/creationDate&gt;
+	&lt;copyright&gt;(C) 2022 Open Source Matters, Inc.&lt;/copyright&gt;
+	&lt;license&gt;GNU General Public License version 2 or later; see LICENSE.txt&lt;/license&gt;
+	&lt;authorEmail&gt;admin@joomla.org&lt;/authorEmail&gt;
+	&lt;authorUrl&gt;www.joomla.org&lt;/authorUrl&gt;
+	&lt;version&gt;1.0.0&lt;/version&gt;
+	&lt;description&gt;PLG_SYSTEM_EXAMPLE_XML_DESCRIPTION&lt;/description&gt;
+	&lt;files&gt;
+		<emphasis role="bold">&lt;filename plugin="example"&gt;example.php&lt;/filename&gt;</emphasis>
+	&lt;/files&gt;
+	&lt;languages&gt;
+		&lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.ini&lt;/language&gt;
+		&lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.sys.ini&lt;/language&gt;
+	&lt;/languages&gt;
+&lt;/extension&gt;
+</programlisting>
+
+        <para>to this:</para>
+
+        <programlisting>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;extension type="plugin" group="system" method="upgrade"&gt;
+	&lt;name&gt;plg_system_example&lt;/name&gt;
+	&lt;author&gt;Joomla! Project&lt;/author&gt;
+	&lt;creationDate&gt;2022-10&lt;/creationDate&gt;
+	&lt;copyright&gt;(C) 2022 Open Source Matters, Inc.&lt;/copyright&gt;
+	&lt;license&gt;GNU General Public License version 2 or later; see LICENSE.txt&lt;/license&gt;
+	&lt;authorEmail&gt;admin@joomla.org&lt;/authorEmail&gt;
+	&lt;authorUrl&gt;www.joomla.org&lt;/authorUrl&gt;
+	&lt;version&gt;1.0.0&lt;/version&gt;
+	&lt;description&gt;PLG_SYSTEM_EXAMPLE_XML_DESCRIPTION&lt;/description&gt;
+	<emphasis role="bold">&lt;namespace path="src"&gt;Joomla\Plugin\System\Example&lt;/namespace&gt;</emphasis>
+	&lt;files&gt;
+	<emphasis role="bold">&lt;folder&gt;services&lt;/folder&gt;</emphasis>
+	<emphasis role="bold">&lt;folder plugin="example"&gt;src&lt;/folder&gt;</emphasis>
+	&lt;/files&gt;
+	&lt;languages&gt;
+		&lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.ini&lt;/language&gt;
+		&lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.sys.ini&lt;/language&gt;
+	&lt;/languages&gt;
+&lt;/extension&gt;
+</programlisting>
+
+        <para>The affected lines are in bold type.</para>
+
+        <para>First of all, we have a <tag>&lt;namespace&gt;</tag> tag to
+        declare our namespace. The namespace MUST follow the convention
+        <code>Joomla\Plugin\<replaceable>Type</replaceable>\<replaceable>Name</replaceable></code>
+        where Type is the plugin type a.k.a. folder (e.g. system, user,
+        console, …) and Name is the name of the plugin. TheType must be
+        written as Uppercasefirst i.e. the first letter is uppercase and all
+        others are lowercase.</para>
+
+        <para>The second obvious change is that instead of a plugin file we
+        have two folders, <filename>services</filename> and
+        <filename>src</filename>.</para>
+
+        <para>The <filename>services</filename> folder contains a single file,
+        <filename>provider.php</filename>. It's very similar to <link
+        linkend="com-services">a component's service provider
+        file</link>:</para>
+
+        <programlisting>&lt;?php
+defined('_JEXEC') || die;
+
+use Joomla\CMS\Extension\PluginInterface;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\DI\Container;
+use Joomla\DI\ServiceProviderInterface;
+use Joomla\Event\DispatcherInterface;
+use Joomla\Plugin\System\Example\Extension\Example;
+
+return new class implements ServiceProviderInterface {
+	public function register(Container $container)
+	{
+		$container-&gt;set(
+			PluginInterface::class,
+			function (Container $container)
+			{
+				$config  = (array)PluginHelper::getPlugin('system', 'example');
+				$subject = $container-&gt;get(DispatcherInterface::class);
+
+				$app = Factory::getApplication();
+
+				/** @var \Joomla\CMS\Plugin\CMSPlugin $plugin */
+				$plugin = new Example($subject, $config);
+				$plugin-&gt;setApplication($app);
+
+				return $plugin;
+			}
+		);
+	}
+};</programlisting>
+
+        <para>The important thing to note here is that the service provider is
+        responsible for registering a
+        <interfacename>Joomla\CMS\Extension\PluginInterface</interfacename>
+        service which returns an object instance of our plugin class. </para>
+
+        <tip>
+          <para>Your plugin class can also implement the
+          <interfacename>\Joomla\CMS\Extension\BootableExtensionInterface</interfacename>
+          interface. If it does, its <methodname>boot</methodname> method will
+          be called when Joomla loads your plugin, before any event is
+          executed, and gives you access to the plugin's Dependency Injection
+          container. While you shouldn't try to execute any significant amount
+          of code at this point (Joomla has not finished booting up yet!) and
+          you shouldn't use the DI container directly to pull resources (the
+          service provider is meant to push them to the plugin instead) it may
+          come in handy for these, uh, <emphasis>forbidden</emphasis>
+          purposes.</para>
+
+          <para>Here's an example. There are <emphasis>some</emphasis>
+          services which have a lengthy initialisation — for example, a
+          foreign currency exchange service will need to periodically pull the
+          currency exchange rates from a central bank's web site. Ideally,
+          you'd want to move their initialisation outside the constructor and
+          into a different method you need to call before doing something
+          useful with your service. However, you may also run into
+          chicken-and-egg situations trying to do that. If the server doesn't
+          support cURL the service might throw an exception. I'd like to catch
+          it so I can <emphasis>not</emphasis> offer this feature with
+          unsatisfied server dependencies. But if I do that in the service
+          provider I am also very likely trying to make a web request to the
+          central bank's website to get the currency exchange rate at an
+          inopportune moment where the application needs to finish loading as
+          fast as possible.</para>
+
+          <para>While there are clever ways to work around that, you may find
+          it far easier to get access to the container in the
+          <methodname>boot</methodname> method, store a reference to the
+          container in a private property of your plugin and pull an instance
+          of your custom forex service when you need it. If it throws an
+          exception you can implement your “this isn't possible on this
+          server” logic. By instantiating your service through the provider
+          only when needed you solved your chicken-and-egg problem.</para>
+
+          <para>A cleaner solution would of course be trying to check the
+          server dependencies on service instantiation and set a flag in the
+          service. When the service consumer (your plugin) tries to use the
+          service you could throw an exception. This is an obvious solution in
+          this simple problem. For more complex problems there might not be an
+          equally obvious solution.</para>
+
+          <para>As I always say to aspiring developers, your goal is to
+          deliver something useful and maintainable in a finite period of
+          time. If it means writing something a CS professor would give a
+          disapproving frown, so be it. You can revisit that implementation
+          later, when you have time to burn. As Steve Jobs succinctly put it,
+          “<link
+          xlink:href="https://leaderforgood.com/real-artists-ship/">real
+          artists ship</link>”.</para>
+        </tip>
+
+        <para>The plugin class, as with legacy plugins, extends from
+        <classname>\Joomla\CMS\Plugin\CMSPlugin</classname> and works the same
+        as <link linkend="plg-forms-legacy">a Legacy plugin's</link>
+        class.</para>
+
+        <para>You will not see any plugins of this type in the core and they
+        are pretty rare in the wild, mostly from software — like older
+        versions of mine — which started the conversion process to Joomla 4
+        before Joomla 4 was finished and before the modern event system was
+        mature enough for general use.</para>
+
+        <para>Practically speaking, the only use case for this type of plugin
+        is if you still have plugin events which pass around scalar variables
+        <emphasis>by reference</emphasis>. For example, something like
+        this:</para>
+
+        <programlisting>public function onMyCustomEvent(string $foo, array &amp;$bar);</programlisting>
+
+        <para>The $bar variable is a scalar (array) passed by reference. It
+        can be modified by the plugin event handler. This will not be possible
+        using modern events.</para>
+
+        <para>If you want a clean solution you need to make changes in the
+        code which calls this plugin event. Instead of passing around an array
+        you'd have to pass a
+        <classname>\Joomla\CMS\Object\CMSObject</classname> or
+        <classname>\Joomla\Registry\Registry</classname> object created from
+        the contents of the array. Your modern event handler can modify that
+        object (objects are always passed by reference in all versions of PHP
+        supported by Joomla 4 and beyond). Then your consumer code could
+        convert back from an object to an array.</para>
+
+        <para>The clean solution is admittedly more convoluted than you might
+        expect and requires changes in the consumer which might not be
+        possible if it's not code under your control. If you do not feel
+        confident implementing the cleaner solution, or if it's just not
+        possible because third party code is using your events, you can create
+        a Joomla 4 classic plugin with a legacy plugin event handler for your
+        plugin event which won't give you a hard time with scalar variables
+        passed by reference. It's not the best coding practice but it does
+        take a while —and several refactoring passes— to migrate to a cleaner
+        architecture. Even more so considering that Joomla 3 and these coding
+        practice had been around for nearly a decade before Joomla 4 was
+        released.</para>
       </section>
 
       <section xml:id="plg-forms-j4-subscriberinterface">
         <title>Joomla 4 with SubscriberInterface</title>
 
-        <para/>
+        <para>You might remember from an earlier chapter talking about <link
+        linkend="com-controllers-basic-services">the basic services in a
+        component's service provider</link> that you can trigger plugins using
+        modern events like so:</para>
+
+        <programlisting>$event = \Joomla\CMS\Event\GenericEvent::create('onSomething', [$param1, $param2]);
+$this-&gt;getDispatcher()-&gt;dispatch($event-&gt;getName(), $event);
+$results = $event-&gt;getArgument('result', []);</programlisting>
+
+        <para>It follows reason that Joomla 4 offers a way to write plugins
+        which only deal with these modern events. These events are faster and
+        have many more tricks up their sleeves than the ‘dumb’ callback model
+        implemented in Joomla 1.x, 2.x and 3.x.</para>
+
+        <para>Plugins of this type are just like <link
+        linkend="plg-forms-j4-classic">Joomla 4 classic plugins</link> with a
+        twist. The plugin class implements the
+        <interfacename>\Joomla\Event\SubscriberInterface</interfacename> and
+        you set the protected property <code>$this-&gt;allowLegacyListeners =
+        false;</code>. This changes the way Joomla registers event
+        handlers.</para>
+
+        <para>Joomla will NOT use reflection to find public methods whose name
+        starts with <code>on</code>. It will instead call the public static
+        method <methodname>getSubscribedEvents</methodname> which is defined
+        in the interface and implemented in your plugin class. This returns an
+        array mapping event names to public methods of your plugin. Not having
+        to go through reflection saves <emphasis>a lot</emphasis> of time on
+        every page load of the site. Moreover, events are self-contained
+        objects being passed around which reduces the overhead of calling each
+        event handler. These add up with the dozens to hundreds of plugins and
+        event handlers running on a typical Joomla site, saving several dozens
+        to a few hundreds of milliseconds of page load time. This is a
+        significant performance improvement for the site. <emphasis
+        role="bold">This is why I've been telling people since 2017, that
+        modern events make Joomla 4 and later versions
+        faster</emphasis>.</para>
+
+        <para>The implementation of the getSubscribedEvents method is pretty
+        straightforward:</para>
+
+        <programlisting>public static function getSubscribedEvents(): array
+{
+	return [
+		'onSomething'     =&gt; 'doSomething',
+		'onSomethingElse' =&gt; ['doSomething', \Joomla\Event\Priority::HIGH],
+	];
+}</programlisting>
+
+        <para>The keys of the array are the event names. The values are the
+        names of the methods which handle each event.</para>
+
+        <para>But, wait a minute! That second item has an array value. What is
+        that? Well, that's one of the benefits of using SubscriberInterface:
+        you can tell Joomla about the priority you want for your event
+        handler, meaning that the order plugins execute is not dictated only
+        by their user-defined ordering in the backend of the site but also by
+        the programmer's preferred priority.</para>
+
+        <para>By default, all event handlers are attached with Normal
+        priority. They are then executed in the order they were attached, i.e.
+        how the plugins were ordered in the backend Plugins management page of
+        the site. This is the only option you get with legacy and classic
+        plugins.</para>
+
+        <para>Plugins implementing the SubscriberInterface can optionally set
+        a priority for each event handler. This is an integer. The higher the
+        integer is, the earlier your event handler executes. Joomla first
+        executes all event handlers with the highest priority number in the
+        order they were attached. Then moves to the event handlers with the
+        second highest priority number in the order they were attached and so
+        on.</para>
+
+        <para>If you set your priority to high, as I did above, your event
+        handler will be one of the first (if not the absolute first) to be
+        executed. If, conversely, you set it to
+        <code>\Joomla\Event\Priority::MIN</code> or even
+        <code>PHP_INT_MIN</code> your event handler will be one of the last
+        (if not the absolute last) to be executed. In the few cases where this
+        is truly needed you no longer have to tell your users to reorder
+        plugins for your plugin to work correctly and predictably; you can
+        just set the priority.</para>
+
+        <caution>
+          <para><emphasis role="bold">With great power comes great
+          responsibility</emphasis>. Do NOT set the priority of your event
+          handlers unless there is an absolute need to do so. </para>
+
+          <para>For example, a security plugin will need to guarantee that its
+          plugin events execute first to avoid other plugins' security
+          vulnerabilities being triggered by malicious requests. Full page
+          HTML source code search &amp; replace plugins will need to have
+          their onAfterRender handler run as the very last to be able to
+          replace HTML text right before it's potentially compressed and
+          returned to the browser. </para>
+
+          <para>The vast majority of plugins should NOT set a priority. By
+          setting a priority you make it very hard if not impossible for the
+          user to change the execution order of your plugin which might be
+          necessary to work around issues on their site. <emphasis
+          role="bold">DO NOT TAKE AWAY THE USER'S AGENCY UNLESS THERE IS AN
+          VERY WELL JUSTIFIED AND DOCUMENTED REASON</emphasis>.</para>
+        </caution>
+
+        <para>Moreover, you should keep in mind that all methods handling
+        events only accept one argument (by value, not reference!), an event
+        object which implements the
+        <interfacename>\Joomla\Event\EventInterface</interfacename> interface.
+        We will talk about this in <link
+        linkend="plg-forms-j4-listener-types">the next section on listener
+        types</link>.</para>
+      </section>
+
+      <section xml:id="plg-forms-j4-listener-types">
+        <title>Legacy vs Event Listener methods</title>
+
+        <para>As we have already alluded to in the previous sections, there
+        are two types of plugin event listeners.</para>
+
+        <bridgehead>Legacy plugin event listeners</bridgehead>
+
+        <para>Legacy plugin event listeners are nothing more than glorified
+        callbacks. They are plain old methods which accept a number of
+        parameters and possibly<footnote>
+            <para>Actually, they always have to return a value. It just so
+            happens that the return value of methods typehinted to return void
+            is NULL in PHP. At some point, in newer PHP versions, this will
+            start throwing an error which is another reason legacy listeners
+            will have to eventually go away.</para>
+          </footnote> return a value. For example, we could have something
+        like this:</para>
+
+        <programlisting>public onSomething(string $foo, array $bar): array</programlisting>
+
+        <para>This simplicity is simultaneously the strength and the Achille's
+        heel of legacy plugin event handlers.</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Having an arbitrary number of parameters makes it really
+            hard to know what is the <emphasis>canonical</emphasis> parameters
+            list when you are calling a plugin event and when you are
+            implementing a handler for it.</para>
+          </listitem>
+
+          <listitem>
+            <para>It's impossible to add new parameters, even optional ones,
+            without a breaking change. If different handlers have a different
+            number of parameters (or, worse, parameters order!) they expect
+            you might get PHP warning or errors.</para>
+          </listitem>
+
+          <listitem>
+            <para>Neither the parameters nor the return values can be
+            type-hinted. This makes it perfectly possible for a developer,
+            core or third party, to pass the wrong data type to an event's
+            argument e.g. an object where an array is expected. It also makes
+            for inconsistent return values which need to be normalised and
+            validated in consumer code, i.e. every time an event is
+            called.</para>
+          </listitem>
+
+          <listitem>
+            <para>The aforementioned problems can result in bugs which are
+            really hard to address. For example, a third party extension may
+            cause a core or third party plugin to fail with a PHP error on PHP
+            8 by passing the wrong data type to it. Conversely, a third party
+            plugin may cause core or third party components or modules to fail
+            by returning an unexpected data type. Identifying who messed up is
+            hard. Explaining to a client that it's not your code at fault but
+            a third party plugin may be really hard, especially if that third
+            party plugin works fine in the <emphasis>very limited
+            subset</emphasis> of use cases it was developed for and tested
+            on.</para>
+          </listitem>
+
+          <listitem>
+            <para>Running callbacks with an arbitrary number of arguments
+            requires going through PHP's
+            <function>call_user_func_array()</function> function which has
+            more overhead than calling methods directly. This is only relevant
+            on older PHP versions; the performance delta is nearly gone in PHP
+            8.</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>The only thing this simple callback arrangement has going for it
+        is that, well, it's very simple to implement in the code which calls
+        the plugin events, the core code which runs the plugin event handlers
+        and the code which consumes the results of plugin event handlers —
+        though the latter is debatable.</para>
+
+        <bridgehead>Modern event listeners</bridgehead>
+
+        <para>Joomla 4 introduced a whole new concepts: <emphasis
+        role="bold">events</emphasis>.</para>
+
+        <para>Each event is its own object. It has arguments which can be
+        anonymous or named, typically the former in generic events and the
+        latter in <link linkend="plg-concrete-events">concrete events</link>.
+        Events always have a named argument called <code>result</code> which
+        lets the event handler not only return a result but also inspect what
+        other results were returned by event handlers called before it (most
+        concrete events have an <methodname>addResult</methodname> method to
+        facilitate returning results). A concrete event class can implement
+        type checks and validation of any (or all) of its arguments, including
+        the results. It's no longer the Wild West.</para>
+
+        <para>Event handlers have the option to stop the processing of an
+        event's handlers by calling the event object's
+        <methodname>stopPropagation</methodname> method; this is useful when
+        you want to run a number of plugins until you get at least one result.
+        Think about avatars displayed in a forum. You may have a number of
+        plugins which can return an avatar image: Gravatar (if the user has an
+        account there), using an image source from a user field, Facebook (if
+        the user has linked an account), a locally installed social network
+        component, and a fall-back to a generated fake avatar. The first
+        avatar found will be used, the rest will be discarded. If the rest are
+        going to be discarded, why even bother running the code to check if
+        they exist?! Instead, each avatar plugin would work like this. It runs
+        its code. If there is no avatar to be reported, return. If there is an
+        avatar to be reported use <methodname>addResult</methodname> to return
+        it and call the event's <methodname>stopPropagation</methodname>
+        method to prevent the other avatar plugins from running for no reason
+        and wasting the user's time and your server's resources. This is
+        something you just cannot do with legacy event listeners.</para>
+
+        <para>Also, as we mentioned earlier, modern event handlers can have
+        prioritised event handlers with all the benefits we already
+        mentioned.</para>
+
+        <para>Modern event handlers are fairly simple:</para>
+
+        <programlisting>public function handleSomething(\Joomla\Event\Event $event): void</programlisting>
+
+        <para>Note the type-hint to the <code>$event</code> argument. As
+        written above, the method can be used to handle any event. In most
+        cases you will need to use a concrete event class: either the concrete
+        core event classes supplied in Joomla's
+        <filename>libraries/src/Event</filename> directory and its
+        subdirectories or a concrete event class provided by another Joomla
+        extension.</para>
+
+        <para>Getting the arguments to the event depends on the event class
+        itself. For generic events you'd need to do something like:</para>
+
+        <programlisting>[$param1, $param2, $param3] = $event-&gt;getArguments();</programlisting>
+
+        <para>That's because generic events do not have named arguments. This
+        is the equivalent of having a legacy plugin event handler with the
+        method signature:</para>
+
+        <programlisting>public function onSomething($param1, $param2, $param3);</programlisting>
+
+        <para>With concrete events, it depends on the event. In most cases
+        you'd do either of the following:</para>
+
+        <programlisting>// Named arguments without a getter method
+$param1 = $event-&gt;getArgument('param1');
+// Named arguments with getter methods
+$param2 = $event-&gt;getParam1();</programlisting>
+
+        <para>Any decent IDE will let you know if there is a getter in
+        <code>$event</code> based on its type-hint. That's why it makes sense
+        to type-hint your event handler methods correctly.</para>
+
+        <para>The return type of a modern event handler is always void. You do
+        NOT return values directly. Instead, you add them to the
+        <code>result</code> argument which is always an array:</para>
+
+        <programlisting>$result = $this-&gt;getArgument('result') ?? [];
+$result[] = $theResultIAmReturning;
+$this-&gt;setArgument('result', $result);</programlisting>
+
+        <para>Most concrete event classes implement the
+        <interfacename>\Joomla\CMS\Event\Result\ResultAwareInterface</interfacename>
+        which has the <methodname>addResult</methodname> method to return
+        values more easily:</para>
+
+        <programlisting>$this-&gt;addResult($theResultIAmReturning);</programlisting>
+
+        <para>Finally, remember that events can be mutable, immutable or
+        selectively immutable. A mutable event allows its handlers to use
+        <methodname>setArgument</methodname> freely, modifying all of its
+        arguments.</para>
+
+        <caution>
+          <para>Even though <emphasis>most</emphasis> core events are
+          currently mutable, this <emphasis>will</emphasis> change in Joomla 5
+          and Joomla 6. Joomla is moving towards concrete event classes for
+          all core events. These concrete classes will be selectively
+          immutable: all of their arguments will be immutable except for the
+          <code>result</code> argument; the latter only if it's an event which
+          expects a result to be returned.</para>
+
+          <para>Therefore you MUST NOT rely on core events' arguments being
+          mutable at the moment. Treat them as immutable or you <emphasis>will
+          suffer</emphasis> in the future! </para>
+        </caution>
+
+        <para>An immutable event does not allow any of its arguments to be set
+        after it has been created. This does not mean that you cannot do
+        anything with the arguments! Remember that argument values which are
+        object can be modified without needing to set the argument again. For
+        example, this is a valid, working event handler:</para>
+
+        <programlisting>	public function handleTableAfterLoad(\Joomla\CMS\Event\Table\AfterLoadEvent $event): void
+	{
+		if (!$event-&gt;getArgument('result')) return;
+		
+		/** @var \Joomla\CMS\Table\TableInterface $table */
+		$table = $event-&gt;getArgument('subject');
+
+		$table-&gt;modified_by = \Joomla\CMS\Factory::getApplication()
+			-&gt;getIdentity()
+			-&gt;id;
+	}</programlisting>
+
+        <para>The
+        <classname>\Joomla\CMS\Event\Table\AfterLoadEvent</classname> concrete
+        event class is an <emphasis>immutable</emphasis> event. However, it
+        has a <code>subject</code> argument which contains a Joomla Table
+        object. All objects in PHP are passed by reference; any change we make
+        to it will persist when we return from our method. That's why we can
+        change its <code>modified_by</code> property without returning any
+        value from our event handler and despite the event itself being
+        immutable.</para>
+
+        <para>Finally, we have selective immutable events. On the face of it,
+        they are immutable events. However, they have setter methods for
+        specific named arguments. Actually, the
+        <classname>\Joomla\CMS\Event\Table\AfterLoadEvent</classname> is a
+        selectively immutable event. It has setters for the
+        <code>result</code> and <code>row</code> arguments. Every event
+        implementing
+        <interfacename>\Joomla\CMS\Event\Result\ResultAwareInterface</interfacename>
+        is selectively immutable; there is always the
+        <methodname>addResult</methodname> method to add to the results
+        returned by the event.</para>
+
+        <para>Handling events is a bit more involved than using simple
+        callback methods like you used to in legacy plugins. If you feel
+        utterly lost, <code>var_dump</code> the <code>$event</code> variable
+        and <code>die();</code><footnote>
+            <para>You can of course attach a PHP debugger and add a breakpoint
+            to your event handler to better inspect what is going on. Even
+            though this method is preferable I understand that not everyone
+            knows how to do it. Plus, var_dump and die is easy and I use it
+            too when I just want to get a quick idea of what's going on with a
+            variable without having to temporarily disable my other
+            breakpoints. All tools are useful when used appropriately.</para>
+          </footnote>. You will get a lot of insight as to what the event does
+        and which data does it carry.</para>
       </section>
     </section>
 
