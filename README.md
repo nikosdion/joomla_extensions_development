@@ -12,7 +12,7 @@ Please keep in mind that I am writing this book on my own time, without any kind
 
 ## How to read this book
 
-An [HTML version of the book](html/index.html) is included in this repository. 
+An [HTML version of the book](https://www.dionysopoulos.me/book.html) can be found on my personal site. 
 
 ## “Developing” the book
 
