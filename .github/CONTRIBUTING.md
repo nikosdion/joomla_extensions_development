@@ -2,7 +2,7 @@
 
 Thank you for investing your time in contributing to my project! Any contribution you make will be reflected on [the HTML version of the book](https://www.dionysopoulos.me/book.html) and any releases I make in other formats.
 
-Read the [Code of Conduct](./CODE_OF_CONDUCT.md) to keep our community approachable and respectable.
+Read the [Code of Conduct](CODE_OF_CONDUCT.md) to keep our community approachable and respectable.
 
 In this guide you will get an overview of the contribution workflow from opening an issue, creating a PR, reviewing, and merging the PR.
 
@@ -10,7 +10,7 @@ Use the table of contents icon in the top left corner of this document to get to
 
 ## New contributor guide
 
-To get an overview of the project, read the [README](README.md).
+To get an overview of the project, read the [README](../README.md).
 
 ## Getting started
 
