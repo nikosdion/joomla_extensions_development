@@ -1,9 +1,10 @@
-name: Deploy to persona site
+name: Deploy to personal site
 on: [push]
 jobs:
-  build:
-    name: Build
+  deployment:
+    name: Deployment
     runs-on: ubuntu-latest
+    environment: Dionysopoulos.me
     steps:
       - name: Checkout
         uses: actions/checkout@v2
