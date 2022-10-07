@@ -11,15 +11,23 @@
   <info>
     <title>Joomla Extensions Development</title>
 
+    <subtitle>The missing Joomla reference for extension developers</subtitle>
+
     <author>
       <personname><firstname>Nicholas</firstname><othername>K.</othername><surname>Dionysopoulos</surname></personname>
 
-      <affiliation>
-        <orgname>Akeeba Ltd</orgname>
-      </affiliation>
+      <personblurb>
+        <para>Nicholas is a software developer, mostly known for his work in
+        Akeeba Backup and Admin Tools. He's been writing Joomla extensions
+        since 2006 — and software in general for another decade, since his
+        middle school years. He is a regular contributor to the Joomla
+        project. When he's not writing code he enjoys writing documentation to
+        spread the knowledge and the Joomla love. He lives in Greece with his
+        wife, daughter and their two cats.</para>
+      </personblurb>
     </author>
 
-    <pubdate>August 2022</pubdate>
+    <pubdate>October 2022</pubdate>
 
     <copyright>
       <year>2022</year>
@@ -37,7 +45,7 @@
     </legalnotice>
   </info>
 
-  <chapter xml:id="intro">
+  <preface xml:id="intro">
     <title>Introduction</title>
 
     <section xml:id="intro-about">
@@ -103,7 +111,7 @@
       become a full time software engineer.</para>
 
       <para>I've been actively participating in the Joomla community since
-      2009. I am a regular Joomla contributor and not just writting code. I've
+      2009. I am a regular Joomla contributor and not just writing code. I've
       been involved in community outreach efforts and instigated the events
       leading to the beginning of the Joomla 4 effort. I still contribute to
       Joomla and, if I want to be honest with myself, I will continue doing
@@ -358,16 +366,17 @@
       definitely make it into the book but I will at least promise to give it
       a good thought and most likely a good try.</para>
     </section>
-  </chapter>
+  </preface>
 
   <chapter xml:id="concepts">
     <title>Basic concepts</title>
 
-    <para>As mentioned in the <link linkend="intro-j4-features">previous
-    chapter</link>, Joomla 4 introduced a lot of new features. Some of these
-    features introduce new fundamental concepts or refine existing ones.
-    Before delving deeper into Joomla extension development let's take a look
-    at these basic concepts to make sure we are all on the same page.</para>
+    <para>As mentioned in the <link
+    linkend="intro-j4-features">introduction</link>, Joomla 4 introduced a lot
+    of new features. Some of these features introduce new fundamental concepts
+    or refine existing ones. Before delving deeper into Joomla extension
+    development let's take a look at these basic concepts to make sure we are
+    all on the same page.</para>
 
     <section xml:id="concepts-namespaces">
       <title>Namespaces</title>
@@ -561,6 +570,196 @@ class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
           namespace support to templates will most likely be based on how
           modules are namespaced and Joomla trying to have a modicum of
           consistency.</para>
+        </listitem>
+      </itemizedlist>
+
+      <bridgehead>How to choose a namespace for your extension</bridgehead>
+
+      <para>Namespaces have for two primary reasons of existence:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">Uniqueness</emphasis>. Each of the
+          extensions installed on the same site in different directories must
+          have a unique namespace prefix which is not a subset or a superset
+          of the namespace prefix of another extension and does not clash (be
+          identical to) the namespace prefix of another extension.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Identifiability</emphasis>. Namespaces
+          of Joomla extensions should make it fairly obvious which extension
+          they belong to when read by people with little to no PHP coding
+          experience.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Let's see some <emphasis>bad</emphasis> examples first.</para>
+
+      <para>A component with the namespace prefix
+      <classname>Acme\Example</classname> and a plugin with the prefix
+      <classname>Acme\Example\System</classname>. This violates both reasons
+      for having a namespace. The namespace prefixes are not unique (the
+      plugin's prefix is a subset of the component's prefix) and it's hard to
+      understand which extension they refer to.</para>
+
+      <para>A component released by Yoyodyne Corporation with the namespace
+      prefix <classname>Acme\Component\Example</classname>. This violates the
+      second rule as a casual bystander would assume that the component was
+      written by a company called Acme, not Yoyodyne.</para>
+
+      <para>A system plugin called foobar with the namespace
+      <classname>Joomla\Plugin\System\Foo</classname>. Again, it violates both
+      reasons as it's neither unique (<code>plg_system_foo</code> could use
+      the same namespace!) and does not help people identify the plugin in
+      question.</para>
+
+      <para>Based on the bad examples it's easy to understand what a
+      <emphasis>good</emphasis> namespace is.</para>
+
+      <para>A good namespace is generally constructed as follows:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The company name, as commonly referred to in marketing and
+          documentation. For example Joomla (the project name commonly used),
+          not OpenSourceMattersInc (the full name of the non-profit legal
+          entity which owns the Joomla trademark).</para>
+        </listitem>
+
+        <listitem>
+          <para>(optional, but encouraged) The type of the extension the
+          namespace refers to, e.g. Component, Plugin, or Module.</para>
+        </listitem>
+
+        <listitem>
+          <para>(for plugins) The plugin type i.e. the folder it's installed
+          into, e.g. System, Content, and so on.</para>
+        </listitem>
+
+        <listitem>
+          <para>The name of the extension, either as installed (e.g. ARS for
+          com_ars) or as commonly referred to in the extensions manager (e.g.
+          ReleaseSystem for com_ars).</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Thus, a namespace like Akeeba\Component\ReleaseSystem gives us a
+      pretty good idea that it's an extension written by a company called
+      Akeeba, it's a component and it's name is something with Release System
+      in it. Hm, it must be Akeeba Release System!</para>
+
+      <para>It is a very good idea that parts of your namespace when searched
+      in the extensions manager end up listing your extension. This will help
+      a user faced with an exception error page to figure out which extension
+      the exception comes from, even though they have no idea about PHP or
+      what an exception is.</para>
+
+      <bridgehead>If you get Class Not Found while developing
+      extensions</bridgehead>
+
+      <para>Joomla automatically creates a map of installed extensions, their
+      location and their namespace prefixes as noted in their XML manifests.
+      It uses this information to register a PSR-4 autoloader which handles
+      loading the various classes based on their name, without having to
+      manually include their files yourself.</para>
+
+      <para>The information is cached in the file
+      <filename>administrator/cache/autoload_psr4.php</filename> which is
+      automatically generated on every page load if it's missing. It is also
+      forcibly regenerated when you install, update, remove, publish, or
+      unpublish an extension from your site.</para>
+
+      <para>It is possible that while developing your site you will end up
+      with that file becoming out of sync with the XML manifests on your
+      filesystem — for example, if you changed the namespace of an extension
+      you are developing or if you moved files around. If that happens to you,
+      simply delete the
+      <filename>administrator/cache/autoload_psr4.php</filename> file and
+      reload the frontend home page of your site. The file will be
+      regenerated.</para>
+
+      <para>If something is missing from that file or if you keep getting
+      problems despite that file appearing to be correct, ask yourself these
+      questions:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Am I using the correct class name? Writing this book I've
+          typed <classname>Acme\Examlpe</classname> instead of
+          <classname>Acme\Example</classname> more times than I care to admit.
+          Always start with the assumption that you typed the class name
+          wrong.</para>
+        </listitem>
+
+        <listitem>
+          <para>Are my folders and files the correct letter case? Attention
+          macOS and Windows users! While on macOS and Windows the folders
+          <filename>FooBar</filename>, <filename>FOOBAR</filename> and
+          <filename>foobar</filename> will all work this is not true on Linux!
+          Also remember that if you commit a folder / file in the wrong case
+          on Git you can't just rename it and commit it; it will not work when
+          checking out the file. Instead rename the folder / file to its
+          correct case with a <filename>-bak</filename> suffix, commit, remove
+          the suffix, commit again.</para>
+        </listitem>
+
+        <listitem>
+          <para>Is the extension installed? You'd be surprised at how wrapped
+          up you can get writing the code of the extension without remembering
+          to actually install it on your development site. I do that every
+          second plugin I write. At least I know that I'm both the detective
+          and the killer in this code murder mystery, having gone through it
+          so often.</para>
+        </listitem>
+
+        <listitem>
+          <para>Is the extension published? When you install a plugin it is
+          disabled by default. Disabled extensions don't get
+          autoloaded.</para>
+        </listitem>
+
+        <listitem>
+          <para>Am I using OPcache? If you're using OPcache —or any other PHP
+          cache— your server might “remember” the older version of the
+          <filename>autoload_psr4.php</filename> file. If unsure, restart the
+          web server <emphasis>and</emphasis> the PHP-FPM service.</para>
+        </listitem>
+
+        <listitem>
+          <para>Have I cleared Joomla's cache? If you toggled the publish
+          status of an extension in the database Joomla might not be aware
+          that you did so (especially salient for plugins and modules). Clear
+          Joomla's cache, administrator and site.</para>
+        </listitem>
+
+        <listitem>
+          <para>Am I using another cache, CDN or reverse proxy between my
+          browser and the server? Don't do that during development!</para>
+        </listitem>
+
+        <listitem>
+          <para>Does the XML manifest exist in the location Joomla expects it
+          <emphasis>and</emphasis> up-to-date? Components' XML manifests must
+          exist in the component's backend root (e.g.
+          <filename>administrator/components/com_example/example.xml</filename>).
+          Plugins and modules expect the XML manifest in their respective
+          folder. Make sure the manifest file you have there actually has the
+          <tag>&lt;namespace&gt;</tag> tag, the namespace is spelled correctly
+          and it has a <parameter>path</parameter> attribute which is also
+          spelled correctly, both itself and the folder name which is your
+          PSR-4 root.</para>
+        </listitem>
+
+        <listitem>
+          <para>Is it possible that my namespace violates the two rules
+          described above, especially the one about it not being a subset of
+          another extension's namespace? If your namespace is a subset of
+          another extension (e.g. my namespace is
+          <classname>Acme\Example\Foo</classname> and there's another
+          extension with the namespace <classname>Acme\Example</classname>)
+          the PSR-4 autoloader will end up looking into the <emphasis>wrong
+          folder</emphasis> for your files.</para>
         </listitem>
       </itemizedlist>
     </section>
@@ -9726,9 +9925,10 @@ if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
 
       <para>This is a bonus round and not a bug which will break sites
       <emphasis>today</emphasis>, but it will break sites come Joomla 6.0 and
-      a mild security concern. It also eases us into the next section on <link
-      linkend="plg-wam">using the WebAssetManager</link> which is why I chose
-      to put this interlude section here in this book.</para>
+      a mild security concern. It also reminds us that plugins, like all other
+      Joomla extension types, should be <link
+      linkend="concepts-webassetmanager">using the
+      WebAssetManager</link>.</para>
 
       <para>The developer of the extension chose to load their static
       JavaScript file using the deprecated
@@ -9852,26 +10052,14 @@ if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
       plumbing covered in previous sections of this book.</para>
     </section>
 
-    <section xml:id="plg-wam">
-      <title>Using the WebAssetManager</title>
+    <section xml:id="plg-interfacing-com">
+      <title>Interfacing with your component</title>
 
       <para/>
     </section>
 
     <section xml:id="plg-concrete-events">
       <title>Generic versus Concrete events</title>
-
-      <para/>
-    </section>
-
-    <section xml:id="plg-view-templates">
-      <title>Using view templates</title>
-
-      <para/>
-    </section>
-
-    <section xml:id="plg-interfacing-com">
-      <title>Interfacing with your component</title>
 
       <para/>
     </section>
