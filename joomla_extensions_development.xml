@@ -8845,12 +8845,12 @@ class Example extends CMSPlugin implements SubscriberInterface
 
         <para>The second thing required for your component to integrate with
         the Joomla API application is a <literal>webservices</literal> plugin.
-        This plugin serves a dual role. </para>
+        This plugin serves a dual role.</para>
 
         <para>On one hand it lets the user determine which components will
         participate in the Joomla API application — if they do not have a use
         case for your component's JSON API they can and should disable the
-        plugin. </para>
+        plugin.</para>
 
         <para>On the other hand the plugin implements routing for your API
         application. That's right; there is no such thing as a Router service
@@ -8870,7 +8870,7 @@ class Example extends CMSPlugin implements SubscriberInterface
         exactly one argument, an object instance of
         <classname>\Joomla\CMS\Router\ApiRouter</classname>. This is a
         subclass of Joomla's <classname>\Joomla\Router\Router</classname>
-        class, optimised for use in the API application. </para>
+        class, optimised for use in the API application.</para>
 
         <para>There are two ways to add routes for your component's API
         application integration, both using the router object.</para>
@@ -11278,6 +11278,153 @@ try { hackMePlenty(); } catch (\Throwable $e) { }</programlisting>
         ISSUE</emphasis>. Do you hear that, form component developers? Your
         extensions make it trivial to hack people's sites. Fix 'em!</para>
       </section>
+    </section>
+
+    <section xml:id="advice-error-messages">
+      <title>The fine art of writing error messages</title>
+
+      <para>Error messages are one of the most critical aspects of our
+      software, though it receives surprisingly little attention. Error
+      messages are displayed to our software's users when something bad
+      happens. Our users will be in a negative state of mind: confused,
+      afraid, angry, or a combination of the above. Our job as software
+      developers is to provide them with reassurance, and to help them
+      identify the issue and resolve it. To do that in an efficient manner
+      requires understanding our code, the user's state of mind and abilities,
+      and the use of language.</para>
+
+      <bridgehead>What is the context of your error message?</bridgehead>
+
+      <para>Let's consider a very simple situation which warrants an error
+      message: a form validation error in an e-commerce component. This could
+      happen in different context. The site owner may have forgotten to enter
+      the information required to integrate with the payment provider. A
+      backend user with data entry-only privileges may have forgotten to enter
+      the price information for a product variation, e.g. the price of
+      <emphasis>blue</emphasis> t-shirts. A frontend user (client) may have
+      forgotten to enter their street address.</para>
+
+      <para>On the face of it, these are all the same thing: form validation
+      error. Let's just set up a few rules in the form and some checks in our
+      Table and throw an exception when something's wrong, Joomla will convey
+      that as error messages on the user interface and all is well,
+      right?</para>
+
+      <para><emphasis role="bold">WRONG!</emphasis></para>
+
+      <para>Our exception results to an error message which is very technical,
+      unhelpful and lacks any empathy. For example “You need to provide the
+      Stripe API key”. This is mostly okay in the first context of the site
+      owner. It is a bit jarring for the data entry person to tell them “Price
+      is required!”. Woah, there, mister! Is this an e-commerce extension for
+      a mass-distributed CMS or Checkpoint Charlie in the height of the Cold
+      War?! It is definitely not a good experience for our prospective client
+      to tell them “The Address is required”. We are putting them off and they
+      might abandon their cart to go to the competition.</para>
+
+      <para>Do not always assume that you can convey the same message, the
+      same way, in every context. Think about the context and adjust your
+      messages accordingly. For example, in the case of conveying messages to
+      the end user (client) we may have to catch the internal exception and
+      “reshape” the error message. We could instead tell them “Your order
+      information is saved but your order is not submitted yet. Some
+      information we need to process it is missing. Please review the fields
+      marked with a red outline below. If the problem isn't solved after
+      editing your information and clicking on Purchase please contact
+      customer support.”.</para>
+
+      <bridgehead>What makes an error message good?</bridgehead>
+
+      <para>An error message needs to be <emphasis
+      role="bold">reassuring</emphasis>. Remember that you are talking to a
+      human who expected something to happen and now they are met with a scary
+      message. Keep the tone serious, but not completely dry. If you know that
+      the application is in a state which is recoverable lead by reassuring
+      the user that this is the case. If it's not in a recoverable state but
+      there is a good chance that the problem can be rectified lead with the
+      fact that there is resolution in sight. If your application is in a dire
+      situation which cannot possibly be recovered from you should try to ease
+      the user into that fact, like a doctor giving someone the bad news that
+      they have 3 months to live.</para>
+
+      <para>An error message must be <emphasis role="bold">factual</emphasis>:
+      it needs to say what happened and why it happened. An error message
+      “Something went wrong” is worse than no error message at all. Tell the
+      user what went wrong. Avoid using technical jargon unless the target
+      audience is most likely to be the site integrator and the technical
+      jargon is relevant to the resolution of the problem. </para>
+
+      <para>For example, if the problem is that there's been a cURL error
+      fetching data from a third party API processing payments the message to
+      show an end user would be “We could not connect to the third party
+      service which processes payments on our behalf”. Conversely, the message
+      to show to the site integrator for the same problem would be something
+      like “Timeout of 30 seconds exceeded contacting PayBuddy”. </para>
+
+      <para>When you have to present ‘dumbed down’ error messages to the end
+      user it's very helpful logging the more technical details and provide
+      the end user with a unique identifier which allows the site integrator
+      to locate this particular error message in the log file so they can
+      provide assistance.</para>
+
+      <para>An error message must be <emphasis role="bold">helpful</emphasis>.
+      Telling someone what went wrong and possibly why is one thing. Helping
+      the resolve it is a completely different issue altogether. Tell your
+      user what they should be doing next. If the message targets end users
+      the resolution should be fairly short and simple to follow; remember
+      that the user is not in a good mental state right now. If the message
+      targets a site integrator it is best to link them to a documentation
+      page <emphasis>relevant to the issue at hand</emphasis> so they can read
+      more about what happened and how to troubleshoot it. </para>
+
+      <para>If there is a reasonable amount of use cases where the target
+      audience will not be able to address this issue by themselves try to
+      include a link to further steps, be it watching a video tutorial,
+      reading a documentation page, asking help on a forum, contacting their
+      host, or contacting the site owner / extension developer — again, you
+      need to choose the appropriate action based on the target
+      audience.</para>
+
+      <para>If you provide a further action which requires the user to contact
+      another person make sure to do it in a way which will guide the user
+      into providing all the necessary information. If at all possible,
+      collect all the necessary information and transmit it with the user's
+      consent (think about how major Operating Systems and browsers implement
+      a “crash assistant”).</para>
+
+      <para>Finally, keep the error messages <emphasis
+      role="bold">concise</emphasis> (short and to the point). Nobody will
+      read a novel-length error message, even if it is the most informative
+      and helpful resource in the Universe.</para>
+
+      <para>These requirements are oftentimes at odds with each other. Finding
+      the appropriate error message requires understanding your target
+      audience and their use cases. This is not easy. Your understanding of
+      the target audience and their use cases will improve over time, and the
+      audience itself and their use cases will also evolve over time. Do not
+      be afraid to revise your error messages, the way you present them, and
+      your documentation on how to troubleshoot them. </para>
+
+      <para>A good way to approach error messages is to make them friendly,
+      short, informative, and when the resolution is more than ten words do
+      link to a longer documentation page which takes the user by the hand and
+      helps them resolve the issue. Yes, you will have the users who can't be
+      bothered to read the documentation (like death and taxes, they are
+      unavoidable), as well as the users who got lost reading it (approach it
+      as an opportunity to understand their challenges and improve your
+      documentation). In the end of the day you have helped far more users
+      figure out what to do without contacting you, and without feeling overly
+      frustrated, angry, or stupid. We don't hear about those users but if
+      they become the <emphasis>majority</emphasis> of our users then we can
+      say we are doing the right thing as developers.</para>
+
+      <para>If you want to see what good error messages are like, take a look
+      at Joomla Update's archive extraction step since Joomla 4.0.4. When
+      something fails it will tell you what failed, why it failed, the next
+      steps to follow and links to a documentation page with troubleshooting
+      information. Unfortunately, we could not link to specific
+      troubleshooting steps as the Wiki format is rather limited but
+      <emphasis>you</emphasis> can definitely do even better!</para>
     </section>
 
     <section xml:id="advice-composer">
