@@ -9441,10 +9441,8 @@ $results = $event-&gt;getArgument('result', []);</programlisting>
         <para>Plugins of this type are just like <link
         linkend="plg-forms-j4-classic">Joomla 4 classic plugins</link> with a
         twist. The plugin class implements the
-        <interfacename>\Joomla\Event\SubscriberInterface</interfacename> and
-        you set the protected property <code>$this-&gt;allowLegacyListeners =
-        false;</code>. This changes the way Joomla registers event
-        handlers.</para>
+        <interfacename>\Joomla\Event\SubscriberInterface</interfacename>.
+        This changes the way Joomla registers event handlers.</para>
 
         <para>Joomla will NOT use reflection to find public methods whose name
         starts with <code>on</code>. It will instead call the public static
