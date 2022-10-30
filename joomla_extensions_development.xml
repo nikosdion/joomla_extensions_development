@@ -9101,7 +9101,261 @@ class Example extends CMSPlugin implements SubscriberInterface
     <section xml:id="com-scheduled-tasks">
       <title>Integration with Scheduled Tasks</title>
 
-      <para/>
+      <para>Joomla 4.1 and later have an amazingly useful new feature called
+      Scheduled Tasks. This is not really part of a component, it's just a
+      plugin type, but since it is often used in conjunction with a component
+      it makes sense to mention it here. You can read more about plugins in
+      general in the <link linkend="plg">Plugins</link> chapter of this
+      book.</para>
+
+      <para>Scheduled Tasks allow the user to defined repeated, unattended
+      tasks which run on a schedule. It's like CRON jobs but without
+      necessarily needing a CRON server on the site's server. They can be
+      triggered with CRON jobs, with a special URL (e.g. using web-based
+      pseudo-CRON services such as WebCRON.org), or automatically based on the
+      site's traffic in what is called Lazy Scheduling.</para>
+
+      <para>The best way to understand how a Scheduled Task plugin works is
+      looking at the demo tasks plugin under
+      <filename>plugins/task/demotasks</filename> folder on your site; it is
+      part of Joomla itself.</para>
+
+      <para>You create a plugin which provides one or more scheduled tasks in
+      the <literal>tasks</literal> folder. The plugin extension must implement
+      <classname>\Joomla\Event\SubscriberInterface</classname>. It also needs
+      to make use of the
+      <classname>\Joomla\Component\Scheduler\Administrator\Traits\TaskPluginTrait</classname>.
+      The trait provides all the magic.</para>
+
+      <para>You need to handle three events:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><literal>onTaskOptionsList</literal>. This is set to be
+          handled by the <methodname>advertiseRoutines</methodname> method
+          implemented in the <classname>TaskPluginTrait</classname>. This
+          tells Joomla to add task types based on the contents of the
+          <constant>TASKS_MAP</constant> constant of your plugin.</para>
+        </listitem>
+
+        <listitem>
+          <para><literal>onExecuteTask</literal>. This is handled by the
+          <methodname>standardRoutineHandler</methodname> method implemented
+          in the <classname>TaskPluginTrait</classname>. When a scheduled task
+          type the plugin can handled is being executed this method will call
+          your respective plugin method, as defined in the
+          <constant>TASKS_MAP</constant> constant of your plugin.</para>
+        </listitem>
+
+        <listitem>
+          <para><literal>onContentPrepareForm</literal>. This is handled by
+          the <methodname>enhanceTaskItemForm</methodname> method implemented
+          in the <classname>TaskPluginTrait</classname>. It tells the
+          Scheduled Tasks manager to use the XML forms which define each task
+          type's options when the user creates a scheduled task with this task
+          type.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The <constant>TASKS_MAP</constant> constant is the most important
+      part of the plugin. It is an array with task definitions like
+      this:</para>
+
+      <programlisting>private const TASKS_MAP = [
+    'exampleTask.foobar' =&gt; [
+        'langConstPrefix' =&gt; 'PLG_TASK_EXAMPLE_TASK_FOOBAR',
+        'method'          =&gt; 'foobar',
+        'form'            =&gt; 'foobar',
+    ],
+];</programlisting>
+
+      <para>Do note that in this example we define one task type. It is
+      possible and most of the times desirable for a task plugin to define
+      more than one task types. In this case the
+      <constant>TASKS_MAP</constant> array will have more than one
+      elements.</para>
+
+      <para>The outermost key for each entry, in our example
+      <literal>exampleTask.foobar</literal>, tells Joomla what is the internal
+      name of the task type we are defining. The convention is to use
+      <literal><replaceable>something</replaceable>Task.<replaceable>taskName</replaceable></literal>
+      where <replaceable>something</replaceable> is the name of our plugin and
+      <replaceable>taskName</replaceable> is a fairly short name for the task
+      type. This will be stored in the database; you must not change it
+      between different versions of your task plugin.</para>
+
+      <para>In the innermost array we have three keys:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><literal>langConstPrefix</literal>. Required. The common
+          prefix of the language strings used for this task type. The
+          convention is to use the format
+          <literal>PLG_TASK_<replaceable>SOMETHING</replaceable>_TASK_<replaceable>TASKNAME</replaceable></literal>
+          where <replaceable>something</replaceable> is the name of our plugin
+          and <replaceable>taskName</replaceable> is a fairly short name for
+          the task type. The plugin's language INI file will have to define at
+          least two language strings:</para>
+
+          <itemizedlist>
+            <listitem>
+              <para><literal>PLG_TASK_<replaceable>SOMETHING</replaceable>_TASK_<replaceable>TASKNAME</replaceable>_TITLE</literal>.
+              The title of the task type, displayed to the user. Keep it very
+              short and descriptive.</para>
+            </listitem>
+
+            <listitem>
+              <para><literal>PLG_TASK_<replaceable>SOMETHING</replaceable>_TASK_<replaceable>TASKNAME</replaceable>_DESC</literal>.
+              A longer description of the task type, displayed to the user.
+              Try to keep it under 50 words.</para>
+            </listitem>
+          </itemizedlist>
+        </listitem>
+
+        <listitem>
+          <para><literal>method</literal>. Required. The name of the plugin
+          method which will be handling the task type. It's customary to name
+          it after the <replaceable>taskName</replaceable> you used in the
+          previous keys.</para>
+        </listitem>
+
+        <listitem>
+          <para><literal>form</literal>. Optional. The filename, without the
+          .xml extension, of the XML form file which adds the configuration
+          parameters to the task type when the user is editing the definition
+          of a task. This file is placed in the <filename>forms</filename>
+          folder of the plugin.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The method which handles each task type has the following
+      signature:</para>
+
+      <programlisting>public function foobar(
+  \Joomla\Component\Scheduler\Administrator\Event\ExecuteTaskEvent $event
+): int</programlisting>
+
+      <para>The <parameter>$event</parameter> parameter is a standard Joomla
+      event object. To get the task definition from the event you need to
+      do</para>
+
+      <programlisting>$task = $event-&gt;getArgument('subject');</programlisting>
+
+      <para>This gives you a
+      <classname>\Joomla\Component\Scheduler\Administrator\Task\Task</classname>
+      object.</para>
+
+      <para>To get the configuration parameters of the task, as a simple
+      <classname>stdClass</classname> object, you can do:</para>
+
+      <programlisting>$params = $event-&gt;getArgument('params');</programlisting>
+
+      <para>Your method does NOT set a result value to the
+      <parameter>$event</parameter> object; it's not an event handler per se.
+      It instead returns an integer value which must be one of the constants
+      defined in
+      <classname>\Joomla\Component\Scheduler\Administrator\Task\Status</classname>.
+      You should realistically only use the following constants as return
+      values:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><constant>KNOCKOUT</constant>. An error occurred. The task
+          execution will appear failed. The task will be rescheduled normally
+          for its next execution according to its configured schedule.</para>
+        </listitem>
+
+        <listitem>
+          <para><constant>OK</constant>. Success. The task execution will
+          appear successful. The task will be rescheduled normally for its
+          next execution according to its configured schedule.</para>
+        </listitem>
+
+        <listitem>
+          <para><constant>WILL_RESUME</constant>. Temporary pause. The task
+          has more work to do but halted execution to avoid a timeout. The
+          task execution will appear to be ongoing. The task is rescheduled to
+          resume execution as soon as possible i.e. the next time Joomla is
+          asked to check whether any tasks need to execute. Please note that
+          if your task is being resumed the following will return true:</para>
+
+          <programlisting>$resuming = $event
+  -&gt;getArgument('subject')
+  -&gt;get('last_exit_code', Status::OK) === Status::WILL_RESUME;</programlisting>
+
+          <para>Resumable tasks are great for long operations, like resizing
+          hundreds of images or sending a newsletter to thousands of
+          recipients, which might otherwise time out if you tried executing
+          them in a single run. Split your work into small batches and/or
+          check how much time has elapsed since you started doing some work.
+          If a batch is complete and/or you have spent more than a configured
+          maximum amount of time (typically useful values are 3, 5, 10, 20 and
+          30 seconds) return a Status::WILL_RESUME. Next time your task runs
+          checks if the last_exit_code parameter is Status::WILL_RESUME and
+          continue your work where you left off.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Earlier, we talked about having an XML form file to add parameters
+      to the Scheduled Task type. The contents of the file look like
+      this:</para>
+
+      <programlisting>&lt;?xml version="1.0" encoding="utf-8" ?&gt;
+&lt;form&gt;
+    &lt;fields name="params"&gt;
+        &lt;fieldset name="task_params"&gt;
+            &lt;field
+                    name="my_parameter"
+                    type="text"
+                    label="PLG_TASK_EXAMPLE_TASK_FOOBAR_MY_PARAMETER_LABEL"
+                    description="PLG_TASK_EXAMPLE_TASK_FOOBAR_MY_PARAMETER_DESC"
+                    default=""
+            /&gt;
+        &lt;/fieldset&gt;
+    &lt;/fields&gt;
+&lt;/form&gt;
+</programlisting>
+
+      <para>The <tag>form</tag> tag has a <tag>fields</tag> tag whose name is
+      <literal>params</literal> and inside it there is a <tag>fieldset</tag>
+      tag whose name is <literal>task_params</literal>. The fields inside the
+      <tag>fieldset</tag> are rendered in the task definition page.</para>
+
+      <para>There is a special case where you can have a <tag>fieldset</tag>
+      tag outside the <tag>fields</tag> tag; if you want your task to only be
+      available for execution when Scheduled Tasks are executed through a
+      Joomla CLI application command. This can be very useful if you have a
+      very long running operation you do not want to (or cannot reasonably)
+      break into smaller sub-tasks to make it a resumable task. In this case,
+      we will add another <tag>fieldset</tag> tag whose name is
+      <literal>aside</literal> and place a special hidden field in it. See
+      below, highlighted in bold type:</para>
+
+      <para><programlisting>&lt;?xml version="1.0" encoding="utf-8" ?&gt;
+&lt;form&gt;
+<emphasis role="bold">    &lt;fieldset name="aside"&gt;
+        &lt;field name="cli_exclusive" type="hidden" default="1" /&gt;
+    &lt;/fieldset&gt;</emphasis>
+    &lt;fields name="params"&gt;
+        &lt;fieldset name="task_params"&gt;
+            &lt;field
+                    name="my_parameter"
+                    type="text"
+                    label="PLG_TASK_EXAMPLE_TASK_FOOBAR_MY_PARAMETER_LABEL"
+                    description="PLG_TASK_EXAMPLE_TASK_FOOBAR_MY_PARAMETER_DESC"
+                    default=""
+            /&gt;
+        &lt;/fieldset&gt;
+    &lt;/fields&gt;
+&lt;/form&gt;</programlisting>That's really all there is to it! Since this is
+      a regular Joomla plugin and assuming your component is native Joomla 4
+      (therefore its classes can autoload from anywhere in Joomla) you can of
+      course pass your component's <classname>MVCFactory</classname> instance
+      to the plugin and use it to get access to your component's Models and
+      Tables. Therefore, your tasks can reuse your component's code. Remember
+      that you write good software by staying DRY (Don't Repeat Yourself —
+      reuse your objects and traits instead of copying and pasting the same
+      code all over the place).</para>
     </section>
 
     <section xml:id="com-fields">
@@ -10720,12 +10974,6 @@ if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
       plumbing covered in previous sections of this book.</para>
     </section>
 
-    <section xml:id="plg-interfacing-com">
-      <title>Interfacing with your component</title>
-
-      <para/>
-    </section>
-
     <section xml:id="plg-concrete-events">
       <title>Generic versus Concrete events</title>
 
@@ -11352,14 +11600,14 @@ try { hackMePlenty(); } catch (\Throwable $e) { }</programlisting>
       “Something went wrong” is worse than no error message at all. Tell the
       user what went wrong. Avoid using technical jargon unless the target
       audience is most likely to be the site integrator and the technical
-      jargon is relevant to the resolution of the problem. </para>
+      jargon is relevant to the resolution of the problem.</para>
 
       <para>For example, if the problem is that there's been a cURL error
       fetching data from a third party API processing payments the message to
       show an end user would be “We could not connect to the third party
       service which processes payments on our behalf”. Conversely, the message
       to show to the site integrator for the same problem would be something
-      like “Timeout of 30 seconds exceeded contacting PayBuddy”. </para>
+      like “Timeout of 30 seconds exceeded contacting PayBuddy”.</para>
 
       <para>When you have to present ‘dumbed down’ error messages to the end
       user it's very helpful logging the more technical details and provide
@@ -11375,7 +11623,7 @@ try { hackMePlenty(); } catch (\Throwable $e) { }</programlisting>
       that the user is not in a good mental state right now. If the message
       targets a site integrator it is best to link them to a documentation
       page <emphasis>relevant to the issue at hand</emphasis> so they can read
-      more about what happened and how to troubleshoot it. </para>
+      more about what happened and how to troubleshoot it.</para>
 
       <para>If there is a reasonable amount of use cases where the target
       audience will not be able to address this issue by themselves try to
@@ -11403,7 +11651,7 @@ try { hackMePlenty(); } catch (\Throwable $e) { }</programlisting>
       the target audience and their use cases will improve over time, and the
       audience itself and their use cases will also evolve over time. Do not
       be afraid to revise your error messages, the way you present them, and
-      your documentation on how to troubleshoot them. </para>
+      your documentation on how to troubleshoot them.</para>
 
       <para>A good way to approach error messages is to make them friendly,
       short, informative, and when the resolution is more than ten words do
@@ -11812,6 +12060,189 @@ return new class implements ServiceProviderInterface {
 vendor/*
 # Scoped dependencies
 components/com_example/dependencies/*</programlisting>
+    </section>
+
+    <section xml:id="advice-libraries">
+      <title>Library packages</title>
+
+      <para>When you are writing a lot of software for Joomla you will find
+      yourself having a lot of common code between your extensions. When the
+      amount of common code surpasses a certain (low) threshold and / or is
+      used on more than a couple of extensions it makes sense to share it
+      among all of your extensions. </para>
+
+      <para>This is what a <literal>library</literal> package is designed to
+      do. It creates a subdirectory inside the site's
+      <filename>libraries</filename> directory and optionally assigns it a
+      namespace.</para>
+
+      <para>The XML manifest of a files package is quite
+      straightforward:</para>
+
+      <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;extension type="library" method="upgrade"&gt;
+    &lt;name&gt;LIB_ACME_MYLIBRARY_LABEL&lt;/name&gt;
+    &lt;description&gt;LIB_ACME_MYLIBRARY_XML_DESCRIPTION&lt;/description&gt;
+    <emphasis role="bold">&lt;libraryname&gt;mylibrary&lt;/libraryname&gt;</emphasis>
+    &lt;creationDate&gt;2022-10-30&lt;/creationDate&gt;
+    &lt;author&gt;Acme Corp.&lt;/author&gt;
+    &lt;authorEmail&gt;acme-corp@example.com&lt;/authorEmail&gt;
+    &lt;authorUrl&gt;https://www.example.com&lt;/authorUrl&gt;
+    &lt;copyright&gt;(C)2022 Acme Corp&lt;/copyright&gt;
+    &lt;license&gt;GNU GPLv2 or later&lt;/license&gt;
+    &lt;version&gt;1.0.0&lt;/version&gt;
+    &lt;packager&gt;Acme Corp&lt;/packager&gt;
+    &lt;packagerurl&gt;https://www.example.com/download/mylibrary.html&lt;/packagerurl&gt;
+    <emphasis role="bold">&lt;namespace path="src"&gt;Acme\MyLibrary&lt;/namespace&gt;</emphasis>
+
+    &lt;languages folder="language"&gt;
+        &lt;language tag="en-GB"&gt;en-GB/lib_mylibrary.sys.ini&lt;/language&gt;
+        &lt;language tag="en-GB"&gt;en-GB/lib_mylibrary.ini&lt;/language&gt;
+    &lt;/languages&gt;
+
+    &lt;files&gt;
+        &lt;folder&gt;src&lt;/folder&gt;
+
+        &lt;file&gt;LICENSE.txt&lt;/file&gt;
+        &lt;file&gt;README.txt&lt;/file&gt;
+    &lt;/files&gt;
+
+    &lt;scriptfile&gt;script.mylibrary.php&lt;/scriptfile&gt;
+
+    &lt;updateservers&gt;
+        &lt;server type="extension" priority="1" name="Acme Corp My Library updates"&gt;https://cdn.example.com/updates/mylibrary_updates.xml&lt;/server&gt;
+    &lt;/updateservers&gt;
+&lt;/extension&gt;</programlisting>
+
+      <para>This is a typical <link
+      xlink:href="https://docs.joomla.org/Manifest_files">Joomla extension XML
+      manifest</link> with two tags you need to pay attention to:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><tag>libraryname</tag> tells Joomla the name of the
+          subdirectory under <filename>libraries</filename> where the files
+          will be copied. In this case we have told Joomla to install our
+          library files in the <filename>libraries/mylibrary</filename> folder
+          of the site. This is our library root folder.</para>
+        </listitem>
+
+        <listitem>
+          <para><tag>namespace</tag> tells Joomla the common namespace prefix
+          of your library files —assuming they follow the PSR-4 standard— and
+          the subdirectory inside your library's root which is the PSR-4 root.
+          In this case we tell Joomla that the common namespace prefix is
+          <classname>Acme\MyLibrary</classname> and the PSR-4 root for this
+          namespace is <filename>libraries/mylibrary/src</filename>.</para>
+
+          <para>This tag is <emphasis role="bold">optional</emphasis>.
+          However, if you do not provide this tag Joomla will NOT be able to
+          autoload your library files. You will have to provide your own
+          autoloader or include <filename>.php</filename> files
+          manually.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>The <tag>files</tag> tag tells Joomla where to copy files from the
+      package. If you have a subdirectory in your package where files are
+      located remember to use the <parameter>folder</parameter> attribute. For
+      example, if your package puts everything under a
+      <filename>dist</filename> folder change the <tag>files</tag> tag to
+      read:</para>
+
+      <programlisting>&lt;files <emphasis role="bold">folder="dist"</emphasis>&gt;</programlisting>
+
+      <para>It is a good idea to include a license and Read Me file with your
+      library. The former can be used to fulfil the legal requirement of most
+      Open Source licenses to distribute a copy of the license with the
+      software. The latter helps explaining to a user what exactly is in this
+      folder, what is it used by, and instructions regarding the update and
+      uninstallation of the library (users are well-known for going medieval
+      on folders on their site, renaming or deleting them without much thought
+      when they do not understand what they are for).</para>
+
+      <para>While providing a language file is not mandatory, I strongly
+      recommend providing a <filename>.sys.ini</filename> language file so
+      that you can use language strings in the <tag>name</tag> and
+      <tag>description</tag> tags.</para>
+
+      <para>If you provide a regular .ini language file, e.g. for error
+      messages and prompts, please keep in mind that <emphasis>it will not be
+      autoloaded</emphasis>. If you really need to provide translated messages
+      you need to make sure that all code paths leading to such a message will
+      first go through Joomla's Language object to load the translation
+      file:</para>
+
+      <programlisting>\Joomla\CMS\Factory::getApplication()
+  -&gt;getLanguage()
+  -&gt;load('lib_<replaceable>mylibrary</replaceable>', JPATH_SITE);</programlisting>
+
+      <para>Note that the extension you are loading is
+      <literal>lib_<replaceable>mylibrary</replaceable></literal> where
+      <replaceable>mylibrary</replaceable> is the content of your library's
+      XML manifest's <tag>libraryname</tag> tag.</para>
+
+      <para>Another thing you need to keep in mind when writing a library is
+      that libraries are not bootable extensions in Joomla. As a result, they
+      do not have a service provider
+      (<filename>services/provider.php</filename>) file. If you need to use
+      Joomla services you have two and a half options:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>The library consumers (your components, plugins, or modules)
+          need to push the services to your library objects. This is the
+          preferable way —it makes your library code easily testable with
+          PHPUnit— but it may lead to a very convoluted implementation in your
+          extensions. This is the optimal way for experienced
+          developers.</para>
+        </listitem>
+
+        <listitem>
+          <para>Pull services directly from the
+          <classname>Joomla\CMS\Factory</classname> using its
+          <methodname>getApplication</methodname> and
+          <methodname>getContainer</methodname> methods. This is the simplest
+          way to go about it BUT it makes your code untestable. In other
+          words, it's easy to use in your extensions but really difficult to
+          test with.</para>
+        </listitem>
+
+        <listitem>
+          <para>Hybrid! Use your own DI container and have your library's
+          public interface objects require it to be passed in the constructor.
+          The library consumers can set up their own DI container… or just use
+          a default implementation. A custom container can be used when
+          testing or when an experienced developer is developing their own
+          application, thus emulating the first option we described above. The
+          default DI container implementation —which simply goes through the
+          global CMS Factory— requires no setup so novice developers, or
+          trivial extensions, can quickly use the library without having to
+          worry about passing around services and setting up a DI container,
+          thus emulating the second option described above.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>While library extensions can have media files it is generally not
+      recommended to ship media files with your library. If you have media
+      files your library is not a library, it's more of a prototype extension.
+      Sure, you can do that —that's pretty much what we were doing with Akeeba
+      Live Update long before Joomla supported library packages— but the use
+      cases are so limited in number and so advanced in nature that if you
+      need to read this documentation you are extremely unlikely to need to
+      use this trick.</para>
+
+      <para>Finally, pay attention to how you are going to go about updating
+      your library extension. Joomla has absolutely no dependency management
+      across installed extensions. If a site has Extension A which requires
+      version 1.x of your library and Extension B which requires version 2.x
+      of your library you'll inadvertently break the site if version 2.x of
+      your library is not 100% backwards compatible to version 1.x of your
+      library. This was one of the many headaches we had to deal with when we
+      shipped our own MVC framework (Akeeba FOF) with our extensions. Short of
+      checking for the installed library version in your extension and
+      refusing to execute if it's too low or too high there's no other
+      practical way to address this conundrum.</para>
     </section>
   </chapter>
 
