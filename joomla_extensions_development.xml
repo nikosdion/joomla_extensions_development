@@ -11791,7 +11791,7 @@ return new class implements ServiceProviderInterface {
   {
     $container-&gt;set(
       PluginInterface::class,
-      unction (Container $container) {
+      function (Container $container) {
         $subject = $container-&gt;get(DispatcherInterface::class);
         $config  = (array) PluginHelper::getPlugin('system', 'example');
         
@@ -11820,7 +11820,7 @@ return new class implements ServiceProviderInterface {
   {
     $container-&gt;set(
       PluginInterface::class,
-      unction (Container $container) {
+      function (Container $container) {
         $subject = $container-&gt;get(DispatcherInterface::class);
         $config  = (array) PluginHelper::getPlugin('system', 'example');
         
@@ -12034,7 +12034,7 @@ return new class implements ServiceProviderInterface {
   {
     $container-&gt;set(
       PluginInterface::class,
-      unction (Container $container) {
+      function (Container $container) {
         $subject = $container-&gt;get(DispatcherInterface::class);
         $config  = (array) PluginHelper::getPlugin('system', 'example');
         
