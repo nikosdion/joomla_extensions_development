@@ -9361,7 +9361,225 @@ class Example extends CMSPlugin implements SubscriberInterface
     <section xml:id="com-fields">
       <title>Custom fields</title>
 
-      <para/>
+      <para>Implementing custom fields is relatively simple. For starters,
+      your component extension must implement the
+      <interfacename>Joomla\CMS\Fields\FieldsServiceInterface</interfacename>.
+      The two methods defined in the interface are implemented a lot like this
+      in most cases:</para>
+
+      <programlisting>public function validateSection($section, $item = null)
+{
+  if (!in_array($section, ['categories', 'item'])) {
+    return null;
+  }
+
+  return $section;
+}
+
+public function getContexts(): array
+{
+  Factory::getApplication()-&gt;getLanguage()-&gt;load('com_example', JPATH_ADMINISTRATOR);
+
+  return [
+    'com_example.item'       =&gt; Text::_('COM_EXAMPLE_TITLE_ITEMS'),
+    'com_example.categories' =&gt; Text::_('JCATEGORY'),
+  ];
+}</programlisting>
+
+      <para>The former method makes sure that a context's section (the stuff
+      after the dot) is a valid section where you expect custom fields to
+      exist. In this example we expect two sections,
+      <literal>categories</literal> and <literal>item</literal>.</para>
+
+      <para>The latter method returns a list of contexts for out component
+      where custom fields can be defined. We defined the two contexts
+      corresponding to the sections we accept in the
+      <methodname>validateSection</methodname> method. The return values will
+      be used by <literal>com_fields</literal> to render the drop-down which
+      lets the user select the section for which they define custom fields for
+      your component.</para>
+
+      <para>Your XML manifest must, of course, include two links to the Joomla
+      Fields component, one for the Fields and one for the Fields group. Use
+      one of the contexts you returned in the
+      <methodname>getContexts</methodname> method above. Do NOT use the
+      context for categories.</para>
+
+      <programlisting>&lt;menu link="option=com_fields&amp;amp;view=fields&amp;amp;context=com_example.item"&gt;
+    JGLOBAL_FIELDS
+    &lt;params&gt;
+        &lt;menu-quicktask&gt;&lt;![CDATA[index.php?option=com_fields&amp;view=field&amp;layout=edit&amp;context=com_example.item]]&gt;&lt;/menu-quicktask&gt;
+        &lt;menu-quicktask-title&gt;COM_EXAMPLE_SUBMENU_FIELDS_NEW&lt;/menu-quicktask-title&gt;
+        &lt;menu-quicktask-permission&gt;core.create;com_fields&lt;/menu-quicktask-permission&gt;
+    &lt;/params&gt;
+&lt;/menu&gt;
+
+&lt;menu link="option=com_fields&amp;amp;view=groups&amp;amp;context=com_example.item"&gt;
+JGLOBAL_FIELD_GROUPS
+&lt;params&gt;
+    &lt;menu-quicktask&gt;&lt;![CDATA[index.php?option=com_fields&amp;view=group&amp;layout=edit&amp;context=com_example.item]]&gt;&lt;/menu-quicktask&gt;
+    &lt;menu-quicktask-title&gt;COM_EXAMPLE_SUBMENU_FIELD_GROUPS_NEW&lt;/menu-quicktask-title&gt;
+    &lt;menu-quicktask-permission&gt;core.create;com_fields&lt;/menu-quicktask-permission&gt;
+&lt;/params&gt;
+&lt;/menu&gt;</programlisting>
+
+      <para>Your backend item edit pages <emphasis>should</emphasis> display
+      the custom fields automatically — as long as you render all of the
+      form's fieldset without looking for specific names. For example,
+      something similar to this code:</para>
+
+      <programlisting>&lt;?php
+
+use Joomla\CMS\HTML\HTMLHelper;
+use Joomla\CMS\Language\Text;
+use Joomla\CMS\Router\Route;
+
+?&gt;
+&lt;form action="&lt;?= Route::_('index.php?option=com_example&amp;view=item&amp;layout=edit&amp;id=' . $this-&gt;item-&gt;id) ?&gt;"
+      aria-label="&lt;?= Text::_('COM_ATS_TITLE_TICKETS_EDIT', true) ?&gt;"
+      class="form-validate"
+      id="adminForm"
+      method="post"
+      name="adminForm"
+&gt;
+    &lt;input name="task" type="hidden" value=""&gt;
+    &lt;?= HTMLHelper::_('form.token') ?&gt;
+
+    &lt;?php foreach ($this-&gt;form-&gt;getFieldsets() as $fieldSet): ?&gt;
+
+    &lt;div class="card mb-2"&gt;
+        &lt;h3 class="card-header bg-info text-white"&gt;
+            &lt;?= Text::_($this-&gt;form-&gt;getFieldsets()[$fieldSet]-&gt;label) ?&gt;
+        &lt;/h3&gt;
+        &lt;div class="card-body"&gt;
+            &lt;?php echo $this-&gt;form-&gt;renderFieldset($fieldSet); ?&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;?php endforeach; ?&gt;
+
+&lt;/form&gt;</programlisting>
+
+      <para>Joomla handles loading and saving the values of custom fields
+      automatically as long as the Content - Fields plugin is
+      published.</para>
+
+      <para>In the frontend, fields' contents are returned through the
+      <literal>onContentAfterTitle</literal>,
+      <literal>onContentAfterDisplay</literal> and
+      <literal>onContentBeforeDisplay</literal> events. Typically, the
+      implementation in your HtmlView class looks similar to this:</para>
+
+      <programlisting>&lt;?php
+
+use Joomla\CMS\Factory;
+use Joomla\CMS\MVC\View\HtmlView as BaseHtmlView;
+use Joomla\CMS\Plugin\PluginHelper;
+
+
+class HtmlView extends BaseHtmlView
+{
+    /**
+     * The item object details
+     *
+     * @var    \Joomla\CMS\Object\CMSObject
+     *
+     * @since  1.6
+     */
+    protected $item;
+
+    // ... your code here ...
+
+    /**
+     * Execute and display a template script.
+     *
+     * @param   string  $tpl  The name of the template file to parse; automatically searches through the template paths.
+     *
+     * @return  void|boolean
+     */
+    public function display($tpl = null)
+    {
+        $app        = Factory::getApplication();
+        $state      = $this-&gt;get('State');
+        $item       = $this-&gt;get('Item');
+        $this-&gt;form = $this-&gt;get('Form');
+
+        // ... your code here ...
+
+        // Process the content plugins.
+        PluginHelper::importPlugin('content');
+        $offset = $state-&gt;get('list.offset');
+
+        // Some plugins require a text attribute without checking if it exists
+        $item-&gt;text = '';
+
+        $app-&gt;triggerEvent('onContentPrepare', [
+            'com_example.item', &amp;$item, &amp;$item-&gt;params, $offset
+        ]);
+
+        // Store the events for later
+        $item-&gt;event = new \stdClass();
+
+        $results = $app-&gt;triggerEvent('onContentAfterTitle', [
+                'com_example.item', &amp;$item, &amp;$item-&gt;params, $offset,
+            ]);
+        $item-&gt;event-&gt;afterDisplayTitle = trim(implode("\n", $results));
+
+        $results = $app-&gt;triggerEvent('onContentBeforeDisplay', [
+            'com_example.item', &amp;$item, &amp;$item-&gt;params, $offset,
+        ]);
+        $item-&gt;event-&gt;beforeDisplayContent = trim(implode("\n", $results));
+
+        $results = $app-&gt;triggerEvent('onContentAfterDisplay', [
+            'com_example.item', &amp;$item, &amp;$item-&gt;params, $offset,
+        ]);
+        $item-&gt;event-&gt;afterDisplayContent = trim(implode("\n", $results));
+
+        $this-&gt;item = $item;
+
+        // ... your code here ...
+    }
+}</programlisting>
+
+      <para>Your view template can then output
+      <code>$this-&gt;event-&gt;afterDisplayTitle</code> etc in appropriate
+      places.</para>
+
+      <tip>
+        <para>If you want to see how you can override Joomla's default custom
+        field display to format it in a way that's more pleasant to the eye
+        you can download Akeeba Ticket System Core (it's free of charge) and
+        look at
+        <classname>\Akeeba\Component\ATS\Site\View\Ticket\HtmlView</classname>.</para>
+
+        <para>I have a method called
+        <methodname>getCustomFieldsDisplay</methodname> which renders fields
+        using custom layout overrides for the <literal>field.render</literal>
+        and <literal>fields.render</literal> Joomla layouts. Ignore the
+        section with the comment “Filter fields by ATS Private Display”, this
+        is some special handling I use to make some fields invisible to the
+        general public and only visible to the owner of the helpdesk ticket
+        and the helpdesk personnel — this uses information from a custom
+        plugin I ship with my software and is very specific to my use
+        case.</para>
+
+        <para>The two layout files
+        (<filename>components/com_ats/layouts/field/render.php</filename> and
+        <filename>components/com_ats/layouts/fields/render.php</filename>) are
+        used to format the custom fields in a way which visually integrates
+        more pleasantly than Joomla's default “word vomit” display style of
+        nested unsorted lists.</para>
+
+        <para>It goes without saying, my clients can of course choose to
+        override these layout files OR the entire view template to render
+        custom fields the way they see fit. For example, a site integrator
+        might choose to have a custom field which is never displayed
+        automatically, get its value using the field name and display it in a
+        visually pleasant display in the view template. For instance, someone
+        could have a custom field plugin which saves geographical coordinates.
+        These could be displayed in the frontend of the site as an
+        OpenStreetMap map. With custom fields, sky's the limit!</para>
+      </tip>
     </section>
 
     <section xml:id="com-hmvc">
@@ -12069,7 +12287,7 @@ components/com_example/dependencies/*</programlisting>
       yourself having a lot of common code between your extensions. When the
       amount of common code surpasses a certain (low) threshold and / or is
       used on more than a couple of extensions it makes sense to share it
-      among all of your extensions. </para>
+      among all of your extensions.</para>
 
       <para>This is what a <literal>library</literal> package is designed to
       do. It creates a subdirectory inside the site's
