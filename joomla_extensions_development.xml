@@ -2972,7 +2972,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
 
           <listitem>
             <para><code><replaceable>Type</replaceable></code> is the type of
-            the class you have, i.e. one of <code>Component</code>,
+            the class you have, i.e. one of <code>Controller</code>,
             <code>Model</code>, or <code>Table</code>. Again, the first letter
             is uppercase.</para>
           </listitem>
