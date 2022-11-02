@@ -4007,7 +4007,7 @@ $someView = $this-&gt;getView('Some', 'Administrator', 'Html');</programlisting>
 
         <note>
           <para>Tables are only available in the Administrator side of the
-          application. While you can theoretically define different Table
+          application. While you can theoretically defined different Table
           classes in the frontend (Site) or JSON API (Api) side it's not a
           good idea as you will very likely run into issues where the “wrong”
           table class is being used. As a result, it's advisable to always
