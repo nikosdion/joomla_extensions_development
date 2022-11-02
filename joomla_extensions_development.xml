@@ -5532,7 +5532,7 @@ class Category extends Categories
         <para>In Joomla 3 we would create a router as a
         <filename>router.php</filename> file in the root of our component's
         frontend, e.g. <filename>components/com_example/router.php</filename>.
-        That file had two way to implement a router:</para>
+        That file had two ways to implement a router:</para>
 
         <itemizedlist>
           <listitem>
