@@ -3419,7 +3419,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
           <term>Joomla\CMS\MVC\Model\ItemModel</term>
 
           <listitem>
-            <para>This is an extension of the DatabaseModel, designed to
+            <para>This is an extension of the BaseDatabaseModel, designed to
             <emphasis>display</emphasis> a single record in the
             frontend.</para>
 
@@ -3447,7 +3447,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
           <term>Joomla\CMS\MVC\Model\ListModel</term>
 
           <listitem>
-            <para>This class extends from the DatabaseModel and has the
+            <para>This class extends from the BaseDatabaseModel and has the
             ability to manage forms (you need them for Search Tools a.k.a.
             list filters) and, crucially, to provide pagination-aware list of
             records from a database table.</para>
