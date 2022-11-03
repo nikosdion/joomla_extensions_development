@@ -7273,8 +7273,8 @@ protected $deleteFolders = [
         </note>
 
         <para>The content of the <code>&lt;layout&gt;</code> tag can either be
-        empty or contain of exactly one <code>&lt;message&gt;</code> tag with
-        a text content which is also a language string key<footnote>
+        empty or contain exactly one <code>&lt;message&gt;</code> tag with a
+        text content which is also a language string key<footnote>
             <para>Core components put the language string key inside a
             <code>&lt;![CDATA[…]]&gt;</code> wrapper. This is not necessary
             since Joomla 1.6. Language string keys are meant to only consist
