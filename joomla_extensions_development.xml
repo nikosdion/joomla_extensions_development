@@ -6197,7 +6197,7 @@ class RouterFactoryProvider implements ServiceProviderInterface
       <filename>administrator/components/com_example/presets</filename>
       folder. To get an idea of what you can do, take a look at a core preset
       such as
-      <filename>administrator/componetns/com_users/presets/users.xml</filename>.</para>
+      <filename>administrator/components/com_users/presets/users.xml</filename>.</para>
 
       <para>The name of your menu preset XML file MUST be unique across all
       components installed in Joomla. For this reason it's recommended to name
@@ -6213,7 +6213,7 @@ class RouterFactoryProvider implements ServiceProviderInterface
         <para>Per-component menu presets can be overridden in the same way as
         view templates. For example, if you want to override the default core
         Users menu preset
-        (<filename>administrator/componetns/com_users/presets/users.xml</filename>),
+        (<filename>administrator/components/com_users/presets/users.xml</filename>),
         copy it to
         <filename>administrator/templates/atum/html/com_menus/presets/users.xml</filename>
         and edit away!</para>
@@ -7196,7 +7196,7 @@ protected $deleteFolders = [
         <code>com_example</code>, a view named <code>welcome</code> and a view
         template for that view named <code>default</code> the view XML file
         would be
-        <filename>administrator/componetns/com_example/tmpl/welcome/default.xml</filename>.</para>
+        <filename>administrator/components/com_example/tmpl/welcome/default.xml</filename>.</para>
 
         <bridgehead>View XML file structure</bridgehead>
 
