@@ -6736,7 +6736,7 @@ protected $deleteFolders = [
         <para>If you want a sub-menu under your top level item you need to
         also add a <code>&lt;submenu&gt;</code> tag at the same level as the
         <code>&lt;menu&gt;</code> tag. Unlike the menu tag, this one does not
-        have any attributes. However, it can contains one or more
+        have any attributes. However, it can contain one or more
         <code>&lt;menu&gt;</code> tags, one per sub-menu item.</para>
 
         <important>
