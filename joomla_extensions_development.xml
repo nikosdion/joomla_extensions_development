@@ -7861,8 +7861,8 @@ var distance = comExampleOptions.foo * comExampleOptions.bar;</programlisting>
             <para>This tells Mail Templates that you can use the variables
             <code>{FOO}</code>, <code>{BAR}</code> and <code>{BAZ}</code> in
             the subject, body and HTML body of the mail templates — and let
-            users know that in the user interface. When sending e-mails via
-            the Mail Templates feature you will have to provide the values for
+            users know that in the user interface. When sending emails via the
+            Mail Templates feature you will have to provide the values for
             these variables. The variable names MUST always consist of
             uppercase letters, dashes, underscores and colons.</para>
           </listitem>
@@ -7921,9 +7921,9 @@ var distance = comExampleOptions.foo * comExampleOptions.bar;</programlisting>
 
       <bridgehead>Using mail templates</bridgehead>
 
-      <para>The Mail Templates feature does NOT send e-mails. It only provides
+      <para>The Mail Templates feature does NOT send emails. It only provides
       you with a pre-configured Joomla Mailer object you will use to send
-      e-mails with.</para>
+      emails with.</para>
 
       <para>This is how you use it:</para>
 
