@@ -4882,10 +4882,12 @@ class Example {
       <programlisting language="php">&lt;?php
 namespace Acme\Example\Administrator\Extension;
 
+use Acme\Example\Administrator\Service\Html\Example;
+
 class Example extends MVCComponent implements BootableExtensionInterface {
     public function boot(ContainerInterface $container)
     {
-        $this-&gt;getRegistry()-&gt;register('ats', new ATS());
+        $this-&gt;getRegistry()-&gt;register('example', new Example());
     }
 }</programlisting>
 
@@ -4921,11 +4923,13 @@ class Example {
       <programlisting language="php">&lt;?php
 namespace Acme\Example\Administrator\Extension;
 
+use Acme\Example\Administrator\Service\Html\Example;
+
 class Example extends MVCComponent implements BootableExtensionInterface {
     public function boot(ContainerInterface $container)
     {
         <emphasis role="bold">$db = $container-&gt;get('DatabaseDriver');</emphasis>
-        $this-&gt;getRegistry()-&gt;register('ats', new ATS(<emphasis
+        $this-&gt;getRegistry()-&gt;register('example', new Example(<emphasis
           role="bold">$db</emphasis>));
     }
 }</programlisting>
