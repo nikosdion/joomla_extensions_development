@@ -6946,7 +6946,7 @@ protected $deleteFolders = [
               in Dashboards, this is perfectly supported in the component's
               menu as well.</para>
 
-              <para>When set, a badge will appear net to the title. Joomla
+              <para>When set, a badge will appear next to the title. Joomla
               will perform an AJAX request to the URL provided in the value of
               this attribute. This URL is supposed to return a JSON document
               with the following keys:</para>
