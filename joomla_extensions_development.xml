@@ -9395,7 +9395,7 @@ public function getContexts(): array
       exist. In this example we expect two sections,
       <literal>categories</literal> and <literal>item</literal>.</para>
 
-      <para>The latter method returns a list of contexts for out component
+      <para>The latter method returns a list of contexts for our component
       where custom fields can be defined. We defined the two contexts
       corresponding to the sections we accept in the
       <methodname>validateSection</methodname> method. The return values will
