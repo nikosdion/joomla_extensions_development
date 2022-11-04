@@ -10373,7 +10373,7 @@ $hasSystemExample = class_exists(\Joomla\Plugin\System\Example\Extension\Example
 
       <para>As discussed in a previous section, the service provider file is
       mandatory for Joomla 4 native plugins, lives in the plugin's
-      <filename>services</filename> folder and always named
+      <filename>services</filename> folder and is always named
       <filename>provider.php</filename>.</para>
 
       <para>The absolutely minimal minimal service provider file looks like
