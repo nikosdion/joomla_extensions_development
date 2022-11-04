@@ -3419,7 +3419,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
           <term>Joomla\CMS\MVC\Model\ItemModel</term>
 
           <listitem>
-            <para>This is an extension of the DatabaseModel, designed to
+            <para>This is an extension of the BaseDatabaseModel, designed to
             <emphasis>display</emphasis> a single record in the
             frontend.</para>
 
@@ -3447,7 +3447,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
           <term>Joomla\CMS\MVC\Model\ListModel</term>
 
           <listitem>
-            <para>This class extends from the DatabaseModel and has the
+            <para>This class extends from the BaseDatabaseModel and has the
             ability to manage forms (you need them for Search Tools a.k.a.
             list filters) and, crucially, to provide pagination-aware list of
             records from a database table.</para>
@@ -4882,10 +4882,12 @@ class Example {
       <programlisting language="php">&lt;?php
 namespace Acme\Example\Administrator\Extension;
 
+use Acme\Example\Administrator\Service\Html\Example;
+
 class Example extends MVCComponent implements BootableExtensionInterface {
     public function boot(ContainerInterface $container)
     {
-        $this-&gt;getRegistry()-&gt;register('ats', new ATS());
+        $this-&gt;getRegistry()-&gt;register('example', new Example());
     }
 }</programlisting>
 
@@ -4921,11 +4923,13 @@ class Example {
       <programlisting language="php">&lt;?php
 namespace Acme\Example\Administrator\Extension;
 
+use Acme\Example\Administrator\Service\Html\Example;
+
 class Example extends MVCComponent implements BootableExtensionInterface {
     public function boot(ContainerInterface $container)
     {
         <emphasis role="bold">$db = $container-&gt;get('DatabaseDriver');</emphasis>
-        $this-&gt;getRegistry()-&gt;register('ats', new ATS(<emphasis
+        $this-&gt;getRegistry()-&gt;register('example', new Example(<emphasis
           role="bold">$db</emphasis>));
     }
 }</programlisting>
@@ -5532,7 +5536,7 @@ class Category extends Categories
         <para>In Joomla 3 we would create a router as a
         <filename>router.php</filename> file in the root of our component's
         frontend, e.g. <filename>components/com_example/router.php</filename>.
-        That file had two way to implement a router:</para>
+        That file had two ways to implement a router:</para>
 
         <itemizedlist>
           <listitem>
@@ -6193,7 +6197,7 @@ class RouterFactoryProvider implements ServiceProviderInterface
       <filename>administrator/components/com_example/presets</filename>
       folder. To get an idea of what you can do, take a look at a core preset
       such as
-      <filename>administrator/componetns/com_users/presets/users.xml</filename>.</para>
+      <filename>administrator/components/com_users/presets/users.xml</filename>.</para>
 
       <para>The name of your menu preset XML file MUST be unique across all
       components installed in Joomla. For this reason it's recommended to name
@@ -6209,7 +6213,7 @@ class RouterFactoryProvider implements ServiceProviderInterface
         <para>Per-component menu presets can be overridden in the same way as
         view templates. For example, if you want to override the default core
         Users menu preset
-        (<filename>administrator/componetns/com_users/presets/users.xml</filename>),
+        (<filename>administrator/components/com_users/presets/users.xml</filename>),
         copy it to
         <filename>administrator/templates/atum/html/com_menus/presets/users.xml</filename>
         and edit away!</para>
@@ -6732,7 +6736,7 @@ protected $deleteFolders = [
         <para>If you want a sub-menu under your top level item you need to
         also add a <code>&lt;submenu&gt;</code> tag at the same level as the
         <code>&lt;menu&gt;</code> tag. Unlike the menu tag, this one does not
-        have any attributes. However, it can contains one or more
+        have any attributes. However, it can contain one or more
         <code>&lt;menu&gt;</code> tags, one per sub-menu item.</para>
 
         <important>
@@ -6942,7 +6946,7 @@ protected $deleteFolders = [
               in Dashboards, this is perfectly supported in the component's
               menu as well.</para>
 
-              <para>When set, a badge will appear net to the title. Joomla
+              <para>When set, a badge will appear next to the title. Joomla
               will perform an AJAX request to the URL provided in the value of
               this attribute. This URL is supposed to return a JSON document
               with the following keys:</para>
@@ -7192,7 +7196,7 @@ protected $deleteFolders = [
         <code>com_example</code>, a view named <code>welcome</code> and a view
         template for that view named <code>default</code> the view XML file
         would be
-        <filename>administrator/componetns/com_example/tmpl/welcome/default.xml</filename>.</para>
+        <filename>administrator/components/com_example/tmpl/welcome/default.xml</filename>.</para>
 
         <bridgehead>View XML file structure</bridgehead>
 
@@ -7269,8 +7273,8 @@ protected $deleteFolders = [
         </note>
 
         <para>The content of the <code>&lt;layout&gt;</code> tag can either be
-        empty or contain of exactly one <code>&lt;message&gt;</code> tag with
-        a text content which is also a language string key<footnote>
+        empty or contain exactly one <code>&lt;message&gt;</code> tag with a
+        text content which is also a language string key<footnote>
             <para>Core components put the language string key inside a
             <code>&lt;![CDATA[…]]&gt;</code> wrapper. This is not necessary
             since Joomla 1.6. Language string keys are meant to only consist
@@ -7319,9 +7323,9 @@ protected $deleteFolders = [
 
         <para>The next optional section is wrapped in a <code>&lt;fields
         name="params"&gt;</code> tag and has one or more
-        <code>&lt;fieldset&gt;</code> tags, each one rendered as tabs in the
-        menu item edit page. If you do not specify a title and name your field
-        set <code>basic</code> it will render as a tab labelled
+        <code>&lt;fieldset&gt;</code> tags, rendered as tabs in the menu item
+        edit page. If you do not specify a title and name your field set
+        <code>basic</code> it will render as a tab labelled
         <guilabel>Options</guilabel>.</para>
 
         <para>While the request fields modify the URL generated by the menu
@@ -7857,8 +7861,8 @@ var distance = comExampleOptions.foo * comExampleOptions.bar;</programlisting>
             <para>This tells Mail Templates that you can use the variables
             <code>{FOO}</code>, <code>{BAR}</code> and <code>{BAZ}</code> in
             the subject, body and HTML body of the mail templates — and let
-            users know that in the user interface. When sending e-mails via
-            the Mail Templates feature you will have to provide the values for
+            users know that in the user interface. When sending emails via the
+            Mail Templates feature you will have to provide the values for
             these variables. The variable names MUST always consist of
             uppercase letters, dashes, underscores and colons.</para>
           </listitem>
@@ -7917,9 +7921,9 @@ var distance = comExampleOptions.foo * comExampleOptions.bar;</programlisting>
 
       <bridgehead>Using mail templates</bridgehead>
 
-      <para>The Mail Templates feature does NOT send e-mails. It only provides
+      <para>The Mail Templates feature does NOT send emails. It only provides
       you with a pre-configured Joomla Mailer object you will use to send
-      e-mails with.</para>
+      emails with.</para>
 
       <para>This is how you use it:</para>
 
