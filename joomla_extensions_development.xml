@@ -11995,7 +11995,7 @@ $ip = $this-&gt;input-&gt;server-&gt;get('REMOTE_ADDR');</programlisting>
         actor can send a forged X-Forwarded-For header to trick your extension
         into believing the request came from a different IP address than the
         one it actually originates. Second, this header may contain more than
-        one IP addresses in a comma-separated list. Validating, sanitizing and
+        one IP address in a comma-separated list. Validating, sanitizing and
         parsing that list is tricky and may lead to some very bad times and
         security issues.</para>
 
