@@ -12048,8 +12048,9 @@ $ip = $this-&gt;input-&gt;server-&gt;get('REMOTE_ADDR');</programlisting>
         USE THE SAME NAMESPACE AND CLASS NAMES</emphasis>. It will break
         Joomla or third party extensions when your code is loaded.</para>
 
-        <para>In fact, even if you are including third libraries which are not
-        included in Joomla you should be doing one of the following:</para>
+        <para>In fact, even if you are including third party libraries which
+        are not included in Joomla you should be doing one of the
+        following:</para>
 
         <itemizedlist>
           <listitem>
