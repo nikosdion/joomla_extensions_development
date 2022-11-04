@@ -8605,7 +8605,7 @@ class Example extends CMSPlugin implements SubscriberInterface
             permissions (access.xml) files are present only in the backend
             directory of the component. The former is necessary for a
             component to be able to be installed, updated and uninstalled.
-            Moreover, Joomla always creates a backend menu item to the
+            Moreover, Joomla always creates a backend menu item for the
             component, meaning that the component must have a backend part
             with a default view even if it's just to display a message that
             there is nothing to do with this component in the backend.</para>
