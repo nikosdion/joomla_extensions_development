@@ -8,12 +8,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: SSH Server Deploy
-        uses: kostya-ten/ssh-server-deploy@v4
+      - name: Sections Deploy
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           port: ${{ secrets.SSH_PORT }}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
-          scp_source: joomla_extensions_development.xml
-          scp_target: ${{ secrets.SSH_PATH }}
+          source: "sections/advice.xml,sections/components.xml,sections/concepts.xml,sections/fdl.xml,sections/gpl.xml,sections/modules.xml,sections/plugins.xml,sections/preface.xml,sections/templates.xml"
+          target: ${{ secrets.SSH_PATH_SECTIONS }}
+      - name: Main XML File Deploy
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          port: ${{ secrets.SSH_PORT }}
+          username: ${{ secrets.SSH_USERNAME }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          source: "joomla_extensions_development.xml"
+          target: ${{ secrets.SSH_PATH }}

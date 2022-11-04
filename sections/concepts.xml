@@ -1,0 +1,855 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright © 2022 Nikolaos Dionysopoulos
+
+Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free
+Documentation License, Version 1.3 or any later version published by the Free Software Foundation; with
+no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included
+in the section entitled "GNU Free Documentation License".
+-->
+<chapter xml:id="concepts"
+         version="5.1" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xila="http://www.w3.org/2001/XInclude/local-attributes"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:trans="http://docbook.org/ns/transclusion"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook"
+>
+    <title>Basic concepts</title>
+
+    <para>As mentioned in the <link
+            linkend="intro-j4-features">introduction</link>, Joomla 4 introduced a lot
+        of new features. Some of these features introduce new fundamental concepts
+        or refine existing ones. Before delving deeper into Joomla extension
+        development let's take a look at these basic concepts to make sure we are
+        all on the same page.</para>
+
+    <section xml:id="concepts-namespaces">
+        <title>Namespaces</title>
+
+        <para>The single most defining change in Joomla 4 is that Joomla
+            embraces <link
+                    xlink:href="https://www.php.net/manual/en/language.namespaces.php">PHP
+                namespaces</link> everywhere: core, core extensions, third party
+            extensions and everything in between.</para>
+
+        <bridgehead>The core</bridgehead>
+
+        <para>The work on namespacing core Joomla API classes had started since
+            Joomla 3.3. If you have not updated your code the last few years you may
+            have found that it no longer works on Joomla 4. Do not despair! The vast
+            majority of issues comes from your using outdated, non-namespaced
+            versions of core classes in your code. Replacing them with their
+            namespaced versions will let most Joomla 3–only extensions to run well
+            enough in Joomla 4 for a migration to be practical.</para>
+
+        <para>I have collected the old, non-namespaced core classes and the new,
+            namespaced names of them along with the Joomla version the namespaced
+            versions appeared and the Joomla version the non-namespaced versions are
+            or will be removed in <link
+                    xlink:href="https://github.com/nikosdion/joomlatypehints/blob/main/JoomlaObsoleteClasses.md">my
+                Joomla Type Hints</link> repository. The repository also includes <link
+                    xlink:href="https://getrector.org">Rector</link> configurations which
+            allow you to do most of the heavy lifting using an automated tool. For
+            everything else you need some good old search and replace across your
+            source trees.</para>
+
+        <bridgehead>The extensions</bridgehead>
+
+        <para>The story of Joomla 4 began on the last day of May 2015 in Prague,
+            Czech Republic at a round table discussion about the future of Joomla. A
+            dozen or so leadership members, core contributors and third party
+            developers sat down to figure out why Joomla “sucks” and how to improve
+            it.</para>
+
+        <para>Beyond the user-facing issues, we found out that the core MVC and
+            architecture were extremely dated. The core MVC started being developed
+            in 2005 and made its first appearance in 2007, with Joomla 1.5. It had
+            not changed much, despite some moderate improvements in Joomla 1.6 which
+            was released in 2010 (e.g. XML Forms) and a few disparate things added
+            here and there (e.g. Tags in 3.2, Layouts in 3.4 and so on). You could
+            not reference frontend code from the backend or vice-versa. For third
+            party extensions this was an annoyance which led to duplicated code and
+            bugs. For using core code, like creating articles <emphasis>the right
+                way</emphasis> using <code>com_content</code>'s Article model, it was
+            nearly impossible: if you tried doing that on a page which had already
+            loaded the front-end ContentModelArticle class you could no longer load
+            the same-named but entirely differently operating backend class.</para>
+
+        <para>The way to solve that would be to <emphasis>namespace</emphasis>
+            the extensions' code. A com_example extension could have the namespace
+            prefix \MyCompany\Example\Administrator for its backend classes and
+            \MyCompany\Example\Site for its frontend classes. This way you could
+            have something like:</para>
+
+        <programlisting language="php">namespace \MyCompany\Example\Site\Model;
+
+            class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
+            {
+            // ...
+            }</programlisting>
+
+        <para>By being able to extend classes across application sides you would
+            finally be able to get rid of duplicate code and obliterate bugs coming
+            from that bad practice.</para>
+
+        <para>By following the <link
+                xlink:href="https://www.php-fig.org/psr/psr-4/">PSR-4</link> standard we
+            could also have a very efficient autoloader which allows us to load any
+            extension's classes from anywhere, without having to know where on the
+            filesystem the class file lives and without having to use the ugly
+            static methods of the core MVC classes (which, by the way, would NOT
+            work predictably across extensions because of their dependence on the
+            <code>JPATH_COMPONENT_ADMINISTRATOR</code> and
+            <code>JPATH_COMPONENT</code> constants which cannot, of course, be
+            redefined).</para>
+
+        <para>Each extension's namespace is declared in the XML manifest of the
+            extension using a new XML element under the
+            <code>&lt;extension&gt;</code> root element:</para>
+
+        <programlisting language="xml">&lt;namespace path="src"&gt;My\Namespace\Prefix&lt;/namespace&gt;</programlisting>
+
+        <para>The <code>path</code> attribute tells Joomla which subdirectory of
+            your extension holds the PSR-4 of your extension's PHP files. It is best
+            practice to name it <filename>src</filename> but <emphasis>you don't
+                have to</emphasis>. In the rest of this section I assume you are using
+            <filename>src</filename>.</para>
+
+        <para>The text inside the XML element, <code>My\Namespace\Prefix</code>
+            in our example, is the namespace prefix you will be using.</para>
+
+        <para>Here is how namespace prefixes work across different types of
+            extensions:</para>
+
+        <itemizedlist>
+            <listitem>
+                <para><emphasis role="bold">Component, frontend</emphasis>. Each
+                    component can register its own namespace prefix without any
+                    restrictions. It is <emphasis>recommended</emphasis> to use the
+                    convention <code>\Company\Something</code> where
+                    <code>Company</code> is your company name (or a shortened version
+                    thereof) and <code>Something</code> corresponds to the
+                    <code>com_something</code> extension name of your component. For
+                    example, the component <code>com_example</code> by Acme, Inc could
+                    have a namespace prefix of <code>\Acme\Example</code> set up in its
+                    XML manifest. In this case its frontend classes MUST be under the
+                    namespace <code>\Acme\Example\Site</code>. The folder
+                    <filename>components/com_example/src</filename> is the root of the
+                    <code>\Acme\Example\Site</code> namespace.</para>
+            </listitem>
+
+            <listitem>
+                <para><emphasis role="bold">Component, backend</emphasis>. Let's say
+                    we have the component <code>com_example</code> by Acme, Inc which
+                    has a namespace prefix of <code>\Acme\Example</code>. In this case
+                    its backend classes MUST be under the namespace
+                    <code>\Acme\Example\Administrator</code>. The folder
+                    <filename>administrator/components/com_example/src</filename> is the
+                    root of the <code>\Acme\Example\Administrator</code>
+                    namespace.</para>
+            </listitem>
+
+            <listitem>
+                <para><emphasis role="bold">Component, API application</emphasis>.
+                    The API application is the third Joomla application (the other two
+                    being Site the frontend, and Administrator the backend). We'll talk
+                    about it <link linkend="com-api">later in this book</link>. Let's
+                    say we have the component <code>com_example</code> by Acme, Inc
+                    which has a namespace prefix of <code>\Acme\Example</code>. In this
+                    case its API application classes MUST be under the namespace
+                    <code>\Acme\Example\Api</code>. The folder
+                    <filename>api/components/com_example/src</filename> is the root of
+                    the <code>\Acme\Example\Api</code> namespace.</para>
+            </listitem>
+
+            <listitem>
+                <para><emphasis role="bold">Module, frontend</emphasis>. A frontend
+                    module mod_example MUST have its classes under the namespace
+                    <code>Joomla\Module\Example\Site</code>. The namespace you MUST
+                    declare in the XML manifest is <code>Joomla\Module\Example</code>.
+                    Even though you are severely restricted in the namespace prefix you
+                    can use, you MUST provide it in your XML manifest or your module
+                    won't work! The folder <filename>modules/mod_example/src</filename>
+                    is the root of the <code>Joomla\Module\Example\Site</code>
+                    namespace.</para>
+            </listitem>
+
+            <listitem>
+                <para><emphasis role="bold">Module, backend</emphasis>. A backend
+                    module mod_example MUST have its classes under the namespace
+                    <code>Joomla\Module\Example\Administrator</code>. The namespace you
+                    MUST declare in the XML manifest is
+                    <code>Joomla\Module\Example</code>. Even though you are severely
+                    restricted in the namespace prefix you can use, you MUST provide it
+                    in your XML manifest or your module won't work! The folder
+                    <filename>administrator/modules/mod_example/src</filename> is the
+                    root of the <code>Joomla\Module\Example\Administrator</code>
+                    namespace.</para>
+            </listitem>
+
+            <listitem>
+                <para><emphasis role="bold">Plugin</emphasis>. The plugin
+                    <code>plg_system_example</code> MUST have its classes under the
+                    namespace <code>Joomla\Plugin\System\Example</code>. The namespace
+                    you MUST declare in the XML manifest is
+                    <code>Joomla\Plugin\System\Example</code>. Even though you are
+                    severely restricted in the namespace prefix you can use, you MUST
+                    provide it in your XML manifest or your plugin won't work! The
+                    folder <filename>plugins/system/example/src</filename> is the root
+                    of the <code>Joomla\Plugin\System\Example</code> namespace.</para>
+            </listitem>
+
+            <listitem>
+                <para><emphasis role="bold">Template</emphasis>. Well, Joomla does
+                    NOT register a namespace for templates. You are encouraged to use
+                    namespaces for any template-specific code (you certainly have some
+                    helpers, don't you?) BUT Joomla won't facilitate you with any
+                    autoloading. You will have to register your template's namespace
+                    directly with the <code>JLoader::registerPrefix</code> method. It is
+                    a good practice putting your namespaced PHP files in the
+                    <filename>src</filename> directory and use the namespace
+                    <code>\Joomla\Template\Site\Something</code> for frontend templates
+                    and <code>\Joomla\Template\Administrator\Something</code> for
+                    backend templates. Please note that there is no real guidance for
+                    the template names BUT we can infer what any future change adding
+                    namespace support to templates will most likely be based on how
+                    modules are namespaced and Joomla trying to have a modicum of
+                    consistency.</para>
+            </listitem>
+        </itemizedlist>
+
+        <bridgehead>How to choose a namespace for your extension</bridgehead>
+
+        <para>Namespaces have for two primary reasons of existence:</para>
+
+        <itemizedlist>
+            <listitem>
+                <para><emphasis role="bold">Uniqueness</emphasis>. Each of the
+                    extensions installed on the same site in different directories must
+                    have a unique namespace prefix which is not a subset or a superset
+                    of the namespace prefix of another extension and does not clash (be
+                    identical to) the namespace prefix of another extension.</para>
+            </listitem>
+
+            <listitem>
+                <para><emphasis role="bold">Identifiability</emphasis>. Namespaces
+                    of Joomla extensions should make it fairly obvious which extension
+                    they belong to when read by people with little to no PHP coding
+                    experience.</para>
+            </listitem>
+        </itemizedlist>
+
+        <para>Let's see some <emphasis>bad</emphasis> examples first.</para>
+
+        <para>A component with the namespace prefix
+            <classname>Acme\Example</classname> and a plugin with the prefix
+            <classname>Acme\Example\System</classname>. This violates both reasons
+            for having a namespace. The namespace prefixes are not unique (the
+            plugin's prefix is a subset of the component's prefix) and it's hard to
+            understand which extension they refer to.</para>
+
+        <para>A component released by Yoyodyne Corporation with the namespace
+            prefix <classname>Acme\Component\Example</classname>. This violates the
+            second rule as a casual bystander would assume that the component was
+            written by a company called Acme, not Yoyodyne.</para>
+
+        <para>A system plugin called foobar with the namespace
+            <classname>Joomla\Plugin\System\Foo</classname>. Again, it violates both
+            reasons as it's neither unique (<code>plg_system_foo</code> could use
+            the same namespace!) and does not help people identify the plugin in
+            question.</para>
+
+        <para>Based on the bad examples it's easy to understand what a
+            <emphasis>good</emphasis> namespace is.</para>
+
+        <para>A good namespace is generally constructed as follows:</para>
+
+        <itemizedlist>
+            <listitem>
+                <para>The company name, as commonly referred to in marketing and
+                    documentation. For example Joomla (the project name commonly used),
+                    not OpenSourceMattersInc (the full name of the non-profit legal
+                    entity which owns the Joomla trademark).</para>
+            </listitem>
+
+            <listitem>
+                <para>(optional, but encouraged) The type of the extension the
+                    namespace refers to, e.g. Component, Plugin, or Module.</para>
+            </listitem>
+
+            <listitem>
+                <para>(for plugins) The plugin type i.e. the folder it's installed
+                    into, e.g. System, Content, and so on.</para>
+            </listitem>
+
+            <listitem>
+                <para>The name of the extension, either as installed (e.g. ARS for
+                    com_ars) or as commonly referred to in the extensions manager (e.g.
+                    ReleaseSystem for com_ars).</para>
+            </listitem>
+        </itemizedlist>
+
+        <para>Thus, a namespace like Akeeba\Component\ReleaseSystem gives us a
+            pretty good idea that it's an extension written by a company called
+            Akeeba, it's a component and it's name is something with Release System
+            in it. Hm, it must be Akeeba Release System!</para>
+
+        <para>It is a very good idea that parts of your namespace when searched
+            in the extensions manager end up listing your extension. This will help
+            a user faced with an exception error page to figure out which extension
+            the exception comes from, even though they have no idea about PHP or
+            what an exception is.</para>
+
+        <bridgehead>If you get Class Not Found while developing
+            extensions</bridgehead>
+
+        <para>Joomla automatically creates a map of installed extensions, their
+            location and their namespace prefixes as noted in their XML manifests.
+            It uses this information to register a PSR-4 autoloader which handles
+            loading the various classes based on their name, without having to
+            manually include their files yourself.</para>
+
+        <para>The information is cached in the file
+            <filename>administrator/cache/autoload_psr4.php</filename> which is
+            automatically generated on every page load if it's missing. It is also
+            forcibly regenerated when you install, update, remove, publish, or
+            unpublish an extension from your site.</para>
+
+        <para>It is possible that while developing your site you will end up
+            with that file becoming out of sync with the XML manifests on your
+            filesystem — for example, if you changed the namespace of an extension
+            you are developing or if you moved files around. If that happens to you,
+            simply delete the
+            <filename>administrator/cache/autoload_psr4.php</filename> file and
+            reload the frontend home page of your site. The file will be
+            regenerated.</para>
+
+        <para>If something is missing from that file or if you keep getting
+            problems despite that file appearing to be correct, ask yourself these
+            questions:</para>
+
+        <itemizedlist>
+            <listitem>
+                <para>Am I using the correct class name? Writing this book I've
+                    typed <classname>Acme\Examlpe</classname> instead of
+                    <classname>Acme\Example</classname> more times than I care to admit.
+                    Always start with the assumption that you typed the class name
+                    wrong.</para>
+            </listitem>
+
+            <listitem>
+                <para>Are my folders and files the correct letter case? Attention
+                    macOS and Windows users! While on macOS and Windows the folders
+                    <filename>FooBar</filename>, <filename>FOOBAR</filename> and
+                    <filename>foobar</filename> will all work this is not true on Linux!
+                    Also remember that if you commit a folder / file in the wrong case
+                    on Git you can't just rename it and commit it; it will not work when
+                    checking out the file. Instead rename the folder / file to its
+                    correct case with a <filename>-bak</filename> suffix, commit, remove
+                    the suffix, commit again.</para>
+            </listitem>
+
+            <listitem>
+                <para>Is the extension installed? You'd be surprised at how wrapped
+                    up you can get writing the code of the extension without remembering
+                    to actually install it on your development site. I do that every
+                    second plugin I write. At least I know that I'm both the detective
+                    and the killer in this code murder mystery, having gone through it
+                    so often.</para>
+            </listitem>
+
+            <listitem>
+                <para>Is the extension published? When you install a plugin it is
+                    disabled by default. Disabled extensions don't get
+                    autoloaded.</para>
+            </listitem>
+
+            <listitem>
+                <para>Am I using OPcache? If you're using OPcache —or any other PHP
+                    cache— your server might “remember” the older version of the
+                    <filename>autoload_psr4.php</filename> file. If unsure, restart the
+                    web server <emphasis>and</emphasis> the PHP-FPM service.</para>
+            </listitem>
+
+            <listitem>
+                <para>Have I cleared Joomla's cache? If you toggled the publish
+                    status of an extension in the database Joomla might not be aware
+                    that you did so (especially salient for plugins and modules). Clear
+                    Joomla's cache, administrator and site.</para>
+            </listitem>
+
+            <listitem>
+                <para>Am I using another cache, CDN or reverse proxy between my
+                    browser and the server? Don't do that during development!</para>
+            </listitem>
+
+            <listitem>
+                <para>Does the XML manifest exist in the location Joomla expects it
+                    <emphasis>and</emphasis> up-to-date? Components' XML manifests must
+                    exist in the component's backend root (e.g.
+                    <filename>administrator/components/com_example/example.xml</filename>).
+                    Plugins and modules expect the XML manifest in their respective
+                    folder. Make sure the manifest file you have there actually has the
+                    <tag>&lt;namespace&gt;</tag> tag, the namespace is spelled correctly
+                    and it has a <parameter>path</parameter> attribute which is also
+                    spelled correctly, both itself and the folder name which is your
+                    PSR-4 root.</para>
+            </listitem>
+
+            <listitem>
+                <para>Is it possible that my namespace violates the two rules
+                    described above, especially the one about it not being a subset of
+                    another extension's namespace? If your namespace is a subset of
+                    another extension (e.g. my namespace is
+                    <classname>Acme\Example\Foo</classname> and there's another
+                    extension with the namespace <classname>Acme\Example</classname>)
+                    the PSR-4 autoloader will end up looking into the <emphasis>wrong
+                        folder</emphasis> for your files.</para>
+            </listitem>
+        </itemizedlist>
+    </section>
+
+    <section xml:id="concepts-container">
+        <title>Dependency Injection Container / Service Locator</title>
+
+        <para>Joomla had historically been quite a mess, architecturally
+            speaking. Its saving grace was that it was a far smaller mess than
+            WordPress and much more approachable to non-expert coders than Drupal.
+            This let it carve a niche for itself: people who wanted a very powerful
+            site without having to first acquire a PhD in Computer Science and/or
+            have a team of dozens of developers under them. In short, Joomla's
+            bad-but-not-too-bad architecture let it be used by small web design
+            firms, freelance site integrators and small but serious software
+            development firms.</para>
+
+        <para>That said, Joomla 1.x to 3.x inclusive had a <link
+                xlink:href="https://en.wikipedia.org/wiki/God_object">God Object</link>
+            called the Joomla Factory (<code>JFactory</code> or
+            <code>\Joomla\CMS\Factory</code>) with a very opinionated approach on
+            instantiating all sorts of globally used services, from the application
+            itself, to the database, to the user objects, to the mailer
+            object.</para>
+
+        <para>While this is a better approach to using global variables (like
+            WordPress' infamous <code>$wpdb</code> for accessing the database), this
+            architecture caused a lot of pain when you wanted to write Unit Tests
+            for your code. Your code gets user instances? You need to create a mock
+            for the entire Factory object returning mock user objects. Your code
+            uses the database? You need to create a mock database object and inject
+            it to an uninitialised Factory instance using static class variables.
+            Your code sends email? Not only you need a mock mailer object, you need
+            to mock the Factory too. Want to write tests which mock different things
+            in different tests? You can either forget about running your tests as a
+            suite OR you need to create an extremely over-reaching and hard to
+            configure mock Factory. Your tests must run in a different order? Good
+            luck figuring out the bugs in your Factory mock object and why running
+            tests in one order works but fails when run in a different order, or on
+            their lonesome. Been there, done that, still paying for therapy…</para>
+
+        <para>In Joomla 4 we no longer have a God Object. Well, to be fair, the
+            Factory is still there but it is no longer a God Object; it is an
+            interface to a <link
+                    xlink:href="https://en.wikipedia.org/wiki/Dependency_injection">Dependency
+                Injection Container</link> (<acronym>DIC</acronym> for short, pronounced
+            like Dee Eye See, not the nickname for a Richard, thank you very much).
+            So, Factory is still a God Object but with lesser powers. A minor deity
+            object, perhaps? In any case, the Container is initialised before
+            Factory is used and it can also be replaced. Therefore you only need to
+            get a copy of the DIC and replace one or more of its services with a
+            mock object when writing Unit Tests. Much easier, much more robust, no
+            more therapy necessary after writing Unit Tests.</para>
+
+        <para>The Container is now the preferred way to get access to several
+            services previously available only through the Factory (they are still
+            available through the Factory in Joomla 4 but will very likely disappear
+            in Joomla 5). Let's see a few practical examples:</para>
+
+        <programlisting language="php">use \Joomla\CMS\Factory;
+
+            // Instead of Factory::getDbo();
+            $db = Factory::getContainer()-&gt;get('DatabaseDriver');
+
+            // Instead of Factory::getLanguage(); WARNING! STILL DOES NOT WORK EXACTLY AS INTENDED!
+            $language = Factory::getContainer()-&gt;get(LanguageFactoryInterface::class)-&gt;createLanguage(
+            Factory::getApplication()-&gt;get('language'),
+            Factory::getApplication()-&gt;get('debug_lang'),
+            );
+
+            // Instead of Factory::getUser($id)
+            $user = Factory::getContainer()-&gt;get(UserFactoryInterface::class)-&gt;loadUserById($id);
+
+            // Instead of Factory::getUser() with no arguments; note that this does NOT go through the DIC!
+            $currentUser = Factory::getApplication()-&gt;getIdentity();</programlisting>
+
+        <para>That said, Joomla's DIC is not a real DIC; it is in fact a <link
+                xlink:href="https://en.wikipedia.org/wiki/Service_locator_pattern">Service
+            Locator</link>. That is to say, you don't ask the DIC to construct an
+            object and expect it to inject the appropriate dependencies based on the
+            class type hints of the constructor's arguments. In theory it can (kind
+            of), but in practice this is NOT how the Joomla core API classes are
+            written. If you came here expecting a DIC like what you find in Laravel,
+            sorry, I have to disappoint you.</para>
+
+        <para>Now, you are thinking, does this not make the DIC kinda useless?
+            No, not really. You see, being a Service Locator you get a
+            <emphasis>copy</emphasis> of it when your extension is initialised. In
+            fact, each native Joomla 4 extension needs to have a Service Provider
+            which takes the DIC copy as input and registers services to it. At the
+            very least you will be registering your extension service which is used
+            by Joomla to instantiate your extension's object and run its code. You
+            can also register any number of services you might need, even custom
+            ones only to be used by your extension.</para>
+
+        <para>At some point in the future Joomla will MAYBE remove the Factory,
+            if not altogether then at least insofar it can only return the main
+            application's DIC. In such a future Joomla will VERY PROBABLY make it
+            much easier for an extension's internal classes to have access to its
+            own DIC / Service Locator instead of only ever making it available to
+            the Extension class. In this potential future Joomla extensions will be
+            self-contained and perfectly testable. Even better, they can be sure
+            that whatever happens in an extension stays in the extension, without
+            leaking to the global application scope (and poison other
+            extensions).</para>
+    </section>
+
+    <section xml:id="concepts-webassetmanager">
+        <title>Web Asset Management</title>
+
+        <para>A large part of our work as Joomla extension developers is to load
+            static assets, CSS and JavaScript files, in the user-facing HTML output
+            of our extensions.</para>
+
+        <para>In older Joomla versions we did that through the HTML document and
+            using HTMLHelper static methods to load dependencies. For
+            example:</para>
+
+        <programlisting language="php">$doc = \Joomla\CMS\Factory::getApplication()-&gt;getDocument();
+            Joomla\CMS\HTML\HTMLHelper::_('bootstrap.tooltip', '.hasTooltip');
+            Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
+            'version'       =&gt; 'auto',
+            'relative'      =&gt; true,
+            'detectDebug'   =&gt; false,
+            'framework'     =&gt; false,
+            'pathOnly'      =&gt; false,
+            'detectBrowser' =&gt; false,
+            ], [
+            'defer' =&gt; true,
+            'async' =&gt; false,
+            ]);
+        </programlisting>
+
+        <para>This has a few shortcomings, as we have all discovered to our
+            despair.</para>
+
+        <para>First of all, we need to remember to load all dependencies in the
+            correct order before our own CSS or JavaScript file. In the above
+            example, the something.js file depends on Bootstrap's Tooltip helper. If
+            we forget the first call to HTMLHelper our JavaScript file will be
+            broken.</para>
+
+        <para>However, our extension is not the only thing running on the page,
+            right? Now, see the second parameter in that first HTMLHelper call? It
+            tells Joomla's Bootstrap HTML helper to initialise the Tooltip helper so
+            that anything with the class hasTooltip will have a Bootstrap tooltip.
+            Since this is a component we are confident that this will always be the
+            case. Oh, really? If a plugin ran before us and it also loaded its own
+            JavaScript which also depends on Bootstrap's tooltip BUT had no second
+            argument (or a different second argument) do you care to guess what our
+            code above will do? If you guessed “sod all” you'd be right and a Joomla
+            extensions development veteran! So, yup, a third party extension having
+            a JavaScript file with the same dependency as ours running before us
+            breaks our perfectly working JavaScript. This could even happen within
+            the same extension if the aforementioned code appeared in a layout and
+            your page just happens to load two layout which both call
+            <code>Joomla\CMS\HTML\HTMLHelper::_('bootstrap.tooltip')</code> with a
+            different second parameter. Great!</para>
+
+        <para>Beyond that, what happens if our something.js gains another
+            dependency and we are loading this file in six different places… but
+            missed updating one of them? Why, yes, that sixth page will be broken!
+            Even worse, we might only update our code with the additional dependency
+            in one place (let's say a layout), another four places not updated work
+            because they are loading that changed layout and the sixth and final
+            place does not work because it was neither updated nor trying to load
+            something else which loads the dependency for us.</para>
+
+        <para>Let's put it this way. If you do manual dependency management you
+            will be in a world of pain, sooner rather than later.</para>
+
+        <para>Joomla 4 addresses this problem by introducing the Web Asset
+            Manager (WAM). The WAM is responsible for loading our CSS and JavaScript
+            files <emphasis>and their dependencies</emphasis>. It can figure out
+            simple dependency chains even across multiple extensions and make sure
+            that things are loaded in an order that makes sense and will do what we
+            wanted it to do.</para>
+
+        <para>For that to work we need two things:</para>
+
+        <orderedlist>
+            <listitem>
+                <para>Using Joomla's media directory the way it was intended ever
+                    since its introduction in Joomla 1.5.0, back in 2007.</para>
+            </listitem>
+
+            <listitem>
+                <para>A <filename>joomla.assets.json</filename> file which describes
+                    our static assets and their dependencies.</para>
+            </listitem>
+        </orderedlist>
+
+        <para>On the first point please let me remind you how the media folder
+            works. If you have any static assets which must be web accessible they
+            <emphasis role="bold">MUST</emphasis> be placed in a subdirectory of the
+            <filename>media</filename> folder named after your extension (as Joomla
+            names it internally). Don't put them in your extension's directory,
+            don't put them in <filename>cache</filename> or <filename>tmp</filename>
+            (they are NOT web accessible, they CAN be moved around even outside the
+            web root AND their contents can and will be removed anytime).</para>
+
+        <para>You have a component named <code>com_foobar</code>? Put your
+            static assets in <filename>media/com_foobar</filename>. You have a
+            module named <code>mod_example</code>? Put your static assets in
+            <filename>media/mod_example</filename>. You have a plugin named
+            <code>example</code> in the <filename>folder</filename> system? Put your
+            static assets in <filename>media/plg_system_example</filename>. You have
+            a template named <code>beauty</code>? Put your static assets in
+            <filename>media/tpl_beauty</filename>. Its subdirectories are
+            <filename>css</filename> for CSS files and <filename>js</filename> for
+            JavaScript files. It's simple, it's efficient, it's how Joomla is meant
+            to work.</para>
+
+        <para>The second point, the <filename>joomla.assets.json</filename>
+            file, tells Joomla where to find what, what depends on what else and how
+            it all fits together. This file is placed in the extension's media
+            subdirectory.</para>
+
+        <para>For example, a component <code>com_example</code> could have a
+            <filename>media/com_example/joomla.asset.json</filename> file which
+            looks like this:</para>
+
+        <programlisting language="json">{
+            "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
+            "name": "com_example",
+            "version": "1.0.0",
+            "description": "This file contains details of the assets used by the Example component by Acme, Inc.",
+            "license": "GPL-2.0-or-later",
+            "assets": [
+            {
+            "name": "com_example.backend",
+            "description": "Backend styling.",
+            "type": "style",
+            "uri": "backend.min.css",
+            "dependencies": [
+            "com_example.typography"
+            ]
+            },
+            {
+            "name": "com_example.typography",
+            "description": "Fancy typography.",
+            "type": "style",
+            "uri": "typography.min.css",
+            "dependencies": [
+            "fontawesome"
+            ]
+            },
+            {
+            "name": "com_example.backend.items",
+            "description": "JavaScript for the backend Items page.",
+            "type": "script",
+            "uri": "backend_items.js",
+            "attributes" : {
+            "defer": true
+            },
+            "dependencies": [
+            "core"
+            ]
+            },
+            {
+            "name": "com_example.backend.items",
+            "type": "preset",
+            "dependencies": [
+            "com_example.backend#style",
+            "com_example.backend.items#script"
+            ]
+            }
+            ]
+            }
+        </programlisting>
+
+        <para>We declare various named assets. The
+            <code>com_example.backend</code> style asset loads the
+            <filename>backend.min.css</filename> file. However, that file depends on
+            the <code>com_example.typography</code> asset which loads the
+            <filename>typography.min.css</filename> file. In its turn, this asset
+            depends on the core <code>fontawesome</code> asset which loads the
+            FontAwesome icon font in any way Joomla figures out is
+            appropriate.</para>
+
+        <para>When we tell Joomla to load the <code>com_example.backend</code>
+            style asset it will first load the CSS files for FontAwesome (if our
+            backend template has not already loaded it), then our
+            <filename>typography.min.css</filename> file and finally our
+            <filename>backend.min.css</filename> file. This all happens
+            automatically. All we have to do in our extension's template layout code
+            is</para>
+
+        <programlisting language="php">$this-&gt;document-&gt;getWebAssetManager()-&gt;useStyle('com_example.backend');</programlisting>
+
+        <para>If at a later point we decide that the backend style needs to
+            depends on yet another CSS asset we will add it to its dependencies
+            array in the <filename>joomla.asset.json</filename> file <emphasis>and
+                we are done</emphasis>. We do not have to touch our view templates. We
+            do not have to think about anything else. Joomla will figure it out. No
+            more hard to track down bugs!</para>
+
+        <para>You may have noticed that we also declared a script asset called
+            <code>com_example.backend.items</code> which loads the file
+            <filename>backend_items.js</filename> deferred. Deferred means that we
+            tell the browser to load it after it has finished initialising the DOM.
+            This means that we do not need to add any special code to execute
+            something after the DOM is initialised which saves us a lot of
+            frustration and bugs. We use the script resource like this:</para>
+
+        <programlisting language="php">$this-&gt;document-&gt;getWebAssetManager()-&gt;useScript('com_example.backend.items');</programlisting>
+
+        <para>We have told Joomla that our script only depends on
+            <code>core</code>, i.e. the Joomla core JavaScript. This is not
+            mandatory, but something you will see plenty of times because you'll be
+            using <code>Joomla.getOptions</code> in your JavaScript code to retrieve
+            settings <link linkend="com-data-to-frontend">passed from the backend to
+                the frontend</link>. This is the recommended method instead of setting
+            arbitrary JavaScript variables in inline JavaScript code. In fact, using
+            inline JavaScript code is discouraged (but not forbidden) in Joomla 4
+            and later.</para>
+
+        <para>If at a later point we modify our JavaScript to also depend on
+            Bootstrap's Modal dialog helper we will just update its
+            dependencies:</para>
+
+        <programlisting language="json">    {
+            "name": "com_example.backend.items",
+            "description": "JavaScript for the backend Items page.",
+            "type": "script",
+            "uri": "backend_items.js",
+            "attributes" : {
+            "defer": true
+            },
+            "dependencies": [
+            "core",
+            "bootstrap.modal"
+            ]
+            }</programlisting>
+
+        <para>That's it! No more hunting down usages of this JavaScript file and
+            updating our view template code.</para>
+
+        <para>You can of course tell Joomla to load both CSS and JavaScript
+            assets. The simplest way is being descriptive in our view
+            template:</para>
+
+        <programlisting language="php">$this-&gt;document-&gt;getWebAssetManager()
+            -&gt;useStyle('com_example.backend')
+            -&gt;useScript('com_example.backend.items');</programlisting>
+
+        <para>(note that useStyle and useScript return the WAM object which
+            means they can be chain-called)</para>
+
+        <para>However, this runs the same risk as loading assets the
+            old-fashioned way. What happens if we decide that the Items page needs
+            some extra CSS which does not apply to the rest of our component's
+            backend? We'd have to edit the template layout file. Enter bugs.</para>
+
+        <para>Instead of being descriptive we can be
+            <emphasis>prescriptive</emphasis> using another WAM feature called
+            <emphasis role="bold">presets</emphasis>. A preset consists entirely of
+            dependencies. We declared it in our JSON file like this:</para>
+
+        <programlisting language="json">    {
+            "name": "com_example.backend.items",
+            "type": "preset",
+            "dependencies": [
+            "com_example.backend#style",
+            "com_example.backend.items#script"
+            ]
+            }
+        </programlisting>
+
+        <para>and we can load it in our view template very easily like
+            this:</para>
+
+        <programlisting language="php">$this-&gt;document-&gt;getWebAssetManager()-&gt;usePreset('com_example.backend.items');</programlisting>
+
+        <para>Note that the preset asset's key is the same as our script asset's
+            key. Script, style and preset assets are separate collections which
+            means we <emphasis>can</emphasis> reuse the same key across them. Joomla
+            will not be confused. We tell it which collection to look into by using
+            a different WAM method: <code>useScript</code>, <code>useStyle</code> or
+            <code>usePreset</code>.</para>
+
+        <para>Now let's see why presets are the bee's knees. Let's say we
+            decided that Items also needs some special styling in a separate CSS
+            file called <filename>items.min.css</filename>. We will just add this
+            asset to our JSON file and update the preset:</para>
+
+        <programlisting language="json">    {
+            "name": "com_example.backend.items",
+            "description": "Backend styling just for the Items page.",
+            "type": "style",
+            "uri": "items.min.css",
+            "dependencies": [
+            "com_example.backend"
+            ]
+            },
+            {
+            "name": "com_example.backend.items",
+            "type": "preset",
+            "dependencies": [
+            "com_example.backend#style",
+            "com_example.backend.items#style",
+            "com_example.backend.items#script"
+            ]
+            }
+        </programlisting>
+
+        <para>(You may notice that our <code>com_example.backend.items</code>
+            asset depends on <code>com_example.backend</code>. I didn't have to do
+            that, but I like to be explicit about dependencies to avoid any stupid
+            bugs if I remove any intermediate dependencies in a dependency
+            chain.)</para>
+
+        <para>We do NOT have to touch our view template file. Since we are
+            telling it to load a preset, changing the preset is enough for Joomla to
+            figure out what it needs to do.</para>
+
+        <para>Using the Web Asset Manager correctly can be a massive asset (no
+            pun intended!) in your extensions' public frontend. Your view templates
+            can load your prescriptive presets. If you decide you want to change
+            something you can change the preset. Your clients who have created
+            template overrides will NOT need to update their overrides. This means
+            far fewer “bug” reports and more time for you to work on your
+            code.</para>
+
+        <para>The Web Asset Manager has changed the way I write extensions and
+            has solved a lot of my headaches. You can use the WAM on any component
+            running on Joomla 4, regardless of whether you are using the “old”
+            (Joomla 3) MVC or the “new” (Joomla 4) MVC. In fact, since it is a part
+            of the Joomla document object, you can use it in modules, even plugins —
+            however, if you are using it in a plugin you MUST tell the WAM to load
+            your JSON file since Joomla will not do that by default for
+            plugins.</para>
+
+        <para>Finally, the WAM is a much less error-prone method to injecting
+            static assets to Joomla. All Joomla document classes have a WAM, even
+            when they are not HTML; it just follows that if it's a non-HTML document
+            adding an asset through WAM does nothing. Compare that with what happens
+            if you try to use the HTMLHelper or the addScript / addStyle document
+            methods when your document is not HTML. Yup, these old ways of adding
+            static assets cause Joomla to error out. Again, WAM is safe, the methods
+            of yesteryear are not. One more reason to migrate your extensions to WAM
+            today.</para>
+    </section>
+</chapter>

@@ -1,0 +1,1628 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright © 2022 Nikolaos Dionysopoulos
+
+Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free
+Documentation License, Version 1.3 or any later version published by the Free Software Foundation; with
+no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included
+in the section entitled "GNU Free Documentation License".
+-->
+<chapter xml:id="plg"
+         version="5.1" xmlns="http://docbook.org/ns/docbook"
+         xmlns:xlink="http://www.w3.org/1999/xlink"
+         xmlns:xila="http://www.w3.org/2001/XInclude/local-attributes"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:trans="http://docbook.org/ns/transclusion"
+         xmlns:svg="http://www.w3.org/2000/svg"
+         xmlns:m="http://www.w3.org/1998/Math/MathML"
+         xmlns:html="http://www.w3.org/1999/xhtml"
+         xmlns:db="http://docbook.org/ns/docbook"
+>
+    <title>Plugins</title>
+
+    <para>Plugins are the fundamental building blocks of Joomla!. They let us
+        execute code when something interesting happens. Unsurprisingly, plugins
+        are extremely powerful and the cornerstone of implementing complex
+        features which alter or add features in Joomla without having to modify
+        core files (“hack core”) as is usual in other CMS. This lets us have very
+        powerful, <emphasis>easily maintainable</emphasis>, sites.</para>
+
+    <section xml:id="plg-forms">
+        <title>The many forms of a Joomla plugin</title>
+
+        <para>Joomla plugins have been around for a very long time. In fact,
+            they've been around since before Joomla forked off Mambo in August 2005.
+            They were called ‘mambots’ back then. Having such a fundamental feature
+            for over two decades understandably means that there are many forms of
+            plugins possible.</para>
+
+        <section xml:id="plg-forms-legacy">
+            <title>Legacy (Joomla 1.x to 3.x)</title>
+
+            <para>It might come to you as a surprise, but the original way plugins
+                were implemented in Joomla 1.0 back in 2005 is still supported in
+                Joomla 4. This support will be removed in Joomla 6, scheduled for
+                release in 2025, two decades after it first appeared. Sure, there have
+                been refinements but the core concept still applies.</para>
+
+            <important>
+                <para>Even though Joomla uses this form of plugin for most of its
+                    core plugins in Joomla 4 (and possibly Joomla 5), this is a form of
+                    plugin which has been deprecated and will most likely go away in
+                    Joomla 6.</para>
+
+                <para>This form of plugin is only recommended if you are writing a
+                    version of your software which is meant to run on both Joomla 3 and
+                    Joomla 4 / 5, to facilitate people trying to migrate their sites
+                    over to a newer Joomla version.</para>
+
+                <para>If you are writing software native to Joomla 4 and beyond you
+                    should use the <link
+                            linkend="plg-forms-j4-subscriberinterface">Joomla 4 with
+                        SubscriberInterface</link> form of plugins explained further
+                    below.</para>
+
+                <para>The only exception to this rule are, at the time of this
+                    writing, plugins in the editors-xtd folder because they are not
+                    real, pure Joomla plugins. Their class is instantiated directly by
+                    Joomla and the <methodname>onDisplay</methodname> method called
+                    directly.</para>
+            </important>
+
+            <para>Legacy plugins consist of a single class which is named
+                PlgTypeName where Type is the plugin type a.k.a. folder (e.g. system,
+                user, console, …) and Name is the name of the plugin. For example, we
+                could have PlgSystemExample for a system plugin named
+                <code>example</code> and which lives in
+                <filename>plugins/system/example/example.php</filename>. The class
+                always extends from
+                <classname>\Joomla\CMS\Plugin\CMSPlugin</classname> or one of its
+                sub-classes typically defined in a component (e.g. finder plugins
+                extend from
+                <classname>\Joomla\Component\Finder\Administrator\Indexer\Adapter</classname>
+                which extends from
+                <classname>\Joomla\CMS\Plugin\CMSPlugin</classname>).</para>
+
+            <para>Any <emphasis role="bold">public</emphasis> method whose name
+                starts with <code>on</code> is registered as an event listener.
+                Therefore a method called <methodname>onFooBar</methodname> is
+                registered as a legacy plugin event listener for an event called
+                <code>onFooBar</code>.</para>
+
+            <para>There's a small caveat when it comes to Joomla 4 and 5. If the
+                method accepts only one parameter which is either named
+                <code>$event</code> OR is type-hinted as a class implementing
+                <interfacename>\Joomla\Event\EventInterface</interfacename> then the
+                method is registered as an event listener, a new type of listener. See
+                <link linkend="plg-forms-j4-listener-types">Legacy vs Event Listener
+                    methods</link>. This is a deliberate design choice which lets you
+                write plugins which can simultaneously handle legacy events when
+                running under Joomla 3 and modern events when running under Joomla 4
+                and 5. This lets you provide a version of your plugin which acts as a
+                “bridge” for people migrating from Joomla 3 to 4 and 5: the same
+                plugin can run on both versions of Joomla without breaking the
+                site.</para>
+        </section>
+
+        <section xml:id="plg-forms-j4-classic">
+            <title>Joomla 4 classic</title>
+
+            <para>As noted earlier, Joomla 4 introduced <link
+                    linkend="concepts-container">Dependency Injection and service
+                providers</link> for all extensions, of course including plugins. It
+                should come as no surprise then that the second plugin variant we get
+                is similar to the <link linkend="plg-forms-legacy">legacy
+                    plugins</link> but with namespaces and service providers.</para>
+
+            <para>The first difference you will notice is that the XML manifest
+                goes from this:</para>
+
+            <programlisting language="xml">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+                &lt;extension type="plugin" group="system" method="upgrade"&gt;
+                &lt;name&gt;plg_system_example&lt;/name&gt;
+                &lt;author&gt;Joomla! Project&lt;/author&gt;
+                &lt;creationDate&gt;2022-10&lt;/creationDate&gt;
+                &lt;copyright&gt;(C) 2022 Open Source Matters, Inc.&lt;/copyright&gt;
+                &lt;license&gt;GNU General Public License version 2 or later; see LICENSE.txt&lt;/license&gt;
+                &lt;authorEmail&gt;admin@joomla.org&lt;/authorEmail&gt;
+                &lt;authorUrl&gt;www.joomla.org&lt;/authorUrl&gt;
+                &lt;version&gt;1.0.0&lt;/version&gt;
+                &lt;description&gt;PLG_SYSTEM_EXAMPLE_XML_DESCRIPTION&lt;/description&gt;
+                &lt;files&gt;
+                <emphasis role="bold">&lt;filename plugin="example"&gt;example.php&lt;/filename&gt;</emphasis>
+                &lt;/files&gt;
+                &lt;languages&gt;
+                &lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.ini&lt;/language&gt;
+                &lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.sys.ini&lt;/language&gt;
+                &lt;/languages&gt;
+                &lt;/extension&gt;
+            </programlisting>
+
+            <para>to this:</para>
+
+            <programlisting language="xml">&lt;?xml version="1.0" encoding="utf-8"?&gt;
+                &lt;extension type="plugin" group="system" method="upgrade"&gt;
+                &lt;name&gt;plg_system_example&lt;/name&gt;
+                &lt;author&gt;Joomla! Project&lt;/author&gt;
+                &lt;creationDate&gt;2022-10&lt;/creationDate&gt;
+                &lt;copyright&gt;(C) 2022 Open Source Matters, Inc.&lt;/copyright&gt;
+                &lt;license&gt;GNU General Public License version 2 or later; see LICENSE.txt&lt;/license&gt;
+                &lt;authorEmail&gt;admin@joomla.org&lt;/authorEmail&gt;
+                &lt;authorUrl&gt;www.joomla.org&lt;/authorUrl&gt;
+                &lt;version&gt;1.0.0&lt;/version&gt;
+                &lt;description&gt;PLG_SYSTEM_EXAMPLE_XML_DESCRIPTION&lt;/description&gt;
+                <emphasis role="bold">&lt;namespace path="src"&gt;Joomla\Plugin\System\Example&lt;/namespace&gt;</emphasis>
+                &lt;files&gt;
+                <emphasis role="bold">&lt;folder&gt;services&lt;/folder&gt;</emphasis>
+                <emphasis role="bold">&lt;folder plugin="example"&gt;src&lt;/folder&gt;</emphasis>
+                &lt;/files&gt;
+                &lt;languages&gt;
+                &lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.ini&lt;/language&gt;
+                &lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.sys.ini&lt;/language&gt;
+                &lt;/languages&gt;
+                &lt;/extension&gt;
+            </programlisting>
+
+            <para>The affected lines are in bold type.</para>
+
+            <para>First of all, we have a <tag>&lt;namespace&gt;</tag> tag to
+                declare our namespace. The namespace MUST follow the convention
+                <code>Joomla\Plugin\<replaceable>Type</replaceable>\<replaceable>Name</replaceable></code>
+                where Type is the plugin type a.k.a. folder (e.g. system, user,
+                console, …) and Name is the name of the plugin. TheType must be
+                written as Uppercasefirst i.e. the first letter is uppercase and all
+                others are lowercase.</para>
+
+            <para>The second obvious change is that instead of a plugin file we
+                have two folders, <filename>services</filename> and
+                <filename>src</filename>.</para>
+
+            <para>The <filename>services</filename> folder contains a single file,
+                <filename>provider.php</filename>. It's very similar to <link
+                        linkend="com-services">a component's service provider
+                    file</link>:</para>
+
+            <programlisting language="php">&lt;?php
+                defined('_JEXEC') || die;
+
+                use Joomla\CMS\Extension\PluginInterface;
+                use Joomla\CMS\Factory;
+                use Joomla\CMS\Plugin\PluginHelper;
+                use Joomla\DI\Container;
+                use Joomla\DI\ServiceProviderInterface;
+                use Joomla\Event\DispatcherInterface;
+                use Joomla\Plugin\System\Example\Extension\Example;
+
+                return new class implements ServiceProviderInterface {
+                public function register(Container $container)
+                {
+                $container-&gt;set(
+                PluginInterface::class,
+                function (Container $container)
+                {
+                $config  = (array)PluginHelper::getPlugin('system', 'example');
+                $subject = $container-&gt;get(DispatcherInterface::class);
+
+                $app = Factory::getApplication();
+
+                /** @var \Joomla\CMS\Plugin\CMSPlugin $plugin */
+                $plugin = new Example($subject, $config);
+                $plugin-&gt;setApplication($app);
+
+                return $plugin;
+                }
+                );
+                }
+                };</programlisting>
+
+            <para>The important thing to note here is that the service provider is
+                responsible for registering a
+                <interfacename>Joomla\CMS\Extension\PluginInterface</interfacename>
+                service which returns an object instance of our plugin class.</para>
+
+            <tip>
+                <para>Your plugin class can also implement the
+                    <interfacename>\Joomla\CMS\Extension\BootableExtensionInterface</interfacename>
+                    interface. If it does, its <methodname>boot</methodname> method will
+                    be called when Joomla loads your plugin, before any event is
+                    executed, and gives you access to the plugin's Dependency Injection
+                    container. While you shouldn't try to execute any significant amount
+                    of code at this point (Joomla has not finished booting up yet!) and
+                    you shouldn't use the DI container directly to pull resources (the
+                    service provider is meant to push them to the plugin instead) it may
+                    come in handy for these, uh, <emphasis>forbidden</emphasis>
+                    purposes.</para>
+
+                <para>Here's an example. There are <emphasis>some</emphasis>
+                    services which have a lengthy initialisation — for example, a
+                    foreign currency exchange service will need to periodically pull the
+                    currency exchange rates from a central bank's web site. Ideally,
+                    you'd want to move their initialisation outside the constructor and
+                    into a different method you need to call before doing something
+                    useful with your service. However, you may also run into
+                    chicken-and-egg situations trying to do that. If the server doesn't
+                    support cURL the service might throw an exception. I'd like to catch
+                    it so I can <emphasis>not</emphasis> offer this feature with
+                    unsatisfied server dependencies. But if I do that in the service
+                    provider I am also very likely trying to make a web request to the
+                    central bank's website to get the currency exchange rate at an
+                    inopportune moment where the application needs to finish loading as
+                    fast as possible.</para>
+
+                <para>While there are clever ways to work around that, you may find
+                    it far easier to get access to the container in the
+                    <methodname>boot</methodname> method, store a reference to the
+                    container in a private property of your plugin and pull an instance
+                    of your custom forex service when you need it. If it throws an
+                    exception you can implement your “this isn't possible on this
+                    server” logic. By instantiating your service through the provider
+                    only when needed you solved your chicken-and-egg problem.</para>
+
+                <para>A cleaner solution would of course be trying to check the
+                    server dependencies on service instantiation and set a flag in the
+                    service. When the service consumer (your plugin) tries to use the
+                    service you could throw an exception. This is an obvious solution in
+                    this simple problem. For more complex problems there might not be an
+                    equally obvious solution.</para>
+
+                <para>As I always say to aspiring developers, your goal is to
+                    deliver something useful and maintainable in a finite period of
+                    time. If it means writing something a CS professor would give a
+                    disapproving frown, so be it. You can revisit that implementation
+                    later, when you have time to burn. As Steve Jobs succinctly put it,
+                    “<link
+                            xlink:href="https://leaderforgood.com/real-artists-ship/">real
+                        artists ship</link>”.</para>
+            </tip>
+
+            <para>The plugin class, as with legacy plugins, extends from
+                <classname>\Joomla\CMS\Plugin\CMSPlugin</classname> and works the same
+                as <link linkend="plg-forms-legacy">a Legacy plugin's</link>
+                class.</para>
+
+            <para>You will not see any plugins of this type in the core and they
+                are pretty rare in the wild, mostly from software — like older
+                versions of mine — which started the conversion process to Joomla 4
+                before Joomla 4 was finished and before the modern event system was
+                mature enough for general use.</para>
+
+            <para>Practically speaking, the only use case for this type of plugin
+                is if you still have plugin events which pass around scalar variables
+                <emphasis>by reference</emphasis>. For example, something like
+                this:</para>
+
+            <programlisting language="php">public function onMyCustomEvent(string $foo, array &amp;$bar);</programlisting>
+
+            <para>The $bar variable is a scalar (array) passed by reference. It
+                can be modified by the plugin event handler. This will not be possible
+                using modern events.</para>
+
+            <para>If you want a clean solution you need to make changes in the
+                code which calls this plugin event. Instead of passing around an array
+                you'd have to pass a
+                <classname>\Joomla\CMS\Object\CMSObject</classname> or
+                <classname>\Joomla\Registry\Registry</classname> object created from
+                the contents of the array. Your modern event handler can modify that
+                object (objects are always passed by reference in all versions of PHP
+                supported by Joomla 4 and beyond). Then your consumer code could
+                convert back from an object to an array.</para>
+
+            <para>The clean solution is admittedly more convoluted than you might
+                expect and requires changes in the consumer which might not be
+                possible if it's not code under your control. If you do not feel
+                confident implementing the cleaner solution, or if it's just not
+                possible because third party code is using your events, you can create
+                a Joomla 4 classic plugin with a legacy plugin event handler for your
+                plugin event which won't give you a hard time with scalar variables
+                passed by reference. It's not the best coding practice but it does
+                take a while —and several refactoring passes— to migrate to a cleaner
+                architecture. Even more so considering that Joomla 3 and these coding
+                practice had been around for nearly a decade before Joomla 4 was
+                released.</para>
+        </section>
+
+        <section xml:id="plg-forms-j4-subscriberinterface">
+            <title>Joomla 4 with SubscriberInterface</title>
+
+            <para>You might remember from an earlier chapter talking about <link
+                    linkend="com-controllers-basic-services">the basic services in a
+                component's service provider</link> that you can trigger plugins using
+                modern events like so:</para>
+
+            <programlisting language="php">$event = \Joomla\CMS\Event\GenericEvent::create('onSomething', [$param1, $param2]);
+                $this-&gt;getDispatcher()-&gt;dispatch($event-&gt;getName(), $event);
+                $results = $event-&gt;getArgument('result', []);</programlisting>
+
+            <para>It follows reason that Joomla 4 offers a way to write plugins
+                which only deal with these modern events. These events are faster and
+                have many more tricks up their sleeves than the ‘dumb’ callback model
+                implemented in Joomla 1.x, 2.x and 3.x.</para>
+
+            <para>Plugins of this type are just like <link
+                    linkend="plg-forms-j4-classic">Joomla 4 classic plugins</link> with a
+                twist. The plugin class implements the
+                <interfacename>\Joomla\Event\SubscriberInterface</interfacename> and
+                you set the protected property <code>$this-&gt;allowLegacyListeners =
+                    false;</code>. This changes the way Joomla registers event
+                handlers.</para>
+
+            <para>Joomla will NOT use reflection to find public methods whose name
+                starts with <code>on</code>. It will instead call the public static
+                method <methodname>getSubscribedEvents</methodname> which is defined
+                in the interface and implemented in your plugin class. This returns an
+                array mapping event names to public methods of your plugin. Not having
+                to go through reflection saves <emphasis>a lot</emphasis> of time on
+                every page load of the site. Moreover, events are self-contained
+                objects being passed around which reduces the overhead of calling each
+                event handler. These add up with the dozens to hundreds of plugins and
+                event handlers running on a typical Joomla site, saving several dozens
+                to a few hundreds of milliseconds of page load time. This is a
+                significant performance improvement for the site. <emphasis
+                        role="bold">This is why I've been telling people since 2017, that
+                    modern events make Joomla 4 and later versions
+                    faster</emphasis>.</para>
+
+            <para>The implementation of the getSubscribedEvents method is pretty
+                straightforward:</para>
+
+            <programlisting language="php">public static function getSubscribedEvents(): array
+                {
+                return [
+                'onSomething'     =&gt; 'doSomething',
+                'onSomethingElse' =&gt; ['doSomething', \Joomla\Event\Priority::HIGH],
+                ];
+                }</programlisting>
+
+            <para>The keys of the array are the event names. The values are the
+                names of the methods which handle each event.</para>
+
+            <para>But, wait a minute! That second item has an array value. What is
+                that? Well, that's one of the benefits of using SubscriberInterface:
+                you can tell Joomla about the priority you want for your event
+                handler, meaning that the order plugins execute is not dictated only
+                by their user-defined ordering in the backend of the site but also by
+                the programmer's preferred priority.</para>
+
+            <para>By default, all event handlers are attached with Normal
+                priority. They are then executed in the order they were attached, i.e.
+                how the plugins were ordered in the backend Plugins management page of
+                the site. This is the only option you get with legacy and classic
+                plugins.</para>
+
+            <para>Plugins implementing the SubscriberInterface can optionally set
+                a priority for each event handler. This is an integer. The higher the
+                integer is, the earlier your event handler executes. Joomla first
+                executes all event handlers with the highest priority number in the
+                order they were attached. Then moves to the event handlers with the
+                second highest priority number in the order they were attached and so
+                on.</para>
+
+            <para>If you set your priority to high, as I did above, your event
+                handler will be one of the first (if not the absolute first) to be
+                executed. If, conversely, you set it to
+                <code>\Joomla\Event\Priority::MIN</code> or even
+                <code>PHP_INT_MIN</code> your event handler will be one of the last
+                (if not the absolute last) to be executed. In the few cases where this
+                is truly needed you no longer have to tell your users to reorder
+                plugins for your plugin to work correctly and predictably; you can
+                just set the priority.</para>
+
+            <caution>
+                <para><emphasis role="bold">With great power comes great
+                    responsibility</emphasis>. Do NOT set the priority of your event
+                    handlers unless there is an absolute need to do so.</para>
+
+                <para>For example, a security plugin will need to guarantee that its
+                    plugin events execute first to avoid other plugins' security
+                    vulnerabilities being triggered by malicious requests. Full page
+                    HTML source code search &amp; replace plugins will need to have
+                    their onAfterRender handler run as the very last to be able to
+                    replace HTML text right before it's potentially compressed and
+                    returned to the browser.</para>
+
+                <para>The vast majority of plugins should NOT set a priority. By
+                    setting a priority you make it very hard if not impossible for the
+                    user to change the execution order of your plugin which might be
+                    necessary to work around issues on their site. <emphasis
+                            role="bold">DO NOT TAKE AWAY THE USER'S AGENCY UNLESS THERE IS AN
+                        VERY WELL JUSTIFIED AND DOCUMENTED REASON</emphasis>.</para>
+            </caution>
+
+            <para>Moreover, you should keep in mind that all methods handling
+                events only accept one argument (by value, not reference!), an event
+                object which implements the
+                <interfacename>\Joomla\Event\EventInterface</interfacename> interface.
+                We will talk about this in <link
+                        linkend="plg-forms-j4-listener-types">the next section on listener
+                    types</link>.</para>
+        </section>
+
+        <section xml:id="plg-forms-j4-listener-types">
+            <title>Legacy vs Event Listener methods</title>
+
+            <para>As we have already alluded to in the previous sections, there
+                are two types of plugin event listeners.</para>
+
+            <bridgehead>Legacy plugin event listeners</bridgehead>
+
+            <para>Legacy plugin event listeners are nothing more than glorified
+                callbacks. They are plain old methods which accept a number of
+                parameters and possibly<footnote>
+                    <para>Actually, they always have to return a value. It just so
+                        happens that the return value of methods typehinted to return void
+                        is NULL in PHP. At some point, in newer PHP versions, this will
+                        start throwing an error which is another reason legacy listeners
+                        will have to eventually go away.</para>
+                </footnote> return a value. For example, we could have something
+                like this:</para>
+
+            <programlisting language="php">public onSomething(string $foo, array $bar): array</programlisting>
+
+            <para>This simplicity is simultaneously the strength and the Achille's
+                heel of legacy plugin event handlers.</para>
+
+            <itemizedlist>
+                <listitem>
+                    <para>Having an arbitrary number of parameters makes it really
+                        hard to know what is the <emphasis>canonical</emphasis> parameters
+                        list when you are calling a plugin event and when you are
+                        implementing a handler for it.</para>
+                </listitem>
+
+                <listitem>
+                    <para>It's impossible to add new parameters, even optional ones,
+                        without a breaking change. If different handlers have a different
+                        number of parameters (or, worse, parameters order!) they expect
+                        you might get PHP warning or errors.</para>
+                </listitem>
+
+                <listitem>
+                    <para>Neither the parameters nor the return values can be
+                        type-hinted. This makes it perfectly possible for a developer,
+                        core or third party, to pass the wrong data type to an event's
+                        argument e.g. an object where an array is expected. It also makes
+                        for inconsistent return values which need to be normalised and
+                        validated in consumer code, i.e. every time an event is
+                        called.</para>
+                </listitem>
+
+                <listitem>
+                    <para>The aforementioned problems can result in bugs which are
+                        really hard to address. For example, a third party extension may
+                        cause a core or third party plugin to fail with a PHP error on PHP
+                        8 by passing the wrong data type to it. Conversely, a third party
+                        plugin may cause core or third party components or modules to fail
+                        by returning an unexpected data type. Identifying who messed up is
+                        hard. Explaining to a client that it's not your code at fault but
+                        a third party plugin may be really hard, especially if that third
+                        party plugin works fine in the <emphasis>very limited
+                            subset</emphasis> of use cases it was developed for and tested
+                        on.</para>
+                </listitem>
+
+                <listitem>
+                    <para>Running callbacks with an arbitrary number of arguments
+                        requires going through PHP's
+                        <function>call_user_func_array()</function> function which has
+                        more overhead than calling methods directly. This is only relevant
+                        on older PHP versions; the performance delta is nearly gone in PHP
+                        8.</para>
+                </listitem>
+            </itemizedlist>
+
+            <para>The only thing this simple callback arrangement has going for it
+                is that, well, it's very simple to implement in the code which calls
+                the plugin events, the core code which runs the plugin event handlers
+                and the code which consumes the results of plugin event handlers —
+                though the latter is debatable.</para>
+
+            <bridgehead>Modern event listeners</bridgehead>
+
+            <para>Joomla 4 introduced a whole new concepts: <emphasis
+                    role="bold">events</emphasis>.</para>
+
+            <para>Each event is its own object. It has arguments which can be
+                anonymous or named, typically the former in generic events and the
+                latter in <link linkend="plg-concrete-events">concrete events</link>.
+                Events always have a named argument called <code>result</code> which
+                lets the event handler not only return a result but also inspect what
+                other results were returned by event handlers called before it (most
+                concrete events have an <methodname>addResult</methodname> method to
+                facilitate returning results). A concrete event class can implement
+                type checks and validation of any (or all) of its arguments, including
+                the results. It's no longer the Wild West.</para>
+
+            <para>Event handlers have the option to stop the processing of an
+                event's handlers by calling the event object's
+                <methodname>stopPropagation</methodname> method; this is useful when
+                you want to run a number of plugins until you get at least one result.
+                Think about avatars displayed in a forum. You may have a number of
+                plugins which can return an avatar image: Gravatar (if the user has an
+                account there), using an image source from a user field, Facebook (if
+                the user has linked an account), a locally installed social network
+                component, and a fall-back to a generated fake avatar. The first
+                avatar found will be used, the rest will be discarded. If the rest are
+                going to be discarded, why even bother running the code to check if
+                they exist?! Instead, each avatar plugin would work like this. It runs
+                its code. If there is no avatar to be reported, return. If there is an
+                avatar to be reported use <methodname>addResult</methodname> to return
+                it and call the event's <methodname>stopPropagation</methodname>
+                method to prevent the other avatar plugins from running for no reason
+                and wasting the user's time and your server's resources. This is
+                something you just cannot do with legacy event listeners.</para>
+
+            <para>Also, as we mentioned earlier, modern event handlers can have
+                prioritised event handlers with all the benefits we already
+                mentioned.</para>
+
+            <para>Modern event handlers are fairly simple:</para>
+
+            <programlisting language="php">public function handleSomething(\Joomla\Event\Event $event): void</programlisting>
+
+            <para>Note the type-hint to the <code>$event</code> argument. As
+                written above, the method can be used to handle any event. In most
+                cases you will need to use a concrete event class: either the concrete
+                core event classes supplied in Joomla's
+                <filename>libraries/src/Event</filename> directory and its
+                subdirectories or a concrete event class provided by another Joomla
+                extension.</para>
+
+            <para>Getting the arguments to the event depends on the event class
+                itself. For generic events you'd need to do something like:</para>
+
+            <programlisting language="php">[$param1, $param2, $param3] = $event-&gt;getArguments();</programlisting>
+
+            <para>That's because generic events do not have named arguments. This
+                is the equivalent of having a legacy plugin event handler with the
+                method signature:</para>
+
+            <programlisting language="php">public function onSomething($param1, $param2, $param3);</programlisting>
+
+            <para>With concrete events, it depends on the event. In most cases
+                you'd do either of the following:</para>
+
+            <programlisting language="php">// Named arguments without a getter method
+                $param1 = $event-&gt;getArgument('param1');
+                // Named arguments with getter methods
+                $param2 = $event-&gt;getParam1();</programlisting>
+
+            <para>Any decent IDE will let you know if there is a getter in
+                <code>$event</code> based on its type-hint. That's why it makes sense
+                to type-hint your event handler methods correctly.</para>
+
+            <para>The return type of a modern event handler is always void. You do
+                NOT return values directly. Instead, you add them to the
+                <code>result</code> argument which is always an array:</para>
+
+            <programlisting language="php">$result = $this-&gt;getArgument('result') ?? [];
+                $result[] = $theResultIAmReturning;
+                $this-&gt;setArgument('result', $result);</programlisting>
+
+            <para>Most concrete event classes implement the
+                <interfacename>\Joomla\CMS\Event\Result\ResultAwareInterface</interfacename>
+                which has the <methodname>addResult</methodname> method to return
+                values more easily:</para>
+
+            <programlisting language="php">$this-&gt;addResult($theResultIAmReturning);</programlisting>
+
+            <para>Finally, remember that events can be mutable, immutable or
+                selectively immutable. A mutable event allows its handlers to use
+                <methodname>setArgument</methodname> freely, modifying all of its
+                arguments.</para>
+
+            <caution>
+                <para>Even though <emphasis>most</emphasis> core events are
+                    currently mutable, this <emphasis>will</emphasis> change in Joomla 5
+                    and Joomla 6. Joomla is moving towards concrete event classes for
+                    all core events. These concrete classes will be selectively
+                    immutable: all of their arguments will be immutable except for the
+                    <code>result</code> argument; the latter only if it's an event which
+                    expects a result to be returned.</para>
+
+                <para>Therefore you MUST NOT rely on core events' arguments being
+                    mutable at the moment. Treat them as immutable or you <emphasis>will
+                        suffer</emphasis> in the future!</para>
+            </caution>
+
+            <para>An immutable event does not allow any of its arguments to be set
+                after it has been created. This does not mean that you cannot do
+                anything with the arguments! Remember that argument values which are
+                object can be modified without needing to set the argument again. For
+                example, this is a valid, working event handler:</para>
+
+            <programlisting language="php">	public function handleTableAfterLoad(\Joomla\CMS\Event\Table\AfterLoadEvent $event): void
+                {
+                if (!$event-&gt;getArgument('result')) return;
+
+                /** @var \Joomla\CMS\Table\TableInterface $table */
+                $table = $event-&gt;getArgument('subject');
+
+                $table-&gt;modified_by = \Joomla\CMS\Factory::getApplication()
+                -&gt;getIdentity()
+                -&gt;id;
+                }</programlisting>
+
+            <para>The
+                <classname>\Joomla\CMS\Event\Table\AfterLoadEvent</classname> concrete
+                event class is an <emphasis>immutable</emphasis> event. However, it
+                has a <code>subject</code> argument which contains a Joomla Table
+                object. All objects in PHP are passed by reference; any change we make
+                to it will persist when we return from our method. That's why we can
+                change its <code>modified_by</code> property without returning any
+                value from our event handler and despite the event itself being
+                immutable.</para>
+
+            <para>Finally, we have selective immutable events. On the face of it,
+                they are immutable events. However, they have setter methods for
+                specific named arguments. Actually, the
+                <classname>\Joomla\CMS\Event\Table\AfterLoadEvent</classname> is a
+                selectively immutable event. It has setters for the
+                <code>result</code> and <code>row</code> arguments. Every event
+                implementing
+                <interfacename>\Joomla\CMS\Event\Result\ResultAwareInterface</interfacename>
+                is selectively immutable; there is always the
+                <methodname>addResult</methodname> method to add to the results
+                returned by the event.</para>
+
+            <para>Handling events is a bit more involved than using simple
+                callback methods like you used to in legacy plugins. If you feel
+                utterly lost, <code>var_dump</code> the <code>$event</code> variable
+                and <code>die();</code><footnote>
+                    <para>You can of course attach a PHP debugger and add a breakpoint
+                        to your event handler to better inspect what is going on. Even
+                        though this method is preferable I understand that not everyone
+                        knows how to do it. Plus, var_dump and die is easy and I use it
+                        too when I just want to get a quick idea of what's going on with a
+                        variable without having to temporarily disable my other
+                        breakpoints. All tools are useful when used appropriately.</para>
+                </footnote>. You will get a lot of insight as to what the event does
+                and which data does it carry.</para>
+        </section>
+    </section>
+
+    <section xml:id="plg-namespaces">
+        <title>Namespaces</title>
+
+        <para>Before Joomla 4.0 all plugins were a single class which followed
+            the naming convention
+            <classname>Plg<replaceable>Folder</replaceable><replaceable>Name</replaceable></classname>
+            where <code>Folder</code> is the plugin folder with its first letter
+            capitalised (e.g. <code>System</code> for <code>system</code> plugins)
+            and <code>Name</code> is the plugin's name with all of its letters
+            lowercase except the first one which is capitalised (e.g. Example). Thus
+            a plugin named <code>example</code> in the <code>system</code> folder
+            would have the class name PlgSystemExample.</para>
+
+        <para>In those earlier Joomla versions the file name of the plugin was
+            also prescribed and could not change. The aforementioned plugin's class
+            file would necessarily be
+            <filename>plugins/system/example/example.php</filename>. The immediate
+            result of that is that the file name and the class name are not the same
+            which makes class autoloading for plugins a pain in the posterior.
+            Therefore, we had no autoloading for plugins.</para>
+
+        <para>While this is not a problem for trivial plugins, it can become a
+            substantial issue for more complex plugins. As a developer you either
+            had to create a supermassive class running into the several thousands of
+            lines of code or you'd have to “invent” your own autoloader. Typically
+            it would be the latter, with the plugin's constructor method using
+            <code>\JLoader::register</code> or <code>\JLoader::registerPrefix</code>
+            to register individual, arbitrarily named classes or a PSR-4 namespace
+            used by the plugin. The former ran the risk of having same-named classes
+            declared by multiple plugins with the site breaking. The latter ran the
+            risk of having two or more plugins trying to use the same-named
+            namespace, again breaking the site.</para>
+
+        <para>Joomla 4.0 added <link
+                linkend="concepts-namespaces">namespaces</link> support for plugins. All
+            we have to do is declare a namespace, a root folder for it under our
+            plugin and make sure that the folder and file names follow the <link
+                    xlink:href="https://www.php-fig.org/psr/psr-4/">PSR-4</link>
+            standard.</para>
+
+        <para>Your plugin's namespace prefix is declared in the XML manifest of
+            the plugin using a new XML element under the
+            <code>&lt;extension&gt;</code> root element:</para>
+
+        <programlisting language="xml">&lt;namespace path="src"&gt;My\Namespace\Prefix&lt;/namespace&gt;</programlisting>
+
+        <para>The <code>path</code> attribute tells Joomla which subdirectory of
+            your extension holds the PSR-4 of your extension's PHP files. It is best
+            practice to name it <filename>src</filename> but <emphasis>you don't
+                have to</emphasis>. I always assume you are using
+            <filename>src</filename>.</para>
+
+        <para>The text inside the XML element, <code>My\Namespace\Prefix</code>
+            in our example, is the namespace prefix you will be using. Each plugin
+            can register its own namespace prefix without any restrictions. It is
+            <emphasis>recommended</emphasis> to use the convention
+            <code>Joomla\Plugin\<replaceable>Folder</replaceable>\<replaceable>Name</replaceable></code>
+            where <code>Folder</code> is the plugin folder with its first letter
+            capitalised (e.g. <code>System</code> for <code>system</code> plugins)
+            and <code>Name</code> is the plugin's name with all of its letters
+            lowercase except the first one which is capitalised (e.g. Example). Thus
+            a plugin named <code>example</code> in the <code>system</code> folder
+            would have the namespace <code>Joomla\Plugin\System\Example</code>.
+            Using this convention ensures that there will be no overlap in
+            namespaces of different plugins since you cannot have two different
+            plugins with the same name and plugin type.</para>
+
+        <note>
+            <para>Unlike components, this is the entire namespace for your plugin.
+                You do NOT get a different namespace per Joomla application.</para>
+        </note>
+
+        <para>Your plugin's class does not have to follow any specific naming
+            convention or be placed in a specific sub-namespace of the plugin's
+            namespace. This is determined in the plugin's <link
+                    linkend="plg-services">Service Provider</link>. It does have to extend
+            from <classname>\Joomla\CMS\Plugin\CMSPlugin</classname> or one of its
+            descendant classes.</para>
+
+        <para>It is <emphasis>customary</emphasis> to name it
+            <code>Extension</code>, <code>Plugin</code>, or after the name of your
+            plugin (e.g. <code>Example</code>) and place it in the
+            <code>Extension</code> sub-namespace of your plugin. For example, our
+            aforementioned example system plugin would customarily have its main
+            plugin class be
+            <classname>Joomla\Plugin\System\Example\Extension\Example</classname>.</para>
+
+        <para>Any other classes you are shipping with and using in your plugin
+            just follow the PSR-4 class naming standard.</para>
+
+        <para>The best part? Joomla registers namespaces when it boots. Even if
+            your plugin is not yet loaded (but <emphasis>is</emphasis> enabled!) you
+            have access to its classes using Joomla's PSR-4 autoloader. This is a
+            typically much faster way to find out if a plugin is loaded or not
+            instead of going through
+            <methodname>\Joomla\CMS\Plugin\PluginHelper::isEnabled</methodname>. For
+            example:</para>
+
+        <programlisting language="php">// The old way
+            $hasSystemExample = <methodname>\Joomla\CMS\Plugin\PluginHelper::isEnabled</methodname>('system', 'example');
+            // The new way
+            $hasSystemExample = class_exists(\Joomla\Plugin\System\Example\Extension\Example::class, true);</programlisting>
+
+        <para>This does NOT mean that you should stop using
+            <methodname>\Joomla\CMS\Plugin\PluginHelper::isEnabled</methodname>
+            though. There are plenty of cases where you know the type and name of a
+            plugin but do not know how it has named its plugin class. In this case
+            go through the slower, old way; it's safer than making arbitrary
+            assumptions. Use the new way only for your own plugins since you are in
+            full control of their classes's naming.</para>
+    </section>
+
+    <section xml:id="plg-services">
+        <title>Service Provider</title>
+
+        <para>As discussed in a previous section, the service provider file is
+            mandatory for Joomla 4 native plugins, lives in the plugin's
+            <filename>services</filename> folder and always named
+            <filename>provider.php</filename>.</para>
+
+        <para>The absolutely minimal minimal service provider file looks like
+            the following:</para>
+
+        <programlisting language="php">&lt;?php
+
+            defined('_JEXEC') || die;
+
+            use Joomla\CMS\Extension\PluginInterface;
+            use Joomla\CMS\Plugin\PluginHelper;
+            use Joomla\DI\Container;
+            use Joomla\DI\ServiceProviderInterface;
+            use Joomla\Event\DispatcherInterface;
+            use Joomla\Plugin\System\Example\Extension\Example;
+
+            return new class implements ServiceProviderInterface
+            {
+            /**
+            * Registers the service provider with a DI container.
+            *
+            * @param   Container  $container  The DI container.
+            *
+            * @return  void
+            *
+            * @since   4.2.0
+            */
+            public function register(Container $container)
+            {
+            $container-&gt;set(
+            PluginInterface::class,
+            function (Container $container) {
+            $config  = (array) PluginHelper::getPlugin('system', 'example');
+            $subject = $container-&gt;get(DispatcherInterface::class);
+
+            return new Example($subject, $config);
+            }
+            );
+            }
+            };</programlisting>
+
+        <para>As you can see the service provider returns an <link
+                xlink:href="https://www.php.net/manual/en/language.oop5.anonymous.php">anonymous
+            PHP class</link> which implements the
+            <code>Joomla\DI\ServiceProviderInterface</code>. That's the standard way
+            to extend Joomla's DIC. Joomla creates a <emphasis>copy</emphasis> of
+            its DIC and uses it as our plugin's own DIC. The service providers we
+            set up in our plugin stay with our plugin, they do not leak out to the
+            global application scope (the global Joomla DIC you get through the
+            <code>Joomla\CMS\Factory::getContainer()</code> static method).</para>
+
+        <para>The code in the anonymous function does the bare minimum of
+            setting up a plugin. If you need to register custom service providers
+            for your plugin do it before this code.</para>
+
+        <para>The return line creates the plugin object from the plugin's class.
+            If you need to push services into your plugin's object instance you will
+            have to replace that line with something like this:</para>
+
+        <programlisting language="php">$plugin = Example($subject, $config);
+            $plugin-&gt;setMyCustomService($container-&gt;get(MyCustomService::class));
+
+            return $plugin;</programlisting>
+    </section>
+
+    <section xml:id="plg-extension">
+        <title>Extension class (plugin)</title>
+
+        <para>The plugin class has not changed in any significant manner apart
+            from the fact that it can now be namespaced and have any name you please
+            as we learned in the previous two sections. It still extends from
+            <classname>\Joomla\CMS\Plugin\CMSPlugin</classname> or one of its
+            subclasses.</para>
+
+        <para>The biggest difference is that since Joomla 4.0 <link
+                linkend="plg-forms-j4-listener-types">you can implement the
+            <classname>\Joomla\Event\SubscriberInterface</classname></link> in your
+            plugin class to handle modern events instead of registering plugin event
+            callbacks, as we already discussed.</para>
+
+        <para>The other big change starting with Joomla 4.2 is that you no
+            longer need to declare an <code>$app</code> property to magically get
+            access to the Joomla application object or a <code>$db</code> property
+            to magically get access ot the database driver object. Instead, you need
+            to set up these features through your service provider.</para>
+
+        <note>
+            <para>While you can still use the two properties, doing so will
+                trigger a PHP deprecated notice. Unfortunately, if you want to support
+                earlier Joomla versions (e.g. 3.x, 4.0 and 4.1) this is all you can
+                do.</para>
+        </note>
+
+        <bridgehead>Accessing the Joomla application object</bridgehead>
+
+        <para>Modify your provider's return line to read something like the
+            following:</para>
+
+        <programlisting language="php">// Create the plugin
+            $plugin = Example($subject, $config);
+            // Push the application object
+            $plugin-&gt;setApplication(\Joomla\CMS\Factory::getApplication());
+
+            return $plugin;</programlisting>
+
+        <para>In your plugin's code you can now get the Joomla application
+            object by doing</para>
+
+        <programlisting language="php">$app = $this-&gt;getApplication();</programlisting>
+
+        <bridgehead>Accessing the Joomla database driver object</bridgehead>
+
+        <para>Accessing the Joomla database driver object is
+            <emphasis>slightly</emphasis> more complicated.</para>
+
+        <para>First of all, your plugin class must have the
+            <classname>\Joomla\Database\DatabaseAwareInterface</classname> in its
+            implements list and use the
+            <classname>\Joomla\Database\DatabaseAwareTrait</classname>. For
+            example:</para>
+
+        <programlisting language="php">class Example extends \Joomla\CMS\Plugin\CMSPlugin
+            implements \Joomla\Database\DatabaseAwareInterface
+            {
+            use \Joomla\Database\DatabaseAwareTrait;
+
+            // The rest of the plugin class goes here.
+            }</programlisting>
+
+        <para>Your service provider must have the following line before the
+            <code>return $plugin;</code> line:</para>
+
+        <programlisting language="php">$plugin-&gt;setDatabase($container-&gt;get('DatabaseDriver'));</programlisting>
+
+        <para>Inside your plugin's class you can now access the database driver
+            object like this:</para>
+
+        <programlisting language="php">$db = $this-&gt;getDatabase();</programlisting>
+    </section>
+
+    <section xml:id="plg-lang">
+        <title>Language files</title>
+
+        <para>The Joomla language files have not really changed much since
+            Joomla 1.0. Joomla is using the <link
+                    xlink:href="https://en.wikipedia.org/wiki/INI_file">INI format</link>
+            with a few twists:</para>
+
+        <itemizedlist>
+            <listitem>
+                <para>The keys must always be in UPPERCASE. You cannot have keys in
+                    lowercase or MixedCase.</para>
+            </listitem>
+
+            <listitem>
+                <para>The values to the right of the equals sign must be enclosed in
+                    double quotes (<code>"</code>).</para>
+            </listitem>
+
+            <listitem>
+                <para>If you want to use double quotes inside your values you need
+                    to escape them as <code>\"</code>.</para>
+            </listitem>
+
+            <listitem>
+                <para>Some language strings are used in JavaScript code using a
+                    legacy method. They do not support escaped double quotes. Use single
+                    quotes (<code>'</code>) instead, even for HTML attributes (yes, HTML
+                    allows you to do things like <code>&lt;a
+                        href='https://www.example.com'&gt;example&lt;/a&gt;</code> even
+                    though attribute values <emphasis>should</emphasis> use double
+                    quotes for compatibility with XHTML). If you want to put quotes
+                    around human-readable text you can also use calligraphic quotes:
+                    <code>“ ” ‘ ’</code> and so on.</para>
+            </listitem>
+
+            <listitem>
+                <para>You can comment a line by putting a semicolon (<code>;</code>)
+                    as its first character. Do not put semicolons at the end of strings,
+                    they might be parsed as part of the value.</para>
+            </listitem>
+        </itemizedlist>
+
+        <bridgehead>No more language tags in filenames</bridgehead>
+
+        <para>There is a pretty big change for language file
+            <emphasis>naming</emphasis> in Joomla 4 and beyond: <emphasis
+                    role="bold">you must not use the language prefix</emphasis>.</para>
+
+        <para>In Joomla 1.5 to 3.10 inclusive language files were named like
+            <filename>en-GB.plg_system_example.ini</filename> (British English),
+            <filename>de-DE.plg_system_example.ini</filename> (German, Germany) and
+            <filename>de-AT.plg_system_example.ini</filename> (German,
+            Austria).</para>
+
+        <para>However, that naming was highly redundant as starting with Joomla
+            1.6 in 2010 the language files had to be placed in a folder whose name
+            was the language tag itself! Inside a language folder you'd have the
+            relative filepaths
+            <filename>en-GB/en-GB.plg_system_example.ini</filename>,
+            <filename>de-DE/de-DE.plg_system_example.ini</filename> and
+            <filename>de-AT/de-AT.plg_system_example.ini</filename>. Having the same
+            language tag appear twice in a pathname didn't make sense. Therefore in
+            Joomla 4 and beyond we no longer use the language tag prefix!</para>
+
+        <para>The files are now simply named similar to
+            <filename>plg_system_example.ini</filename>. The language of the file is
+            inferred from the folder name it's in. For example, the filepath
+            <filename>en-GB/plg_system_example.ini</filename> obviously refers to
+            British English.</para>
+
+        <bridgehead>Plugin language files</bridgehead>
+
+        <para>A plugin has multiple different language files. The base name of
+            all files is the name of the Joomla component extension, e.g.
+            <code>plg_system_example</code>(the two latter parts separated by
+            underscores is the plugin type a.k.a. folder and the plugin name, in all
+            lowercase):</para>
+
+        <itemizedlist>
+            <listitem>
+                <para><filename>plg_system_example.sys.ini</filename> — System
+                    language file. Required. It only needs the two language keys for the
+                    plugin name and its XML manifest file's description. Used during
+                    installation.</para>
+            </listitem>
+
+            <listitem>
+                <para><filename>plg_system_example.ini</filename> — Language file.
+                    Required. Has the language keys for all of the plugin's options.
+                    Also needs the two language keys for the plugin name and its XML
+                    manifest file's description. It can also contain any language
+                    strings you are using during the execution of your plugin.</para>
+            </listitem>
+        </itemizedlist>
+
+        <para>Plugin language files are placed in the <emphasis
+                role="bold">administrator</emphasis> application's
+            <filename>language</filename> subdirectory — even for plugins which ONLY
+            run in the frontend of the site! For example, the language files for
+            British English are placed in
+            <filename>administrator/language/en-GB</filename>. Moreover, Joomla will
+            fall back to the language subdirectory under your plugin. For example,
+            the language files for British English are also sought for in
+            <filename>plugins/system/example/language/en-GB</filename>. If files
+            exist in both locations then <emphasis>only</emphasis> the one in the
+            application's directory will be loaded.</para>
+
+        <bridgehead>Language file autoloading</bridgehead>
+
+        <para>Unlike previous versions of Joomla, you do NOT have to load your
+            language files manually. Joomla loads your plugin's language files
+            automatically.</para>
+
+        <para>All you need to do is set the protected property
+            <property>autoloadLanguage</property> to <code>true</code> in your
+            constructor:</para>
+
+        <programlisting language="php">public function __construct(&amp;$subject, $config = array())
+            {
+            $this-&gt;autoloadLanguage = true;
+
+            parent::__construct($subject, $config);
+            }</programlisting>
+
+        <important>
+            <para>The parent constructor method must be called AFTER setting the
+                property. Otherwise your language files will not be loaded.</para>
+        </important>
+
+        <para>If you prefer to load the language files of your plugin only when
+            they are absolutely needed you just need to call:</para>
+
+        <programlisting language="php">$this-&gt;loadLanguage();</programlisting>
+
+        <para>Since Joomla 3.3 (based on my recollection, +/- 1 minor version…)
+            Joomla will load language files in this order:</para>
+
+        <itemizedlist>
+            <listitem>
+                <para>(Only if Debug Language is disabled). The language file for
+                    the site's default language (<code>en-GB</code>, unless a third
+                    party extension has changed it).</para>
+            </listitem>
+
+            <listitem>
+                <para>The currently active language's normative INI file (e.g.
+                    <code>plg_system_example.ini</code>) or legacy INI file (e.g.
+                    <code>en-GB.plg_system_example.ini</code>).</para>
+            </listitem>
+        </itemizedlist>
+
+        <para>Joomla will first look in the <emphasis
+                role="bold">administrator</emphasis> application's language folder i.e.
+            <filename>administrator/language</filename> . This applied even if you
+            are in the frontend of the site, the API application or the CLI
+            application.</para>
+
+        <para>If neither the current language's, nor the default language's
+            files have been found Joomla will fall back to your plugin's
+            <filename>language</filename> directory. That is to say, your plugin's
+            language directory is a last resort and not guaranteed to be
+            used!</para>
+
+        <para>You may wonder: why does Joomla load both the default language
+            (British English in most cases) <emphasis>and</emphasis> my current
+            language (e.g. Canadian French) files? The reason is simple. All plugins
+            are required to provide a complete language file for the default
+            language which for Joomla is British English (<code>en-GB</code>).
+            Translation to other languages are optional and often incomplete.
+            Sometime around 2012 we decided that it makes far more sense to show an
+            English, human-readable string to non-English speakers they can look up
+            in the dictionary or their favorite translation tool than an
+            incomprehensible language key like
+            <code>PLG_SYSTEM_EXAMPLE_CONFIG_EARLY_PREP_ARRAY_LABEL</code>. Of course
+            this makes it harder for translators. That's why the Debug Language
+            feature was simultaneously introduced. When enabled, the default
+            language is not enabled and untranslated strings are marked clearly in
+            the output.</para>
+
+        <bridgehead>Defining language files in your XML manifest</bridgehead>
+
+        <para>Your XML manifest needs one set of <tag>&lt;languages&gt;</tag>
+            tags under the <tag>&lt;extension&gt;</tag> root:</para>
+
+        <programlisting language="xml">&lt;extension&gt;
+            &lt;!-- … --&gt;
+            &lt;languages folder="language"&gt;
+            &lt;language tag="en-GB"&gt;en-GB/plg_system_example.ini&lt;/language&gt;
+            &lt;language tag="en-GB"&gt;en-GB/plg_system_example.sys.ini&lt;/language&gt;
+            &lt;language tag="de-DE"&gt;de-DE/plg_system_example.ini&lt;/language&gt;
+            &lt;language tag="de-DE"&gt;de-DE/plg_system_example.sys.ini&lt;/language&gt;
+            &lt;/languages&gt;
+            &lt;!-- … --&gt;
+            &lt;/extension&gt;</programlisting>
+
+        <para>This copies the files from the <filename>language/</filename>
+            folder in your package to Joomla's admin language folder, e.g. the
+            <filename>language/en-GB/plg_system_example.ini</filename> file in your
+            package to
+            <filename>administrator/language/en-GB/plg_system_example.ini</filename>
+            file on your site.</para>
+
+        <bridgehead>Language overrides</bridgehead>
+
+        <para>Language overrides are loaded <emphasis>before</emphasis> any of
+            your language files, at the initialisation of the CMSApplication object,
+            namely when the Language object is constructed. They are stored in the
+            file
+            <filename>language/overrides/<replaceable>LANGUAGE_TAG</replaceable>.override.ini</filename>
+            under the application's root (site root for the frontend,
+            <filename>administrator</filename> for the backend,
+            <filename>api</filename> for the API application) where
+            <replaceable>LANGUAGE_TAG</replaceable> is the current language's tag,
+            e.g. <code>en-GB</code> for British English.</para>
+
+        <warning>
+            <para>Overrides for the frontend and the backend of the site are
+                different for plugins! Even though the plugin's language files are
+                always stored in the backend (even if it runs in the frontend of the
+                site), the overrides Joomla loads if the plugin is executing in the
+                frontend of the site are those set for the site's frontend or marked
+                as for both front- and backend.</para>
+
+            <para>If you think about it, it makes sense. The frontend and backend
+                of the site target different kinds of users. The public frontend may
+                need a different worded message to address its target audience more
+                effectively.</para>
+        </warning>
+
+        <para>The way it works is that your language file is loaded and then the
+            <emphasis>overridden</emphasis> strings are replaced into the language
+            file <emphasis>if and only if</emphasis> they are already defined in the
+            language file.</para>
+
+        <caution>
+            <para>This means that the language overrides cannot be used for
+                language keys not defined in your language files, unlike Joomla
+                3.</para>
+
+            <para>Since this was a widely popular “trick” to allow your users to
+                customise the display of your components you now have to take that
+                explicitly into account. For example, given an item with an alias
+                <code>foobar</code> you might be looking for the language string
+                <code>PLG_SYSTEM_EXAMPLE_ITEM_OVERRIDE_FOOBAR_TITLE</code> to override
+                the title field of your item for display in different languages. This
+                worked in Joomla 3 but will NOT work in Joomla 4 or later.</para>
+
+            <para>As noted in <link linkend="com-lang">the language section for
+                components</link>, you can use custom language files to work around
+                this problem.</para>
+        </caution>
+    </section>
+
+    <section xml:id="plg-dont-break-joomla">
+        <title>How NOT to break Joomla with your plugin</title>
+
+        <para>Plugins are fundamental part of our sites. They can do a lot of
+            useful things and extend Joomla in ways the core may have not been
+            designed to. For this reason plugins have a lot of power over the entire
+            Joomla application. A mistake in a plugin can bring down a site or cause
+            unexpected and unresolvable issues in third party components, plugins
+            and modules.</para>
+
+        <para>The root cause of these problems us typically that the plugin
+            author did test their plugin, but have only done so in the very narrow
+            use case they expect their plugins to be used. This is called “<link
+                    xlink:href="https://en.wikipedia.org/wiki/Happy_path">happy path</link>
+            testing” and is almost as bad as no testing at all. When the plugin is
+            used in any other context — the CLI application, non-HTML output, in
+            cases where the output format may not be determined until after the
+            component for the page has finished executing — it might cause
+            unintended consequences, i.e. the site will break. Even worse, clients
+            will start blaming the innocent parties: Joomla itself and third party
+            developers whose software is written the right way and works perfectly
+            fine.</para>
+
+        <para>To best demonstrate how easy it is to make grave mistakes with too
+            little code let's see a plugin class which makes <emphasis
+                    role="bold">four</emphasis> major mistakes in six lines of code:</para>
+
+        <programlisting language="php">class PlgSystemFoobar extends \Joomla\CMS\Plugin\CMSPlugin
+            {
+            public function __construct(&amp;$subject, $config)
+            {
+            parent::__construct($subject, $config);
+
+            if (\Joomla\CMS\Factory::getApplication()-&gt;isClient('administrator')) return;
+
+            $document = \Joomla\CMS\Factory::getDocument();
+            $document-&gt;addScript(\Joomla\CMS\Uri\Uri::root(true) . 'plugins/system/foobar/js/foobar.js');
+            }
+            }</programlisting>
+
+        <para>This looks like a deceptively simple system plugin. It adds a
+            JavaScript file to every page load in the frontend. Right?</para>
+
+        <para>Well, that is its intention but not what it actually does. It also
+            breaks Joomla 4's CLI and API applications, it breaks pages with
+            non-HTML output, it forbids components from using non-HTML output and
+            tries to load the JavaScript file from the wrong place.</para>
+
+        <bridgehead>Do not execute plugin logic in the plugin
+            constructor</bridgehead>
+
+        <para>Let's think about Joomla's lifetime. In broad terms, the request
+            ends up getting handled by Joomla's <filename>index.php</filename> file.
+            This spins up the Joomla! application, e.g.
+            <code>\Joomla\CMS\Application\SiteApplication</code> for the frontend.
+            The main entry point for the application object is the
+            <code>doExecute</code> method. This method does a lot of initialisation
+            before routing and dispatching the application, meaning that this
+            initialisation takes place before Joomla has parsed SEF URLs or created
+            a document object. In fact, Joomla will load all enabled <emphasis
+                    role="bold">system</emphasis> plugins before Joomla has figured out any
+            basic facts about itself.</para>
+
+        <para>The developer of this plugin put their business logic in the
+            constructor of the plugin which is executed at this early stage of the
+            Joomla application initialisation. While
+            <methodname>isClient()</methodname> will work, the rest of the code
+            which tries to get the document object will break the site.</para>
+
+        <para>The plugin erroneously goes through the
+            <methodname>\Joomla\CMS\Factory::getDocument()</methodname> method to
+            get the document. This is deprecated in Joomla 4. You are supposed to
+            use the <methodname>getDocument()</methodname> method of the application
+            object. Had the developer done that they'd have seen that they are
+            getting null because the document has not been created yet.</para>
+
+        <para>In fact, all this code should be moved from the plugin object
+            constructor to the <code>onAfterDispatch</code> method to work
+            correctly.</para>
+
+        <bridgehead>Do not go through the
+            <classname>\Joomla\CMS\Factory</classname></bridgehead>
+
+        <para>The second problem with this plugin is the exact reason why the
+            Factory's <methodname>getDocument()</methodname> method is
+            deprecated.</para>
+
+        <para>Calling the factory's <methodname>getDocument()</methodname>
+            method will forcibly create a document object which will then be used by
+            the application object. The document object is created based on the
+            information in the request. However, as you might recall, at this point
+            Joomla has not yet parsed the SEF route! This would also be true if this
+            code was moved in the <code>onAfterInitialise</code> event, the earliest
+            system plugin event triggered by Joomla.</para>
+
+        <para>Since the SEF URL has not been parsed Joomla cannot reliably know
+            the type of document to use. Think for example about a URL like
+            <uri>https://www.example.com/foobar.json</uri> which when gone through
+            the SEF URL router will, among other things, set <uri>format=json</uri>
+            in the request. This means that this request expects Joomla to create a
+            <classname>\Joomla\CMS\Document\JsonDocument</classname> document
+            object.</para>
+
+        <para>However, since <uri>format=json</uri> has not been set yet, Joomla
+            will assume <uri>format=html</uri> when you call
+            <methodname>getDocument()</methodname>. Therefore, it will create a
+            <classname>\Joomla\CMS\Document\HtmlDocument</classname> document object
+            which will be used by the application object as well. This will of
+            course break the component which is handling the request as it
+            (correctly) expect a JSONDocument and it instead gets an HTMLDocument. I
+            think we can all agree that the plugin's author is at fault for this
+            mess.</para>
+
+        <para>You should only ever call <emphasis role="bold">two
+            methods</emphasis> of the <classname>\Joomla\CMS\Factory</classname> in
+            Joomla 4:</para>
+
+        <itemizedlist>
+            <listitem>
+                <para><methodname>getContainer()</methodname>. This returns Joomla's
+                    Dependency Injection container (DI Container, sometimes abbreviated
+                    as DIC). If possible, you should avoid using it directly, instead
+                    pushing dependencies through the service provider of your
+                    extension.</para>
+            </listitem>
+
+            <listitem>
+                <para><methodname>getApplication()</methodname>. This returns the
+                    current Joomla application object handling the request. If possible,
+                    your extension should be passed the application object from its
+                    service provider instead of getting the object through the factory
+                    in your extension's code. The service provider will still have to go
+                    through the factory as there is not yet a single container resource
+                    which returns the currently active application (but this might
+                    change in Joomla 5.0 and will almost definitely change by Joomla
+                    6.0).</para>
+            </listitem>
+        </itemizedlist>
+
+        <para>To get the application's document you should do
+            <code>\Joomla\CMS\Factory::getApplication()-&gt;getDocument();</code>.</para>
+
+        <bridgehead>There is more to Joomla than HTML output</bridgehead>
+
+        <para>This is an absurdly common mistake. Developers seem to assume that
+            Joomla will only ever generate HTML output. This is an unreasonable
+            assumption since Joomla 1.0 was released in 2005 — not to mention that
+            it was not a reasonable assumption in Mambo, Joomla's predecessor,
+            either. Joomla is perfectly capable of generating non-HTML output such
+            as XML, JSON, RSS feeds, Atom feeds, raw binary output (e.g. images) and
+            so on and so forth. If there was ever a question as to whether this is
+            possible, changes made early in the Joomla 3.x releases introducing new
+            core document and view classes should have driven that point
+            home.</para>
+
+        <para>The developer of this plugin made the
+            <emphasis>unreasonable</emphasis> assumption that their
+            <varname>$document</varname> will always contain an
+            <classname>HTMLDocument</classname>.</para>
+
+        <para>A URL like
+            <uri>https://www.example.com/index.php?option=com_whatever&amp;format=json</uri>
+            — despite the two problems already mentioned above — would still
+            populate <varname>$document</varname> with a
+            <classname>JSONDocument</classname> object. However,
+            <classname>JSONDocument</classname> does not have an
+            <methodname>addScript</methodname> method. Therefore this plugin causes
+            a PHP fatal error right away. Whoops!</para>
+
+        <para>The correct way to do that is called “feature detection”:</para>
+
+        <programlisting language="php">$document = \Joomla\CMS\Factory::getApplication()-&gt;getDocument();
+
+            if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
+            {
+            return;
+            }</programlisting>
+
+        <para>If the document returned by our application is not an
+            <classname>HTMLDocument</classname> we do not try to do anything else.
+            Simple, isn't it?</para>
+
+        <bridgehead>There is more to Joomla than the frontend and
+            backend</bridgehead>
+
+        <para>Now let's get to the biggest bug of them all: assuming that Joomla
+            consists entirely of the frontend (site) and backend (administrator)
+            application. This has not been true since Joomla 1.6, released in
+            <emphasis>2010</emphasis>. When I first wrote this section in 2022 it
+            was already <emphasis>12 years</emphasis> this assumption has been wrong
+            and I would still see plugins making it and breaking Joomla
+            sites.</para>
+
+        <para>Not to put too fine a point on this, this line is completely
+            wrong:</para>
+
+        <programlisting language="php">if (\Joomla\CMS\Factory::getApplication()-&gt;isClient('administrator')) return;
+        </programlisting>
+
+        <para>Clearly, the developer wanted their code to mean “if this is not
+            the frontend of the site don't do anything”. Instead, what they actually
+            wrote is “if this is the backend of the site — therefore this is the
+            frontend of the site <emphasis>or the api application, or the console
+                application, or any custom application which extends from Joomla's
+                <classname>WebApplication</classname> class</emphasis> — don't do
+            anything”. Whoops!</para>
+
+        <para>As we have already mentioned, Joomla 4 has a number of
+            applications shipped with it:</para>
+
+        <itemizedlist>
+            <listitem>
+                <para><emphasis role="bold">installation</emphasis>. This is the web
+                    installer when you build a new site. Third party code, like our
+                    counterexample system plugin, does not load in it and does not
+                    concern third party developers. It lives in the
+                    <filename>installation</filename> folder of your site. It's been
+                    around since Joomla 1.0.</para>
+
+                <note>
+                    <para>If an <filename>installation</filename> folder is present
+                        Joomla will redirect to it if you try to access any of its other
+                        web-based applications. This happens very early in the
+                        <filename>includes/framework.php</filename> file which is one of
+                        the first things loaded by <filename>includes/app.php</filename>,
+                        after loading <filename>includes/defines.php</filename> and making
+                        sure the <filename>libraries/vendor</filename> folder
+                        exists.</para>
+
+                    <para>This automatic redirection does not happen when
+                        <constant>\Joomla\CMS\Version::DEV_STATUS</constant> is anything
+                        other than <parameter>stable</parameter>, i.e. in
+                        <parameter>alpha</parameter>, <parameter>beta</parameter>,
+                        <parameter>rc</parameter> (Release candidate) releases and
+                        <parameter>dev</parameter> (development) builds from the Joomla
+                        Git repository sources.</para>
+                </note>
+            </listitem>
+
+            <listitem>
+                <para><emphasis role="bold">site</emphasis>. The frontend of the
+                    site, accessed through the <filename>index.php</filename> file in
+                    your site's root. It's been around since Joomla 1.0.</para>
+            </listitem>
+
+            <listitem>
+                <para><emphasis role="bold">administrator</emphasis>. The backend of
+                    the site, accessed through
+                    <filename>administrator/index.php</filename>. It lives in the
+                    <filename>administrator</filename> folder of your site. It's been
+                    around since Joomla 1.0.</para>
+            </listitem>
+
+            <listitem>
+                <para><emphasis role="bold">api</emphasis>. The JSON API
+                    application, accessed through <filename>api/index.php</filename>. It
+                    lives in the <filename>api</filename> folder of your Joomla site.
+                    Introduced in Joomla 4.0.</para>
+            </listitem>
+
+            <listitem>
+                <para><emphasis role="bold">cli</emphasis>. The
+                    <filename>cli/joomla.php</filename> command line application.
+                    Introduced in Joomla 4.0.</para>
+            </listitem>
+        </itemizedlist>
+
+        <para>Further to that, applications other than site and administrator
+            have existing since Joomla 1.5.</para>
+
+        <para>From Joomla 1.5 onwards it's been possible to create your own
+            custom application by extending <classname>JApplicationWeb</classname>.
+            These custom application do load system plugins by default. They were
+            used to create custom entry points for callbacks, e.g. in payment
+            plugins for e-commerce components. They are no longer used as the reason
+            for their existence has been made a moot point since the advent of
+            <code>com_ajax</code> in Joomla 2.5.</para>
+
+        <para>From Joomla 1.6 and up until Joomla 5.4 it's possible for
+            developers to create custom CLI applications by extending
+            <classname>JApplicationCli</classname>. These applications do not load
+            system plugins by default so they are unlikely to have broken. Unlikely
+            does not mean impossible, though; it's possible that a CLI application
+            may have a need to load plugins such as <filename>system</filename>,
+            <filename>content</filename>, <filename>privacy</filename> etc.</para>
+
+        <para>This is why despite the fact that this has been an issue since the
+            dawn of Joomla 1.5 in 2007 plugin developers may have not bumped into
+            this until Joomla 4 was released.</para>
+
+        <para>The correct way to do this is, of course, to check explicitly for
+            the application you want to run under:</para>
+
+        <programlisting language="php">if (!\Joomla\CMS\Factory::getApplication()-&gt;isClient('<emphasis
+                role="bold">site</emphasis>')) return;</programlisting>
+
+        <bridgehead>Do not load static resources directly and/or from your
+            plugin's folder</bridgehead>
+
+        <para>This is a bonus round and not a bug which will break sites
+            <emphasis>today</emphasis>, but it will break sites come Joomla 6.0 and
+            a mild security concern. It also reminds us that plugins, like all other
+            Joomla extension types, should be <link
+                    linkend="concepts-webassetmanager">using the
+                WebAssetManager</link>.</para>
+
+        <para>The developer of the extension chose to load their static
+            JavaScript file using the deprecated
+            <methodname>addScript()</methodname> method of the document and located
+            the file in the plugin's folder structure. This is a two in one
+            issue.</para>
+
+        <para>First of all, ever since Joomla 1.5 (released in 2007 —
+            <emphasis>15 years</emphasis> before I first wrote this section in 2022)
+            Joomla introduced the <filename>media</filename> folder where extensions
+            are expected to place all publicly available static files, be they
+            static files shipped with the extension or user-generated content
+            managed outside Joomla's Media Manager.</para>
+
+        <para>The developer of the plugin should have placed their JavaScript
+            file in the <filename>media/plg_system_foobar/js</filename> folder using
+            the following section in their plugin's XML manifest:</para>
+
+        <programlisting language="xml">&lt;media folder="media" destination="plg_system_foobar"&gt;
+            &lt;folder&gt;js&lt;/folder&gt;
+            &lt;file&gt;joomla.asset.json&lt;/file&gt;
+            &lt;/media&gt;</programlisting>
+
+        <para>(We'll see what the joomla.asset.json file is in a moment)</para>
+
+        <para>It is a bad security practice mixing executable backend code
+            (<filename>.php</filename> files) with frontend executable code
+            (<filename>.js</filename>, <filename>.es6</filename> etc) files and
+            static media files (CSS, images, videos, ...).</para>
+
+        <para>Joomla is moving towards placing all frontend (web browser)
+            accessible stuff into the media folder — even for templates, as of
+            Joomla 4.1 — and will most likely start applying security controls to
+            prevent web access to the plugin, component, module etc folders.
+            <emphasis role="bold">You have been warned</emphasis>. In fact, you were
+            being warned since 2007 but nobody was listening, so let's see how many
+            developers will come screaming bloody murder when these access controls
+            are enforced about <emphasis>20 years</emphasis> after the preferred
+            alternative was introduced in Joomla 1.5.0. Ahem. forgive me, I
+            digressed.</para>
+
+        <para>The next issue is that HTMLDocument's
+            <methodname>addScript()</methodname> method has been deprecated. Joomla
+            4 has moved into using asset dependencies and a <link
+                    linkend="concepts-webassetmanager">Web Asset Manager</link> to, well,
+            manage the asset dependencies.</para>
+
+        <para>Assets and their dependencies are declared in the
+            <filename>joomla.asset.json</filename> file located in the extension's
+            subdirectory under the <filename>media</filename> directory. So, the
+            developer should have shipped a file
+            <filename>media/plg_system_foobar/joomla.asset.json</filename> with the
+            following contents:</para>
+
+        <programlisting language="json">{
+            "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
+            "name": "plg_system_foobar",
+            "version": "1.0.0",
+            "description": "Foobar plugin",
+            "license": "GPL-3.0-or-later",
+            "assets": [
+            {
+            "name": "plg_system_foobar.foobar",
+            "description": "Foobar JavaScript",
+            "type": "script",
+            "uri": "plg_system_foobar/foobar.js",
+            "dependencies": [
+            "core"
+            ],
+            "attributes": {
+            "defer": true
+            }
+            }
+            ]
+            }</programlisting>
+
+        <para>This allows the developer to tell Joomla to add their script using
+            this very simple piece of code:</para>
+
+        <programlisting language="php">$document-&gt;getWebAssetManager()-&gt;useScript('plg_system_foobar.foobar');
+        </programlisting>
+
+        <para>Here's the kicker. <emphasis>This is safe even if you don't check
+            the Document object type</emphasis>. Yeah, if
+            <varname>$document</varname> is a <classname>JSONDocument</classname>
+            which does not have a concept of web assets this code would still work.
+            Joomla defines the Web Asset Manager for all document types, even those
+            which can't possibly use it. It's the page renderer which will make use
+            of the dependencies, if they are supported. I know, right?! It's
+            actually an amazingly good feature! That said, it's still a good idea to
+            check the document type the way I've told you to avoid doing pointless
+            work, or introducing future bugs.</para>
+
+        <bridgehead>Putting it all together</bridgehead>
+
+        <para>Let's put everything we learned together. The tiny plugin barely
+            grew by a couple of lines and it no longer breaks the sites it is
+            installed in. The changes are in bold type:</para>
+
+        <programlisting language="php">class PlgSystemFoobar extends \Joomla\CMS\Plugin\CMSPlugin
+            {
+            public function <emphasis role="bold">onAfterDispatch</emphasis>()
+            {
+            if (!\Joomla\CMS\Factory::getApplication()-&gt;isClient('<emphasis
+                    role="bold">site</emphasis>')) return;
+
+            $document = \Joomla\CMS\Factory<emphasis role="bold">::getApplication()-&gt;getDocument();</emphasis>
+
+            <emphasis role="bold">if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
+                {
+                return;
+                }
+
+                $document-&gt;getWebAssetManager()-&gt;useScript('plg_system_foobar.foobar');</emphasis>
+            }
+            }</programlisting>
+
+        <para>It's still short. It's still readable. It's (mostly) future-proof
+            — well, it's still using the legacy plugin structure but I was trying to
+            draw your attention to the problems, not divert your attention to the
+            plumbing covered in previous sections of this book.</para>
+    </section>
+
+    <section xml:id="plg-concrete-events">
+        <title>Generic versus Concrete events</title>
+
+        <para/>
+    </section>
+</chapter>

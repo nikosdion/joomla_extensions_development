@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Copyright © 2022 Nikolaos Dionysopoulos
+
+Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free
+Documentation License, Version 1.3 or any later version published by the Free Software Foundation; with
+no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included
+in the section entitled "GNU Free Documentation License".
+-->
+<chapter
+        version="5.1" xmlns="http://docbook.org/ns/docbook"
+        xmlns:xlink="http://www.w3.org/1999/xlink"
+        xmlns:xila="http://www.w3.org/2001/XInclude/local-attributes"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:trans="http://docbook.org/ns/transclusion"
+        xmlns:svg="http://www.w3.org/2000/svg"
+        xmlns:m="http://www.w3.org/1998/Math/MathML"
+        xmlns:html="http://www.w3.org/1999/xhtml"
+        xmlns:db="http://docbook.org/ns/docbook"
+        xml:id="tpl">
+    <title>Templates</title>
+
+    <para/>
+
+    <section xml:id="tpl-j4-changes">
+        <title>Major changes in Joomla 4</title>
+
+        <para/>
+    </section>
+
+    <section xml:id="tpl-subtemplates">
+        <title>Sub-templates</title>
+
+        <para/>
+    </section>
+
+    <section xml:id="tpl-errorpages">
+        <title>Error pages</title>
+
+        <para/>
+    </section>
+
+    <section xml:id="tpl-custom-cassiopeia">
+        <title>Using Cassiopeia to create a custom template</title>
+
+        <para/>
+    </section>
+
+    <section xml:id="tpl-custom-from-scratch">
+        <title>Custom template from scratch</title>
+
+        <para/>
+    </section>
+
+    <section xml:id="tpl-fields">
+        <title>Custom fields in your templates</title>
+
+        <para/>
+    </section>
+
+    <section xml:id="tpl-category-content-templates">
+        <title>Per-category view templates in com_content</title>
+
+        <para/>
+    </section>
+
+    <section xml:id="tpl-migration">
+        <title>Migration strategy</title>
+
+        <para/>
+    </section>
+</chapter>
