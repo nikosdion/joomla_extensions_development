@@ -10778,7 +10778,7 @@ return $plugin;</programlisting>
       unexpected and unresolvable issues in third party components, plugins
       and modules.</para>
 
-      <para>The root cause of these problems us typically that the plugin
+      <para>The root cause of these problems is typically that the plugin
       author did test their plugin, but have only done so in the very narrow
       use case they expect their plugins to be used. This is called “<link
       xlink:href="https://en.wikipedia.org/wiki/Happy_path">happy path</link>
