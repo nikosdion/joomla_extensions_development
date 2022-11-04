@@ -8442,8 +8442,8 @@ class Example extends CMSPlugin implements SubscriberInterface
 }</programlisting>
 
         <para>As you can see, after creating the command object we push the
-        MVCFactory into it — if it supports that feature, i.e. is it is using
-        the <classname>MVCFactoryAwareTrait</classname> itself.</para>
+        MVCFactory into it — if it supports that feature, i.e. it is using the
+        <classname>MVCFactoryAwareTrait</classname> itself.</para>
 
         <para>We could do the same for the database object. We'll let you
         figure it out. For the solution, you can read the footnote<footnote>
@@ -8546,7 +8546,7 @@ class Example extends CMSPlugin implements SubscriberInterface
           </footnote>. You can find your token by editing your (Super User)
         profile in the back- or frontend of the site, as long as the
         <guilabel>User - Joomla API Token</guilabel> plugin is published.
-        Authenticating with the token also requires the API
+        Authenticating with the token requires the API
         <guilabel>Authentication - Web Services Joomla Token</guilabel> plugin
         to be published as well. You pass the token in a standard
         Authentication HTTP header following <link
@@ -8598,14 +8598,14 @@ class Example extends CMSPlugin implements SubscriberInterface
         optional<footnote>
             <para>A component <emphasis>must</emphasis> have a backend
             (administrator) part. The frontend (site) and api parts are
-            optional. And, yes, this means that you can absolute have a
+            optional. And, yes, this means that you can absolutely have a
             backend-only component but not a frontend-only or api-only
             component. The necessity for a backend part comes from the fact
             that the XML manifest, the configuration (config.xml) and the
             permissions (access.xml) files are present only in the backend
             directory of the component. The former is necessary for a
             component to be able to be installed, updated and uninstalled.
-            Moreover, Joomla always creates a backend menu item to the
+            Moreover, Joomla always creates a backend menu item for the
             component, meaning that the component must have a backend part
             with a default view even if it's just to display a message that
             there is nothing to do with this component in the backend.</para>
@@ -8714,7 +8714,7 @@ class Example extends CMSPlugin implements SubscriberInterface
               they have the <literal>core.create</literal> privilege in any
               categories which belong to your component (assuming you are
               integrating with Joomla's com_categories). The method is passed
-              the data to be create in case you need to perform more
+              the data to be created in case you need to perform more
               fine-grained access control. For example, a helpdesk component
               would only allow the user who owns a support ticket and the
               support staff to post replies to a specific ticket. The view
@@ -8743,8 +8743,8 @@ class Example extends CMSPlugin implements SubscriberInterface
           Models in your component. If you do not provide a Model, the API
           application will use the Administrator models instead. This is
           usually what you want to do. There are very few cases where the API
-          application needs a model which is different than both the
-          Administrator and the Site model.</para>
+          application needs a different model to both the Administrator and
+          the Site model.</para>
 
           <para>If you do need to create Models, follow the same conventions
           as you'd do for Models in the Administrator part of your
@@ -9112,7 +9112,7 @@ class Example extends CMSPlugin implements SubscriberInterface
       general in the <link linkend="plg">Plugins</link> chapter of this
       book.</para>
 
-      <para>Scheduled Tasks allow the user to defined repeated, unattended
+      <para>Scheduled Tasks allow the user to define repeated, unattended
       tasks which run on a schedule. It's like CRON jobs but without
       necessarily needing a CRON server on the site's server. They can be
       triggered with CRON jobs, with a special URL (e.g. using web-based
@@ -9146,7 +9146,7 @@ class Example extends CMSPlugin implements SubscriberInterface
           <para><literal>onExecuteTask</literal>. This is handled by the
           <methodname>standardRoutineHandler</methodname> method implemented
           in the <classname>TaskPluginTrait</classname>. When a scheduled task
-          type the plugin can handled is being executed this method will call
+          type the plugin can handle is being executed, this method will call
           your respective plugin method, as defined in the
           <constant>TASKS_MAP</constant> constant of your plugin.</para>
         </listitem>
