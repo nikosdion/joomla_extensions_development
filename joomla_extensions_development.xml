@@ -11321,6 +11321,458 @@ if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
     also more generic tips about what to do and what not to do when writing
     software. In this chapter we will explore some of those things.</para>
 
+    <section xml:id="advice-clarity-unlocks-efficiency">
+      <title>Clarity unlocks efficiency</title>
+
+      <para>Instead of telling you what code to write, let's talk about all
+      the non-code, development-adjacent things you do which lead to better
+      code and a better product.</para>
+
+      <bridgehead>The “chores” and why you need to do them</bridgehead>
+
+      <para><emphasis role="bold">User experience (UX)</emphasis>. The
+      cardinal sin of FOSS developers is that we take Eric S. Raymond's “<link
+      xlink:href="https://en.wikipedia.org/wiki/The_Cathedral_and_the_Bazaar">The
+      cathedral and the bazaar</link>” a bit too literally — I'll come back to
+      that later. When it was written in 1997 it made sense. Back then
+      computers were islands of information, isolated behind slow and
+      expensive dial-up Internet connectivity, inhabited primarily by the
+      native tribe of <emphasis>Homo Geekus</emphasis>. Fast forward 25 years
+      and my decidedly non-technical mom who's in her 70s is using a
+      smartphone and a tablet with an always-on Internet connection and
+      <emphasis>we are the people writing the software she is using in the
+      sites she's visiting</emphasis>. We no longer write software to scratch
+      our own itch, we write software to scratch <emphasis>our
+      users'</emphasis> itch. No longer can we expect that our users are geeks
+      like us who will help us co-develop and debug the software, they are
+      "normies". We have to understand who our users are, what is the task
+      they are trying to accomplish (of which our software may only have a
+      tertiary role in a fleeting interaction), and how we can provide them
+      with the most frictionless experience. There are three lessons
+      here:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>We write software for regular people. We do not write software
+          for geeks or machines. We must find out who our users are and in
+          what context they end up using our software.</para>
+        </listitem>
+
+        <listitem>
+          <para>Our software is, from a user's perspective, not anywhere near
+          as important as it is for us. When we internalise it, it's a very
+          humbling realisation which puts our overinflated egos in check. Take
+          that into account when designing the interaction with the user and
+          your user interface.</para>
+        </listitem>
+
+        <listitem>
+          <para>The best software is that which is invisible and frictionless
+          the user. The average modern car runs well over a million lines of
+          code. The software controls the engine, the accelerator, the brakes
+          (to a large extent; you still have emergency control of the brakes),
+          your windshield wipers, the blinkers (for real!), the headlights,
+          the infotainment system, the door locks, everything. You never stop
+          to think about it while driving a car; it is out of sight, out of
+          mind. This is the kind of interaction we must aim for with our
+          software.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Ideally, there's far more to UX than what I mentioned here in
+      passing. UX is a discipline and there's a lot us developers can learn
+      from it, even if we do not have the resources to conduct a full,
+      continuous UX research project. Some resources which can help you get
+      started with that user-first mentality are:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><link
+          xlink:href="https://52weeksofux.com/post/385981879/you-are-not-your-user">You
+          are not your user</link>. A quick introduction to the techniques
+          used to start understanding your users.</para>
+        </listitem>
+
+        <listitem>
+          <para><link
+          xlink:href="https://www.nngroup.com/articles/false-consensus/">The
+          False-Consensus Effect</link>. A slightly longer read, explaining
+          the logical fallacies we succumb to and why testing with real users
+          helps us overcome them.</para>
+        </listitem>
+
+        <listitem>
+          <para>“The Undoing Project” by Micheal Lewis, ISBN
+          978-0-393-25460-0. An excellent book exploring how an unlikely
+          friendship between two psychologist led to deep research into
+          logical fallacies and earned the surviving member of that duo a
+          Nobel Prize in Economics.</para>
+        </listitem>
+
+        <listitem>
+          <para>“Thinking, Fast and Slow” by Daniel Khaneman, ISBN
+          978-0-141-91892-1. Further exploration in how the human thought and
+          decision making process works which ultimately helps you understand
+          what seems like “irrational” behaviour by your users.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para><emphasis role="bold">Writing specifications</emphasis>. Writing
+      software start well before the first line of code is written. After
+      having done your UX research (hopefully!) you need to start designing
+      the intended interaction with the user a.k.a. the feature you are going
+      to write. Don't fire up your IDE yet! Start with pen and paper — or
+      e-pen and tablet (I use an iPad Pro and an Apple Pencil with the
+      Noteshelf app). This is a habit I picked up as an undergrad Mechanical
+      Engineer. I never started working without having a detailed plan of what
+      I am trying to do. Putting pen to paper is…
+      <emphasis>magical</emphasis>. It forces you to think about everything
+      you write down, how they interact, the non-obvious consequences they may
+      have. You will be doing a lot of erasing, scrapping and redoing. Best do
+      that at this early stage than after writing a bunch of code. By the end
+      of it you will have a fairly detailed plan of how to proceed.</para>
+
+      <para><emphasis role="bold">Prototyping (wireframes, UI samples, Proofs
+      Of Concept)</emphasis>. If you are writing a non-trivial feature, or new
+      software, you may not want to put all of the plumbing in there before
+      you can get feedback from real world users about it. Start by making
+      wireframes or UI samples (in plain HTML or even in a design
+      application). Don't just describe what it would look like; users are not
+      co-developers, as we already established. Get your users' feedback and
+      re-iterate. If your feature requires a minimum of interaction, create a
+      Proof of Concept — not all functionality needs to be implemented, just
+      enough to get meaningful feedback from your users.</para>
+
+      <para><emphasis role="bold">Testing</emphasis>. Whenever possible, test.
+      Unit tests, integration tests, functional tests — whatever makes sense
+      in the context of what you are writing. I am not the kind of crazy
+      pedant who will tell you that if you do not get 100% test coverage you
+      are doing it wrong. It's possible to get 100% test coverage but only
+      test the happy path and the happy unhappy path. I cringe as I write it,
+      but there is such a thing as the latter: it's when you only cover the
+      <emphasis>expected</emphasis> failures you have already explicitly added
+      checks for in your code. Instead, I say that you should automatically
+      test what is <emphasis>meaningful</emphasis> in your use case.</para>
+
+      <para>On the subject of testing, do not limit yourself to any automated
+      or manual testing you are doing yourself. You are not the user and you
+      have the innate tendency to follow the happy and unhappy paths you have
+      already established in your head and written code for. Get real users to
+      test what you wrote. Beta versions are great; beta versions where users
+      who found bugs actually report them are even better. Try to incentivise
+      users to report bugs — and rest assured that despite your best effort
+      the stable version will have bugs someone discovered but didn't report.
+      Don't dwell over why people neglected to report bugs; they have been
+      conditioned to believe that their feedback never matters. Just take it
+      in stride and fix them.</para>
+
+      <para><emphasis role="bold">Documentation</emphasis>. “Is there anything
+      more boring than writing documentation?” asked rhetorically the man who
+      is currently writing documentation. Let me tell you the truth. No, there
+      is nothing more boring. It is utterly, mind-numbingly, excruciatingly
+      boring — and I wouldn't ever consider not writing it all the same. When
+      you are writing documentation you put yourself in your user's shoes.
+      What are they trying to accomplish? Try to take them by the hand and
+      explain how that feature soup they perceive in your software can be
+      transformed by a series of cohesive steps to accomplish a concrete goal.
+      Try to imagine their struggle and preemptively provide answers for the
+      non-obvious points which may create friction. Think about failure modes
+      and document them, as well as how to address them. Writing documentation
+      you are the user's friend, mentor, and guide. Writing documentation you
+      shift your perspective from that of the developer who has to hold twenty
+      variables and half a dozen methods in his head while writing code to
+      that of a user and a teacher. It never ceases to amaze me how many
+      problems I find in my software writing documentation and that's the
+      reason I would never consider not writing it, even though it's so
+      incredibly boring.</para>
+
+      <para>I can also tell you how NOT to write documentation: the way
+      Joomla's help screens are written, i.e. just listing a bunch of options
+      and the tautological, to the point of being condescending, descriptions
+      of such. I would like to think that “Enable Thingamajig” is obvious to
+      the user that it means “Setting this option to Yes enables Thingamajig”.
+      If the user can't figure <emphasis>that</emphasis> part out there's a
+      more fundamental issue which cannot be addressed in documentation. So,
+      please, don't write tautologies like that. A far better description of
+      that option would concisely explain what Thingamajig is (and link to a
+      previous documentation page covering it if it's a foundation concept
+      which warrants further explanation!) and how it relates <emphasis>to the
+      tasks the user will likely accomplish with it</emphasis>. Remember,
+      documentation is there to help and guide the user, possibly even to do
+      things they didn't realise were possible to begin with.</para>
+
+      <para>You will receive feedback to your documentation. If the feedback
+      sounds nonsensical, always ask the user the magic question “What is your
+      use case? What were you trying to accomplish and why did you get
+      frustrated reading the documentation?”. Nine out of ten times you'll
+      find out the user has a good point, they just could not articulate it in
+      a way which resonated with you. They knew what their use case is, they
+      knew why they got frustrated, they never told you any of it but came up
+      with and communicated a suggested fix. Since the user can't see beyond
+      their own use case their suggested fix likely made no sense to you who
+      are trying to negotiate all possible use cases — many of which you don't
+      know yourself! — into a coherent documentation. That is to say, don't
+      discount the user because they can't express themselves in your terms.
+      Try to extract a small nugget of insight from their rant. It will
+      benefit you both.</para>
+
+      <para><emphasis role="bold">Support</emphasis>. 10 out of 10 people
+      doing support will tell you that doing end user support sucks. This is
+      by definition. Nobody comes to request support because everything is
+      going swimmingly. The user tried to do something and your software
+      stopped being invisible and frictionless for them. They may or may not
+      have tried reading some of the documentation. They may or may not have
+      tried figuring out a way to fix their problem. They have definitely
+      failed in the latter. They are frustrated, and defensive for the
+      software makes them feel inadequate and helpless. They come to you for
+      help but they are in a very negative state of mind.</para>
+
+      <para>I still want to interact with these people and I want you to do
+      too. Most of the times they missed something obvious or misread
+      something. I try to spot patterns there. If people are always missing
+      the same thing over and over again does it mean that <emphasis>I,
+      myself, have missed an obvious way to proactively help them</emphasis>?
+      Maybe there is a technical way I can alleviate their pain? I would say
+      that a good half of the improvement in my software have come from my
+      qualitative observations on support requests.</para>
+
+      <para>Even more important are the interactions with users who are
+      completely and utterly lost. There are support requests which make you
+      think “how the heck did that person get themselves in that spot?!”. When
+      you are met with such a dissonance between what is the “obvious” way to
+      use the software and what the user did it's very easy to assume the user
+      is an idiot. That's where tech lore derisions like PEBKAC, ID10T, and
+      Wetware Issue come from. These are only fun when reading the Bastard
+      Operator From Hell which, if the title didn't give it immediately away,
+      is satire and satire is always exaggerated and offensive. </para>
+
+      <para>I want you to know that the user in the vast majority of cases is
+      not stupid. They were trying to accomplish something. But what? You will
+      never know unless you ask them “What is your use case? What were you
+      trying to do? Why did you think that doing X was the best approach? I
+      would like to understand your thought process so I can improve the
+      software”. In most cases they will come up with a use case which is
+      either perfectly reasonable or obviously unsuitable for your software.
+      In the former case you'll have another use case you didn't know of and
+      you can figure out how to best help the user accomplish it — even if it
+      means making some changes. In the latter case you can help the user
+      understand why they are looking at the wrong software. Either way, you
+      will be helpful. There are a few cases where the user truly is beyond
+      reason. But you know what? This is also helpful because it might give
+      you more data points on how to modify your marketing material to weed
+      out these people before they become users of your software.</para>
+
+      <bridgehead>Clarity unlocks efficiency</bridgehead>
+
+      <para>Everything I described above does not involve writing code. Oh,
+      the horror! We are developers, shouldn't we be writing code?</para>
+
+      <para>No, <emphasis>writing code is not an end in
+      itself</emphasis>.</para>
+
+      <para>We are modern day shamans, mediators between machine and people
+      instead of mediators between spirits and people. Like shamans, we serve
+      the people. That's the end. Code is the means to that end.</para>
+
+      <para>Our software is but a small part of what a user needs to
+      accomplish. When Alice wants to go to the prom, she needs a dress. She
+      will go online, find the dress she wants, and order it from a site which
+      runs our software. The shop will find her dress in their warehouse, pack
+      it, and send it via a courier company. A lot more steps are involved
+      until Alice gets her dress, tries it on, makes small alterations to fit
+      it on her and look resplendent on a night she will remember fondly for
+      the rest of her life. Our software? It was but a tiny sliver of her
+      journey. If we did it right she didn't notice using it and she won't
+      remember it when she's sharing her prom memories with her anxious
+      granddaughter decades later. We facilitated this beautiful moment but
+      our product which did that facilitating was
+      <emphasis>invisible</emphasis>.</para>
+
+      <para>To be able to offer this kind of experience there are some
+      prerequisites. We need to understand who we are building the software
+      for, which task it will be a part of, and how they expect it to work so
+      that they don't have to stop and think about it. We need to understand
+      the technical details of how it works and address all the messy human
+      interactions with it which might make it not work according to the
+      user's mental model. We have to do that in such a way that practically
+      anyone can use it, regardless of their technical acumen or complete lack
+      thereof. The more we know about all of that, the easier it is for us to
+      write the software that becomes truly invisible and frictionless.</para>
+
+      <para>Conversely, the less time we spend thinking about the users of the
+      software and over-inflate the importance (therefore the expected
+      visibility) of our software to the user, the less enjoyable our software
+      becomes to use. The user has to stop and think. Can you conceive driving
+      a car you had to think twice before pressing the brake pedal because
+      doing so while your steering wheel is turned between 10 and 15 degrees
+      would instead result in the car accelerating? Why do the equivalent in
+      web software?! This will lead to a lot of friction with the users, a lot
+      of unhappy back and forth, a lot of changes, nobody will be happy — not
+      the users and not you the developer.</para>
+
+      <para>So, what do you reckon is most efficient? Writing the software the
+      “right” way from the very beginning, or eternally changing it without
+      real vision, purpose, or sense trying to play catchup with the users
+      complaints? The former is ostensibly faster than the latter, but is it
+      <emphasis>really</emphasis>?</para>
+
+      <para>Front-loading our time expenditure to non-code but
+      development-adjacent tasks which provide us with clarity on the purpose
+      and process of building software we end up spending less time to write
+      better software. Or, to put it more concisely, <emphasis
+      role="bold">clarity unlocks efficiency</emphasis>.</para>
+
+      <para>Print that phrase and tape it to the wall behind your monitor.
+      Every time you are about to moan about the “chores” you have to do
+      instead of writing code read it out loud.</para>
+
+      <bridgehead>Revisiting The Cathedral and The Bazaar</bridgehead>
+
+      <para>As promised, I am coming back to that paper from 1997 and its
+      follow-up book from 1999. While most of the points made in that paper
+      and subsequent book are useful and accurate, there are a few which have
+      not stood the test of time or at least have not been understood
+      correctly. In those 25 years personal computing has evolved and with it
+      the target audience of software and the way we write it. With the
+      benefit of that hindsight, let's revisit some of the points made.</para>
+
+      <blockquote>
+        <para>Every good work of software starts by scratching a developer's
+        personal itch.</para>
+      </blockquote>
+
+      <para>This is a fallacy, in that it assumes that the developer is the
+      ultimate user of the software. While the original
+      <emphasis>spark</emphasis> may come from a personal frustration, using
+      it as the compass for development is self-defeating. Find your users'
+      itch instead</para>
+
+      <blockquote>
+        <para>Plan to throw one [version] away; you will, anyhow</para>
+      </blockquote>
+
+      <para>This is nihilism. Do your homework, do your user research, write
+      specifications, test your preliminary designs. If you do things like
+      that, the right way, you will not have to throw away your first
+      version.</para>
+
+      <blockquote>
+        <para>If you have the right attitude, interesting problems will find
+        you. </para>
+      </blockquote>
+
+      <para>The key here is the right attitude. If you sit there twiddling
+      your thumbs nothing interesting will ever happen. You need to actively
+      solicit the right feedback which will let you see the interesting
+      problems to solve.</para>
+
+      <blockquote>
+        <para>Treating your users as co-developers is your least-hassle route
+        to rapid code improvement and effective debugging. </para>
+      </blockquote>
+
+      <para>This is the one thing that has most drastically evolved in these
+      25 years. This is no longer the case. Big no!</para>
+
+      <para>Your users are NOT co-developers, or guinea pigs! Your users are
+      just that: your users. They want to <emphasis>use</emphasis> your
+      software. Do your research before writing code. It's okay to ask your
+      users for feedback before writing code as long as you're open to
+      scrapping your original idea if need be. It's not okay asking them after
+      the fact, seeking validation. And never, ever, tell a user “we are all
+      overworked volunteers here, why don't you fix it and send us a code
+      patch” for the same reason you wouldn't accept the chief mechanic of a
+      car dealership tell you “we are overworked employees here, why don't you
+      buy some tools and fix your car yourself?”</para>
+
+      <para>Don't ask your users to debug your software and submit code
+      patches. This is <emphasis>your</emphasis> job. Do ask them for access
+      to their installation if that's the only way you can realistically debug
+      an issue you cannot reproduce in any other way. You will find an unhappy
+      path you were not aware of, letting you improve your software.</para>
+
+      <blockquote>
+        <para>Given a large enough beta-tester and co-developer base, almost
+        every problem will be characterized quickly and the fix obvious to
+        someone. </para>
+      </blockquote>
+
+      <para>Yeah, um, this concept died in the late 2000s / early 2010s, after
+      the umpteenth time a user tried to report a bug in good faith and got
+      ignored, ridiculed, told to pound sand because “we are all volunteers
+      here”, or was asked to submit a PR with a code fix. As far as the user
+      is concerned, reporting bugs is counter-productive.</para>
+
+      <para>You can expect some issues to be reported, mostly by people who
+      are developers or adjacent to development, e.g. power users and site
+      integrators. Be ready for your first stable after a beta to come back
+      with a bunch of bugs people had spotted in the beta but never
+      reported.</para>
+
+      <blockquote>
+        <para>The next best thing to having good ideas is recognizing good
+        ideas from your users. Sometimes the latter is better. </para>
+      </blockquote>
+
+      <para>Mostly right, as long as you understand what we explained earlier:
+      users will not articulate their ideas in a way which makes sense to
+      developers. Always ask them for their use case, no matter how dumb their
+      suggestions sounds. That's how you will get to their ideas and figure
+      out which ones are good.</para>
+
+      <blockquote>
+        <para>Perfection (in design) is achieved not when there is nothing
+        more to add, but rather when there is nothing more to take
+        away.</para>
+      </blockquote>
+
+      <para>I hate aphorisms like that because they can be misinterpreted in
+      rather combative and counter-productive ways. </para>
+
+      <para>Perfection lies squarely between the barren nothingness of
+      stripping your software down to its bare essentials which makes it
+      impossible to use in any meaningful way, and the proliferation of a
+      myriad options which makes it impractical to use in any meaningful way.
+      Knowing where perfection lies requires user research.</para>
+
+      <blockquote>
+        <para>To solve an interesting problem, start by finding a problem that
+        is interesting to you. </para>
+      </blockquote>
+
+      <para>This is rooted on the false concept that the developer is the
+      ultimate user of the software being written. Do not prioritise the
+      problems which are interesting to you. Prioritise the problems which are
+      interesting <emphasis>to your users</emphasis>.</para>
+
+      <blockquote>
+        <para>Provided the development coordinator has a communications medium
+        at least as good as the Internet, and knows how to lead without
+        coercion, many heads are inevitably better than one. </para>
+      </blockquote>
+
+      <para>The Internet is the most convenient, not the most efficient,
+      medium of communication. Text-based communication lacks the nuance and
+      social cues of personal interaction. You need face–to–face time with
+      your team members, even if just over video conferencing. Ideally, you
+      need participation in in-person sprints and events. I have solved far
+      harder problems in a 30' Skype call or a 10' in-person chat than I have
+      solved with 30 hours of going back and forth over GitHub issues and
+      instant messaging.</para>
+
+      <para>“Leading without coercion” is often misinterpreted as “I can't
+      tell people what to do and not to do because they are volunteers”, i.e.
+      not leading at all. A development coordinator's job is to provide a
+      clear vision backed by UX research, guide volunteer contributors to do
+      the work necessary to realising it and telling “no” to those who are
+      getting sidetracked. This is not coercion; the social contract here is
+      that the coordinator is willing to <emphasis>lead</emphasis> and the
+      contributors are <emphasis>willing to be led</emphasis>. Those who are
+      unwilling to adhere to this social contract need to leave or made to
+      leave. Anything else leads to toxicity, disengagement, and
+      stagnation.</para>
+    </section>
+
     <section xml:id="advice-write-code-dont-suck">
       <title>Write code which doesn't suck</title>
 
