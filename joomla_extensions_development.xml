@@ -3916,9 +3916,7 @@ $foo = Joomla\CMS\Factory::getApplication()-&gt;input-&gt;getCmd('foo');</progra
 
         <para>This had always been a bad idea because our Controller had to
         <emphasis>know</emphasis> about the global application object and its
-        request variables. This meant, for example, that we could not reuse
-        our component to display a view <link linkend="com-hmvc">using
-        HMVC</link>.</para>
+        request variables. </para>
 
         <para>Since Joomla 3.0 the Controller object has an <code>input</code>
         property which holds its own <code>\Joomla\CMS\Input\Input</code>
@@ -9584,12 +9582,6 @@ class HtmlView extends BaseHtmlView
         These could be displayed in the frontend of the site as an
         OpenStreetMap map. With custom fields, sky's the limit!</para>
       </tip>
-    </section>
-
-    <section xml:id="com-hmvc">
-      <title>HMVC (sort of)</title>
-
-      <para/>
     </section>
   </chapter>
 
