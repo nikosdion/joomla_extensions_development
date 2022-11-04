@@ -8546,7 +8546,7 @@ class Example extends CMSPlugin implements SubscriberInterface
           </footnote>. You can find your token by editing your (Super User)
         profile in the back- or frontend of the site, as long as the
         <guilabel>User - Joomla API Token</guilabel> plugin is published.
-        Authenticating with the token also requires the API
+        Authenticating with the token requires the API
         <guilabel>Authentication - Web Services Joomla Token</guilabel> plugin
         to be published as well. You pass the token in a standard
         Authentication HTTP header following <link
