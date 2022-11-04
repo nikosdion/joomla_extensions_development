@@ -8714,7 +8714,7 @@ class Example extends CMSPlugin implements SubscriberInterface
               has the <literal>core.create</literal> privilege in any
               categories that belong to your component (assuming you are
               integrating with Joomla's com_categories). The method is passed
-              the data to be create in case you need to perform more
+              the data to be created in case you need to perform more
               fine-grained access control. For example, a helpdesk component
               would only allow the user who owns a support ticket and the
               support staff to post replies to a specific ticket. The view
