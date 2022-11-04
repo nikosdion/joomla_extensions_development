@@ -9112,7 +9112,7 @@ class Example extends CMSPlugin implements SubscriberInterface
       general in the <link linkend="plg">Plugins</link> chapter of this
       book.</para>
 
-      <para>Scheduled Tasks allow the user to defined repeated, unattended
+      <para>Scheduled Tasks allow the user to define repeated, unattended
       tasks which run on a schedule. It's like CRON jobs but without
       necessarily needing a CRON server on the site's server. They can be
       triggered with CRON jobs, with a special URL (e.g. using web-based
