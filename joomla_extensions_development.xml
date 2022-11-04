@@ -9175,9 +9175,8 @@ class Example extends CMSPlugin implements SubscriberInterface
 
       <para>Do note that in this example we define one task type. It is
       possible and most of the times desirable for a task plugin to define
-      more than one task types. In this case the
-      <constant>TASKS_MAP</constant> array will have more than one
-      elements.</para>
+      more than one task type. In this case the <constant>TASKS_MAP</constant>
+      array will have more than one elements.</para>
 
       <para>The outermost key for each entry, in our example
       <literal>exampleTask.foobar</literal>, tells Joomla what is the internal
