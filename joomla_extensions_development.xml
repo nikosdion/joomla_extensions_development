@@ -8711,8 +8711,8 @@ class Example extends CMSPlugin implements SubscriberInterface
               allowed to add (create) a new item? By default, it only checks
               if the currently logged in user has the
               <literal>core.create</literal> privilege for your component or
-              they have the <literal>core.create</literal> privilege in any
-              categories which belong to your component (assuming you are
+              has the <literal>core.create</literal> privilege in any
+              categories that belong to your component (assuming you are
               integrating with Joomla's com_categories). The method is passed
               the data to be create in case you need to perform more
               fine-grained access control. For example, a helpdesk component
