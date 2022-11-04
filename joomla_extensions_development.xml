@@ -8743,8 +8743,8 @@ class Example extends CMSPlugin implements SubscriberInterface
           Models in your component. If you do not provide a Model, the API
           application will use the Administrator models instead. This is
           usually what you want to do. There are very few cases where the API
-          application needs a model which is different than both the
-          Administrator and the Site model.</para>
+          application needs a different model than the Administrator or Site
+          model.</para>
 
           <para>If you do need to create Models, follow the same conventions
           as you'd do for Models in the Administrator part of your
