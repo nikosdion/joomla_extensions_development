@@ -9146,8 +9146,8 @@ class Example extends CMSPlugin implements SubscriberInterface
           <para><literal>onExecuteTask</literal>. This is handled by the
           <methodname>standardRoutineHandler</methodname> method implemented
           in the <classname>TaskPluginTrait</classname>. When a scheduled task
-          type the plugin can handled is being executed this method will call
-          your respective plugin method, as defined in the
+          type, the plugin can handle, is being executed, this method will
+          call your respective plugin method, as defined in the
           <constant>TASKS_MAP</constant> constant of your plugin.</para>
         </listitem>
 
