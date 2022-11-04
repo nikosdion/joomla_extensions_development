@@ -10203,7 +10203,7 @@ $this-&gt;setArgument('result', $result);</programlisting>
         <para>An immutable event does not allow any of its arguments to be set
         after it has been created. This does not mean that you cannot do
         anything with the arguments! Remember that argument values which are
-        object can be modified without needing to set the argument again. For
+        objects can be modified without needing to set the argument again. For
         example, this is a valid, working event handler:</para>
 
         <programlisting language="php">	public function handleTableAfterLoad(\Joomla\CMS\Event\Table\AfterLoadEvent $event): void
