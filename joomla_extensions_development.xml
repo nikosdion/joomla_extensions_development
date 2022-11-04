@@ -8598,7 +8598,7 @@ class Example extends CMSPlugin implements SubscriberInterface
         optional<footnote>
             <para>A component <emphasis>must</emphasis> have a backend
             (administrator) part. The frontend (site) and api parts are
-            optional. And, yes, this means that you can absolute have a
+            optional. And, yes, this means that you can absolutely have a
             backend-only component but not a frontend-only or api-only
             component. The necessity for a backend part comes from the fact
             that the XML manifest, the configuration (config.xml) and the
