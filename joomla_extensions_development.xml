@@ -9125,9 +9125,9 @@ class Example extends CMSPlugin implements SubscriberInterface
       part of Joomla itself.</para>
 
       <para>You create a plugin which provides one or more scheduled tasks in
-      the <literal>tasks</literal> folder. The plugin extension must implement
-      <classname>\Joomla\Event\SubscriberInterface</classname>. It also needs
-      to make use of the
+      the <literal>task</literal> plugins folder. The plugin extension must
+      implement <classname>\Joomla\Event\SubscriberInterface</classname>. It
+      also needs to make use of the
       <classname>\Joomla\Component\Scheduler\Administrator\Traits\TaskPluginTrait</classname>.
       The trait provides all the magic.</para>
 
@@ -11548,7 +11548,7 @@ if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
       is an idiot. That's where tech lore derisions like PEBKAC, ID10T, and
       Wetware Issue come from. These are only fun when reading the Bastard
       Operator From Hell which, if the title didn't give it immediately away,
-      is satire and satire is always exaggerated and offensive. </para>
+      is satire and satire is always exaggerated and offensive.</para>
 
       <para>I want you to know that the user in the vast majority of cases is
       not stupid. They were trying to accomplish something. But what? You will
@@ -11662,7 +11662,7 @@ if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
 
       <blockquote>
         <para>If you have the right attitude, interesting problems will find
-        you. </para>
+        you.</para>
       </blockquote>
 
       <para>The key here is the right attitude. If you sit there twiddling
@@ -11672,7 +11672,7 @@ if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
 
       <blockquote>
         <para>Treating your users as co-developers is your least-hassle route
-        to rapid code improvement and effective debugging. </para>
+        to rapid code improvement and effective debugging.</para>
       </blockquote>
 
       <para>This is the one thing that has most drastically evolved in these
@@ -11698,7 +11698,7 @@ if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
       <blockquote>
         <para>Given a large enough beta-tester and co-developer base, almost
         every problem will be characterized quickly and the fix obvious to
-        someone. </para>
+        someone.</para>
       </blockquote>
 
       <para>Yeah, um, this concept died in the late 2000s / early 2010s, after
@@ -11715,7 +11715,7 @@ if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
 
       <blockquote>
         <para>The next best thing to having good ideas is recognizing good
-        ideas from your users. Sometimes the latter is better. </para>
+        ideas from your users. Sometimes the latter is better.</para>
       </blockquote>
 
       <para>Mostly right, as long as you understand what we explained earlier:
@@ -11731,7 +11731,7 @@ if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
       </blockquote>
 
       <para>I hate aphorisms like that because they can be misinterpreted in
-      rather combative and counter-productive ways. </para>
+      rather combative and counter-productive ways.</para>
 
       <para>Perfection lies squarely between the barren nothingness of
       stripping your software down to its bare essentials which makes it
@@ -11741,7 +11741,7 @@ if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
 
       <blockquote>
         <para>To solve an interesting problem, start by finding a problem that
-        is interesting to you. </para>
+        is interesting to you.</para>
       </blockquote>
 
       <para>This is rooted on the false concept that the developer is the
@@ -11752,7 +11752,7 @@ if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
       <blockquote>
         <para>Provided the development coordinator has a communications medium
         at least as good as the Internet, and knows how to lead without
-        coercion, many heads are inevitably better than one. </para>
+        coercion, many heads are inevitably better than one.</para>
       </blockquote>
 
       <para>The Internet is the most convenient, not the most efficient,
