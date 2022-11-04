@@ -12542,7 +12542,7 @@ return new class implements ServiceProviderInterface {
 
       <para>The <parameter>lcobucci/jwt</parameter> dependency already exists
       in Joomla 4 but it's in version 3.x of that library. We want to use
-      version 4 of the library which is incompatible with version 4 but has
+      version 4 of the library which is incompatible with version 3 but has
       the same namespace, <classname>Lcobucci\JWT</classname>. Here's the
       thing. If our dependency is loaded before Joomla's then Joomla's
       WebAuthn system plugin which depends on it will break. If Joomla loads
