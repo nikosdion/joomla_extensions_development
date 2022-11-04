@@ -8442,8 +8442,8 @@ class Example extends CMSPlugin implements SubscriberInterface
 }</programlisting>
 
         <para>As you can see, after creating the command object we push the
-        MVCFactory into it — if it supports that feature, i.e. is it is using
-        the <classname>MVCFactoryAwareTrait</classname> itself.</para>
+        MVCFactory into it — if it supports that feature, i.e. it is using the
+        <classname>MVCFactoryAwareTrait</classname> itself.</para>
 
         <para>We could do the same for the database object. We'll let you
         figure it out. For the solution, you can read the footnote<footnote>
