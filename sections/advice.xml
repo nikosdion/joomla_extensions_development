@@ -694,7 +694,7 @@ in the section entitled "GNU Free Documentation License".
                 actor can send a forged X-Forwarded-For header to trick your extension
                 into believing the request came from a different IP address than the
                 one it actually originates. Second, this header may contain more than
-                one IP addresses in a comma-separated list. Validating, sanitizing and
+                one IP address in a comma-separated list. Validating, sanitizing and
                 parsing that list is tricky and may lead to some very bad times and
                 security issues.</para>
 
@@ -1240,7 +1240,7 @@ in the section entitled "GNU Free Documentation License".
 
         <para>The <parameter>lcobucci/jwt</parameter> dependency already exists
             in Joomla 4 but it's in version 3.x of that library. We want to use
-            version 4 of the library which is incompatible with version 4 but has
+            version 4 of the library which is incompatible with version 3 but has
             the same namespace, <classname>Lcobucci\JWT</classname>. Here's the
             thing. If our dependency is loaded before Joomla's then Joomla's
             WebAuthn system plugin which depends on it will break. If Joomla loads
@@ -1269,7 +1269,7 @@ in the section entitled "GNU Free Documentation License".
             then this path is already added to your path. If not, you will have to
             add it yourself. If you had to add it to your path, close and reopen
             your terminal emulator or simply log out and log back in. Then we can
-            check if Rector is globally available from the command line</para>
+            check if PHP-Scoper is globally available from the command line</para>
 
         <screen>$ php-scoper -V
             PhpScoper version 0.17.6@b528b87</screen>

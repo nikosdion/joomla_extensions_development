@@ -627,7 +627,7 @@ in the section entitled "GNU Free Documentation License".
             <para>An immutable event does not allow any of its arguments to be set
                 after it has been created. This does not mean that you cannot do
                 anything with the arguments! Remember that argument values which are
-                object can be modified without needing to set the argument again. For
+                objects can be modified without needing to set the argument again. For
                 example, this is a valid, working event handler:</para>
 
             <programlisting language="php">	public function handleTableAfterLoad(\Joomla\CMS\Event\Table\AfterLoadEvent $event): void
@@ -1202,7 +1202,7 @@ in the section entitled "GNU Free Documentation License".
             unexpected and unresolvable issues in third party components, plugins
             and modules.</para>
 
-        <para>The root cause of these problems us typically that the plugin
+        <para>The root cause of these problems is typically that the plugin
             author did test their plugin, but have only done so in the very narrow
             use case they expect their plugins to be used. This is called “<link
                     xlink:href="https://en.wikipedia.org/wiki/Happy_path">happy path</link>
