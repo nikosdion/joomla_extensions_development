@@ -8,21 +8,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - name: Sections Deploy
+      - name: Deploy over SSH
         uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SSH_HOST }}
           port: ${{ secrets.SSH_PORT }}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
-          source: "sections/advice.xml,sections/components.xml,sections/concepts.xml,sections/fdl.xml,sections/gpl.xml,sections/modules.xml,sections/plugins.xml,sections/preface.xml,sections/templates.xml"
-          target: ${{ secrets.SSH_PATH_SECTIONS }}
-      - name: Main XML File Deploy
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.SSH_HOST }}
-          port: ${{ secrets.SSH_PORT }}
-          username: ${{ secrets.SSH_USERNAME }}
-          password: ${{ secrets.SSH_PASSWORD }}
-          source: "joomla_extensions_development.xml"
+          source: "joomla_extensions_development.xml,sections/advice.xml,sections/components.xml,sections/concepts.xml,sections/fdl.xml,sections/gpl.xml,sections/modules.xml,sections/plugins.xml,sections/preface.xml,sections/templates.xml"
           target: ${{ secrets.SSH_PATH }}
