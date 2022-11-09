@@ -7,8 +7,7 @@ Documentation License, Version 1.3 or any later version published by the Free So
 no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included
 in the section entitled "GNU Free Documentation License".
 -->
-<chapter xml:id="advice"
-         version="5.1" xmlns="http://docbook.org/ns/docbook"
+<chapter version="5.1" xml:id="advice" xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xila="http://www.w3.org/2001/XInclude/local-attributes"
          xmlns:xi="http://www.w3.org/2001/XInclude"
@@ -17,792 +16,773 @@ in the section entitled "GNU Free Documentation License".
          xmlns:m="http://www.w3.org/1998/Math/MathML"
          xmlns:html="http://www.w3.org/1999/xhtml"
          xmlns:db="http://docbook.org/ns/docbook">
-    <title>General advice and code magic</title>
-
-    <para>There are a few concepts which apply universally to all Joomla
-        extension types but don't quite fit in a category of their own. There are
-        also more generic tips about what to do and what not to do when writing
-        software. In this chapter we will explore some of those things.</para>
-
-    <section xml:id="advice-clarity-unlocks-efficiency">
-        <title>Clarity unlocks efficiency</title>
-
-        <para>Instead of telling you what code to write, let's talk about all
-            the non-code, development-adjacent things you do which lead to better
-            code and a better product.</para>
-
-        <bridgehead>The “chores” and why you need to do them</bridgehead>
-
-        <para><emphasis role="bold">User experience (UX)</emphasis>. The
-            cardinal sin of FOSS developers is that we take Eric S. Raymond's “<link
-                    xlink:href="https://en.wikipedia.org/wiki/The_Cathedral_and_the_Bazaar">The
-                cathedral and the bazaar</link>” a bit too literally — I'll come back to
-            that later. When it was written in 1997 it made sense. Back then
-            computers were islands of information, isolated behind slow and
-            expensive dial-up Internet connectivity, inhabited primarily by the
-            native tribe of <emphasis>Homo Geekus</emphasis>. Fast forward 25 years
-            and my decidedly non-technical mom who's in her 70s is using a
-            smartphone and a tablet with an always-on Internet connection and
-            <emphasis>we are the people writing the software she is using in the
-                sites she's visiting</emphasis>. We no longer write software to scratch
-            our own itch, we write software to scratch <emphasis>our
-                users'</emphasis> itch. No longer can we expect that our users are geeks
-            like us who will help us co-develop and debug the software, they are
-            "normies". We have to understand who our users are, what is the task
-            they are trying to accomplish (of which our software may only have a
-            tertiary role in a fleeting interaction), and how we can provide them
-            with the most frictionless experience. There are three lessons
-            here:</para>
-
-        <itemizedlist>
-            <listitem>
-                <para>We write software for regular people. We do not write software
-                    for geeks or machines. We must find out who our users are and in
-                    what context they end up using our software.</para>
-            </listitem>
-
-            <listitem>
-                <para>Our software is, from a user's perspective, not anywhere near
-                    as important as it is for us. When we internalise it, it's a very
-                    humbling realisation which puts our overinflated egos in check. Take
-                    that into account when designing the interaction with the user and
-                    your user interface.</para>
-            </listitem>
-
-            <listitem>
-                <para>The best software is that which is invisible and frictionless
-                    the user. The average modern car runs well over a million lines of
-                    code. The software controls the engine, the accelerator, the brakes
-                    (to a large extent; you still have emergency control of the brakes),
-                    your windshield wipers, the blinkers (for real!), the headlights,
-                    the infotainment system, the door locks, everything. You never stop
-                    to think about it while driving a car; it is out of sight, out of
-                    mind. This is the kind of interaction we must aim for with our
-                    software.</para>
-            </listitem>
-        </itemizedlist>
-
-        <para>Ideally, there's far more to UX than what I mentioned here in
-            passing. UX is a discipline and there's a lot us developers can learn
-            from it, even if we do not have the resources to conduct a full,
-            continuous UX research project. Some resources which can help you get
-            started with that user-first mentality are:</para>
-
-        <itemizedlist>
-            <listitem>
-                <para><link
-                        xlink:href="https://52weeksofux.com/post/385981879/you-are-not-your-user">You
-                    are not your user</link>. A quick introduction to the techniques
-                    used to start understanding your users.</para>
-            </listitem>
-
-            <listitem>
-                <para><link
-                        xlink:href="https://www.nngroup.com/articles/false-consensus/">The
-                    False-Consensus Effect</link>. A slightly longer read, explaining
-                    the logical fallacies we succumb to and why testing with real users
-                    helps us overcome them.</para>
-            </listitem>
-
-            <listitem>
-                <para>“The Undoing Project” by Micheal Lewis, ISBN
-                    978-0-393-25460-0. An excellent book exploring how an unlikely
-                    friendship between two psychologist led to deep research into
-                    logical fallacies and earned the surviving member of that duo a
-                    Nobel Prize in Economics.</para>
-            </listitem>
-
-            <listitem>
-                <para>“Thinking, Fast and Slow” by Daniel Khaneman, ISBN
-                    978-0-141-91892-1. Further exploration in how the human thought and
-                    decision making process works which ultimately helps you understand
-                    what seems like “irrational” behaviour by your users.</para>
-            </listitem>
-        </itemizedlist>
-
-        <para><emphasis role="bold">Writing specifications</emphasis>. Writing
-            software start well before the first line of code is written. After
-            having done your UX research (hopefully!) you need to start designing
-            the intended interaction with the user a.k.a. the feature you are going
-            to write. Don't fire up your IDE yet! Start with pen and paper — or
-            e-pen and tablet (I use an iPad Pro and an Apple Pencil with the
-            Noteshelf app). This is a habit I picked up as an undergrad Mechanical
-            Engineer. I never started working without having a detailed plan of what
-            I am trying to do. Putting pen to paper is…
-            <emphasis>magical</emphasis>. It forces you to think about everything
-            you write down, how they interact, the non-obvious consequences they may
-            have. You will be doing a lot of erasing, scrapping and redoing. Best do
-            that at this early stage than after writing a bunch of code. By the end
-            of it you will have a fairly detailed plan of how to proceed.</para>
-
-        <para><emphasis role="bold">Prototyping (wireframes, UI samples, Proofs
-            Of Concept)</emphasis>. If you are writing a non-trivial feature, or new
-            software, you may not want to put all of the plumbing in there before
-            you can get feedback from real world users about it. Start by making
-            wireframes or UI samples (in plain HTML or even in a design
-            application). Don't just describe what it would look like; users are not
-            co-developers, as we already established. Get your users' feedback and
-            re-iterate. If your feature requires a minimum of interaction, create a
-            Proof of Concept — not all functionality needs to be implemented, just
-            enough to get meaningful feedback from your users.</para>
-
-        <para><emphasis role="bold">Testing</emphasis>. Whenever possible, test.
-            Unit tests, integration tests, functional tests — whatever makes sense
-            in the context of what you are writing. I am not the kind of crazy
-            pedant who will tell you that if you do not get 100% test coverage you
-            are doing it wrong. It's possible to get 100% test coverage but only
-            test the happy path and the happy unhappy path. I cringe as I write it,
-            but there is such a thing as the latter: it's when you only cover the
-            <emphasis>expected</emphasis> failures you have already explicitly added
-            checks for in your code. Instead, I say that you should automatically
-            test what is <emphasis>meaningful</emphasis> in your use case.</para>
-
-        <para>On the subject of testing, do not limit yourself to any automated
-            or manual testing you are doing yourself. You are not the user and you
-            have the innate tendency to follow the happy and unhappy paths you have
-            already established in your head and written code for. Get real users to
-            test what you wrote. Beta versions are great; beta versions where users
-            who found bugs actually report them are even better. Try to incentivise
-            users to report bugs — and rest assured that despite your best effort
-            the stable version will have bugs someone discovered but didn't report.
-            Don't dwell over why people neglected to report bugs; they have been
-            conditioned to believe that their feedback never matters. Just take it
-            in stride and fix them.</para>
-
-        <para><emphasis role="bold">Documentation</emphasis>. “Is there anything
-            more boring than writing documentation?” asked rhetorically the man who
-            is currently writing documentation. Let me tell you the truth. No, there
-            is nothing more boring. It is utterly, mind-numbingly, excruciatingly
-            boring — and I wouldn't ever consider not writing it all the same. When
-            you are writing documentation you put yourself in your user's shoes.
-            What are they trying to accomplish? Try to take them by the hand and
-            explain how that feature soup they perceive in your software can be
-            transformed by a series of cohesive steps to accomplish a concrete goal.
-            Try to imagine their struggle and preemptively provide answers for the
-            non-obvious points which may create friction. Think about failure modes
-            and document them, as well as how to address them. Writing documentation
-            you are the user's friend, mentor, and guide. Writing documentation you
-            shift your perspective from that of the developer who has to hold twenty
-            variables and half a dozen methods in his head while writing code to
-            that of a user and a teacher. It never ceases to amaze me how many
-            problems I find in my software writing documentation and that's the
-            reason I would never consider not writing it, even though it's so
-            incredibly boring.</para>
-
-        <para>I can also tell you how NOT to write documentation: the way
-            Joomla's help screens are written, i.e. just listing a bunch of options
-            and the tautological, to the point of being condescending, descriptions
-            of such. I would like to think that “Enable Thingamajig” is obvious to
-            the user that it means “Setting this option to Yes enables Thingamajig”.
-            If the user can't figure <emphasis>that</emphasis> part out there's a
-            more fundamental issue which cannot be addressed in documentation. So,
-            please, don't write tautologies like that. A far better description of
-            that option would concisely explain what Thingamajig is (and link to a
-            previous documentation page covering it if it's a foundation concept
-            which warrants further explanation!) and how it relates <emphasis>to the
-                tasks the user will likely accomplish with it</emphasis>. Remember,
-            documentation is there to help and guide the user, possibly even to do
-            things they didn't realise were possible to begin with.</para>
-
-        <para>You will receive feedback to your documentation. If the feedback
-            sounds nonsensical, always ask the user the magic question “What is your
-            use case? What were you trying to accomplish and why did you get
-            frustrated reading the documentation?”. Nine out of ten times you'll
-            find out the user has a good point, they just could not articulate it in
-            a way which resonated with you. They knew what their use case is, they
-            knew why they got frustrated, they never told you any of it but came up
-            with and communicated a suggested fix. Since the user can't see beyond
-            their own use case their suggested fix likely made no sense to you who
-            are trying to negotiate all possible use cases — many of which you don't
-            know yourself! — into a coherent documentation. That is to say, don't
-            discount the user because they can't express themselves in your terms.
-            Try to extract a small nugget of insight from their rant. It will
-            benefit you both.</para>
-
-        <para><emphasis role="bold">Support</emphasis>. 10 out of 10 people
-            doing support will tell you that doing end user support sucks. This is
-            by definition. Nobody comes to request support because everything is
-            going swimmingly. The user tried to do something and your software
-            stopped being invisible and frictionless for them. They may or may not
-            have tried reading some of the documentation. They may or may not have
-            tried figuring out a way to fix their problem. They have definitely
-            failed in the latter. They are frustrated, and defensive for the
-            software makes them feel inadequate and helpless. They come to you for
-            help but they are in a very negative state of mind.</para>
-
-        <para>I still want to interact with these people and I want you to do
-            too. Most of the times they missed something obvious or misread
-            something. I try to spot patterns there. If people are always missing
-            the same thing over and over again does it mean that <emphasis>I,
-                myself, have missed an obvious way to proactively help them</emphasis>?
-            Maybe there is a technical way I can alleviate their pain? I would say
-            that a good half of the improvement in my software have come from my
-            qualitative observations on support requests.</para>
-
-        <para>Even more important are the interactions with users who are
-            completely and utterly lost. There are support requests which make you
-            think “how the heck did that person get themselves in that spot?!”. When
-            you are met with such a dissonance between what is the “obvious” way to
-            use the software and what the user did it's very easy to assume the user
-            is an idiot. That's where tech lore derisions like PEBKAC, ID10T, and
-            Wetware Issue come from. These are only fun when reading the Bastard
-            Operator From Hell which, if the title didn't give it immediately away,
-            is satire and satire is always exaggerated and offensive.</para>
-
-        <para>I want you to know that the user in the vast majority of cases is
-            not stupid. They were trying to accomplish something. But what? You will
-            never know unless you ask them “What is your use case? What were you
-            trying to do? Why did you think that doing X was the best approach? I
-            would like to understand your thought process so I can improve the
-            software”. In most cases they will come up with a use case which is
-            either perfectly reasonable or obviously unsuitable for your software.
-            In the former case you'll have another use case you didn't know of and
-            you can figure out how to best help the user accomplish it — even if it
-            means making some changes. In the latter case you can help the user
-            understand why they are looking at the wrong software. Either way, you
-            will be helpful. There are a few cases where the user truly is beyond
-            reason. But you know what? This is also helpful because it might give
-            you more data points on how to modify your marketing material to weed
-            out these people before they become users of your software.</para>
-
-        <bridgehead>Clarity unlocks efficiency</bridgehead>
-
-        <para>Everything I described above does not involve writing code. Oh,
-            the horror! We are developers, shouldn't we be writing code?</para>
-
-        <para>No, <emphasis>writing code is not an end in
-            itself</emphasis>.</para>
-
-        <para>We are modern day shamans, mediators between machine and people
-            instead of mediators between spirits and people. Like shamans, we serve
-            the people. That's the end. Code is the means to that end.</para>
-
-        <para>Our software is but a small part of what a user needs to
-            accomplish. When Alice wants to go to the prom, she needs a dress. She
-            will go online, find the dress she wants, and order it from a site which
-            runs our software. The shop will find her dress in their warehouse, pack
-            it, and send it via a courier company. A lot more steps are involved
-            until Alice gets her dress, tries it on, makes small alterations to fit
-            it on her and look resplendent on a night she will remember fondly for
-            the rest of her life. Our software? It was but a tiny sliver of her
-            journey. If we did it right she didn't notice using it and she won't
-            remember it when she's sharing her prom memories with her anxious
-            granddaughter decades later. We facilitated this beautiful moment but
-            our product which did that facilitating was
-            <emphasis>invisible</emphasis>.</para>
-
-        <para>To be able to offer this kind of experience there are some
-            prerequisites. We need to understand who we are building the software
-            for, which task it will be a part of, and how they expect it to work so
-            that they don't have to stop and think about it. We need to understand
-            the technical details of how it works and address all the messy human
-            interactions with it which might make it not work according to the
-            user's mental model. We have to do that in such a way that practically
-            anyone can use it, regardless of their technical acumen or complete lack
-            thereof. The more we know about all of that, the easier it is for us to
-            write the software that becomes truly invisible and frictionless.</para>
-
-        <para>Conversely, the less time we spend thinking about the users of the
-            software and over-inflate the importance (therefore the expected
-            visibility) of our software to the user, the less enjoyable our software
-            becomes to use. The user has to stop and think. Can you conceive driving
-            a car you had to think twice before pressing the brake pedal because
-            doing so while your steering wheel is turned between 10 and 15 degrees
-            would instead result in the car accelerating? Why do the equivalent in
-            web software?! This will lead to a lot of friction with the users, a lot
-            of unhappy back and forth, a lot of changes, nobody will be happy — not
-            the users and not you the developer.</para>
-
-        <para>So, what do you reckon is most efficient? Writing the software the
-            “right” way from the very beginning, or eternally changing it without
-            real vision, purpose, or sense trying to play catchup with the users
-            complaints? The former is ostensibly faster than the latter, but is it
-            <emphasis>really</emphasis>?</para>
-
-        <para>Front-loading our time expenditure to non-code but
-            development-adjacent tasks which provide us with clarity on the purpose
-            and process of building software we end up spending less time to write
-            better software. Or, to put it more concisely, <emphasis
-                    role="bold">clarity unlocks efficiency</emphasis>.</para>
-
-        <para>Print that phrase and tape it to the wall behind your monitor.
-            Every time you are about to moan about the “chores” you have to do
-            instead of writing code read it out loud.</para>
-
-        <bridgehead>Revisiting The Cathedral and The Bazaar</bridgehead>
-
-        <para>As promised, I am coming back to that paper from 1997 and its
-            follow-up book from 1999. While most of the points made in that paper
-            and subsequent book are useful and accurate, there are a few which have
-            not stood the test of time or at least have not been understood
-            correctly. In those 25 years personal computing has evolved and with it
-            the target audience of software and the way we write it. With the
-            benefit of that hindsight, let's revisit some of the points made.</para>
-
-        <blockquote>
-            <para>Every good work of software starts by scratching a developer's
-                personal itch.</para>
-        </blockquote>
-
-        <para>This is a fallacy, in that it assumes that the developer is the
-            ultimate user of the software. While the original
-            <emphasis>spark</emphasis> may come from a personal frustration, using
-            it as the compass for development is self-defeating. Find your users'
-            itch instead</para>
-
-        <blockquote>
-            <para>Plan to throw one [version] away; you will, anyhow</para>
-        </blockquote>
-
-        <para>This is nihilism. Do your homework, do your user research, write
-            specifications, test your preliminary designs. If you do things like
-            that, the right way, you will not have to throw away your first
-            version.</para>
-
-        <blockquote>
-            <para>If you have the right attitude, interesting problems will find
-                you.</para>
-        </blockquote>
-
-        <para>The key here is the right attitude. If you sit there twiddling
-            your thumbs nothing interesting will ever happen. You need to actively
-            solicit the right feedback which will let you see the interesting
-            problems to solve.</para>
-
-        <blockquote>
-            <para>Treating your users as co-developers is your least-hassle route
-                to rapid code improvement and effective debugging.</para>
-        </blockquote>
-
-        <para>This is the one thing that has most drastically evolved in these
-            25 years. This is no longer the case. Big no!</para>
-
-        <para>Your users are NOT co-developers, or guinea pigs! Your users are
-            just that: your users. They want to <emphasis>use</emphasis> your
-            software. Do your research before writing code. It's okay to ask your
-            users for feedback before writing code as long as you're open to
-            scrapping your original idea if need be. It's not okay asking them after
-            the fact, seeking validation. And never, ever, tell a user “we are all
-            overworked volunteers here, why don't you fix it and send us a code
-            patch” for the same reason you wouldn't accept the chief mechanic of a
-            car dealership tell you “we are overworked employees here, why don't you
-            buy some tools and fix your car yourself?”</para>
-
-        <para>Don't ask your users to debug your software and submit code
-            patches. This is <emphasis>your</emphasis> job. Do ask them for access
-            to their installation if that's the only way you can realistically debug
-            an issue you cannot reproduce in any other way. You will find an unhappy
-            path you were not aware of, letting you improve your software.</para>
-
-        <blockquote>
-            <para>Given a large enough beta-tester and co-developer base, almost
-                every problem will be characterized quickly and the fix obvious to
-                someone.</para>
-        </blockquote>
-
-        <para>Yeah, um, this concept died in the late 2000s / early 2010s, after
-            the umpteenth time a user tried to report a bug in good faith and got
-            ignored, ridiculed, told to pound sand because “we are all volunteers
-            here”, or was asked to submit a PR with a code fix. As far as the user
-            is concerned, reporting bugs is counter-productive.</para>
-
-        <para>You can expect some issues to be reported, mostly by people who
-            are developers or adjacent to development, e.g. power users and site
-            integrators. Be ready for your first stable after a beta to come back
-            with a bunch of bugs people had spotted in the beta but never
-            reported.</para>
-
-        <blockquote>
-            <para>The next best thing to having good ideas is recognizing good
-                ideas from your users. Sometimes the latter is better.</para>
-        </blockquote>
-
-        <para>Mostly right, as long as you understand what we explained earlier:
-            users will not articulate their ideas in a way which makes sense to
-            developers. Always ask them for their use case, no matter how dumb their
-            suggestions sounds. That's how you will get to their ideas and figure
-            out which ones are good.</para>
-
-        <blockquote>
-            <para>Perfection (in design) is achieved not when there is nothing
-                more to add, but rather when there is nothing more to take
-                away.</para>
-        </blockquote>
-
-        <para>I hate aphorisms like that because they can be misinterpreted in
-            rather combative and counter-productive ways.</para>
-
-        <para>Perfection lies squarely between the barren nothingness of
-            stripping your software down to its bare essentials which makes it
-            impossible to use in any meaningful way, and the proliferation of a
-            myriad options which makes it impractical to use in any meaningful way.
-            Knowing where perfection lies requires user research.</para>
-
-        <blockquote>
-            <para>To solve an interesting problem, start by finding a problem that
-                is interesting to you.</para>
-        </blockquote>
-
-        <para>This is rooted on the false concept that the developer is the
-            ultimate user of the software being written. Do not prioritise the
-            problems which are interesting to you. Prioritise the problems which are
-            interesting <emphasis>to your users</emphasis>.</para>
-
-        <blockquote>
-            <para>Provided the development coordinator has a communications medium
-                at least as good as the Internet, and knows how to lead without
-                coercion, many heads are inevitably better than one.</para>
-        </blockquote>
-
-        <para>The Internet is the most convenient, not the most efficient,
-            medium of communication. Text-based communication lacks the nuance and
-            social cues of personal interaction. You need face–to–face time with
-            your team members, even if just over video conferencing. Ideally, you
-            need participation in in-person sprints and events. I have solved far
-            harder problems in a 30' Skype call or a 10' in-person chat than I have
-            solved with 30 hours of going back and forth over GitHub issues and
-            instant messaging.</para>
-
-        <para>“Leading without coercion” is often misinterpreted as “I can't
-            tell people what to do and not to do because they are volunteers”, i.e.
-            not leading at all. A development coordinator's job is to provide a
-            clear vision backed by UX research, guide volunteer contributors to do
-            the work necessary to realising it and telling “no” to those who are
-            getting sidetracked. This is not coercion; the social contract here is
-            that the coordinator is willing to <emphasis>lead</emphasis> and the
-            contributors are <emphasis>willing to be led</emphasis>. Those who are
-            unwilling to adhere to this social contract need to leave or made to
-            leave. Anything else leads to toxicity, disengagement, and
-            stagnation.</para>
-    </section>
-
-    <section xml:id="advice-write-code-dont-suck">
-        <title>Write code which doesn't suck</title>
-
-        <para>Having audited several dozens of sites with hundreds of extensions
-            I have seen the same old problems appearing in the code of extension
-            after extension. Not only they are security incidents waiting to happen,
-            they also make migrating your code to newer Joomla versions harder and
-            break your extension in said Joomla versions.</para>
-
-        <section xml:id="advice-dont-suck-hardcoded-queries">
-            <title>DON'T: Hard-coded database queries</title>
-
-            <para>I have seen bad code like this:</para>
-
-            <programlisting language="php">$query = 'SELECT `something` FROM `#__whatever` WHERE `id` = ' . $db-&gt;quote($id);</programlisting>
-
-            <para>It's even worse with there is no <code>$db-&gt;quote</code> at
-                all because that ensures it's a SQL injection waiting to
-                happen.</para>
-
-            <para>Having a hard-coded database query is really bad because you are
-                making an assumption the site runs under MySQL and that the escape
-                character is the backtick. This is not a guarantee. Moreover, are you
-                absolutely sure that you have not missed an escape in a long SQL
-                query? Would you bet your and your clients' sites' security, as well
-                as the possibility of massive fines due to GDPR if you have failed
-                miserably, on your ability to not miss anything?</para>
-
-            <para>Let's get real. Joomla has offered a database query builders
-                since version 1.6 (released in 2010) and improved it in Joomla
-                4.</para>
-
-            <para>Here's the simplest way to write the above code:</para>
-
-            <programlisting language="php">$query = $db-&gt;getQuery(true)
+  <title>General advice and code magic</title>
+
+  <para>There are a few concepts which apply universally to all Joomla
+  extension types but don't quite fit in a category of their own. There are
+  also more generic tips about what to do and what not to do when writing
+  software. In this chapter we will explore some of those things.</para>
+
+  <section xml:id="advice-clarity-unlocks-efficiency">
+    <title>Clarity unlocks efficiency</title>
+
+    <para>Instead of telling you what code to write, let's talk about all the
+    non-code, development-adjacent things you do which lead to better code and
+    a better product.</para>
+
+    <bridgehead>The “chores” and why you need to do them</bridgehead>
+
+    <para><emphasis role="bold">User experience (UX)</emphasis>. The cardinal
+    sin of FOSS developers is that we take Eric S. Raymond's “<link
+    xlink:href="https://en.wikipedia.org/wiki/The_Cathedral_and_the_Bazaar">The
+    cathedral and the bazaar</link>” a bit too literally — I'll come back to
+    that later. When it was written in 1997 it made sense. Back then computers
+    were islands of information, isolated behind slow and expensive dial-up
+    Internet connectivity, inhabited primarily by the native tribe of
+    <emphasis>Homo Geekus</emphasis>. Fast forward 25 years and my decidedly
+    non-technical mom who's in her 70s is using a smartphone and a tablet with
+    an always-on Internet connection and <emphasis>we are the people writing
+    the software she is using in the sites she's visiting</emphasis>. We no
+    longer write software to scratch our own itch, we write software to
+    scratch <emphasis>our users'</emphasis> itch. No longer can we expect that
+    our users are geeks like us who will help us co-develop and debug the
+    software, they are "normies". We have to understand who our users are,
+    what is the task they are trying to accomplish (of which our software may
+    only have a tertiary role in a fleeting interaction), and how we can
+    provide them with the most frictionless experience. There are three
+    lessons here:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>We write software for regular people. We do not write software
+        for geeks or machines. We must find out who our users are and in what
+        context they end up using our software.</para>
+      </listitem>
+
+      <listitem>
+        <para>Our software is, from a user's perspective, not anywhere near as
+        important as it is for us. When we internalise it, it's a very
+        humbling realisation which puts our overinflated egos in check. Take
+        that into account when designing the interaction with the user and
+        your user interface.</para>
+      </listitem>
+
+      <listitem>
+        <para>The best software is that which is invisible and frictionless
+        the user. The average modern car runs well over a million lines of
+        code. The software controls the engine, the accelerator, the brakes
+        (to a large extent; you still have emergency control of the brakes),
+        your windshield wipers, the blinkers (for real!), the headlights, the
+        infotainment system, the door locks, everything. You never stop to
+        think about it while driving a car; it is out of sight, out of mind.
+        This is the kind of interaction we must aim for with our
+        software.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Ideally, there's far more to UX than what I mentioned here in
+    passing. UX is a discipline and there's a lot us developers can learn from
+    it, even if we do not have the resources to conduct a full, continuous UX
+    research project. Some resources which can help you get started with that
+    user-first mentality are:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><link
+        xlink:href="https://52weeksofux.com/post/385981879/you-are-not-your-user">You
+        are not your user</link>. A quick introduction to the techniques used
+        to start understanding your users.</para>
+      </listitem>
+
+      <listitem>
+        <para><link
+        xlink:href="https://www.nngroup.com/articles/false-consensus/">The
+        False-Consensus Effect</link>. A slightly longer read, explaining the
+        logical fallacies we succumb to and why testing with real users helps
+        us overcome them.</para>
+      </listitem>
+
+      <listitem>
+        <para>“The Undoing Project” by Micheal Lewis, ISBN 978-0-393-25460-0.
+        An excellent book exploring how an unlikely friendship between two
+        psychologist led to deep research into logical fallacies and earned
+        the surviving member of that duo a Nobel Prize in Economics.</para>
+      </listitem>
+
+      <listitem>
+        <para>“Thinking, Fast and Slow” by Daniel Khaneman, ISBN
+        978-0-141-91892-1. Further exploration in how the human thought and
+        decision making process works which ultimately helps you understand
+        what seems like “irrational” behaviour by your users.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para><emphasis role="bold">Writing specifications</emphasis>. Writing
+    software start well before the first line of code is written. After having
+    done your UX research (hopefully!) you need to start designing the
+    intended interaction with the user a.k.a. the feature you are going to
+    write. Don't fire up your IDE yet! Start with pen and paper — or e-pen and
+    tablet (I use an iPad Pro and an Apple Pencil with the Noteshelf app).
+    This is a habit I picked up as an undergrad Mechanical Engineer. I never
+    started working without having a detailed plan of what I am trying to do.
+    Putting pen to paper is… <emphasis>magical</emphasis>. It forces you to
+    think about everything you write down, how they interact, the non-obvious
+    consequences they may have. You will be doing a lot of erasing, scrapping
+    and redoing. Best do that at this early stage than after writing a bunch
+    of code. By the end of it you will have a fairly detailed plan of how to
+    proceed.</para>
+
+    <para><emphasis role="bold">Prototyping (wireframes, UI samples, Proofs Of
+    Concept)</emphasis>. If you are writing a non-trivial feature, or new
+    software, you may not want to put all of the plumbing in there before you
+    can get feedback from real world users about it. Start by making
+    wireframes or UI samples (in plain HTML or even in a design application).
+    Don't just describe what it would look like; users are not co-developers,
+    as we already established. Get your users' feedback and re-iterate. If
+    your feature requires a minimum of interaction, create a Proof of Concept
+    — not all functionality needs to be implemented, just enough to get
+    meaningful feedback from your users.</para>
+
+    <para><emphasis role="bold">Testing</emphasis>. Whenever possible, test.
+    Unit tests, integration tests, functional tests — whatever makes sense in
+    the context of what you are writing. I am not the kind of crazy pedant who
+    will tell you that if you do not get 100% test coverage you are doing it
+    wrong. It's possible to get 100% test coverage but only test the happy
+    path and the happy unhappy path. I cringe as I write it, but there is such
+    a thing as the latter: it's when you only cover the
+    <emphasis>expected</emphasis> failures you have already explicitly added
+    checks for in your code. Instead, I say that you should automatically test
+    what is <emphasis>meaningful</emphasis> in your use case.</para>
+
+    <para>On the subject of testing, do not limit yourself to any automated or
+    manual testing you are doing yourself. You are not the user and you have
+    the innate tendency to follow the happy and unhappy paths you have already
+    established in your head and written code for. Get real users to test what
+    you wrote. Beta versions are great; beta versions where users who found
+    bugs actually report them are even better. Try to incentivise users to
+    report bugs — and rest assured that despite your best effort the stable
+    version will have bugs someone discovered but didn't report. Don't dwell
+    over why people neglected to report bugs; they have been conditioned to
+    believe that their feedback never matters. Just take it in stride and fix
+    them.</para>
+
+    <para><emphasis role="bold">Documentation</emphasis>. “Is there anything
+    more boring than writing documentation?” asked rhetorically the man who is
+    currently writing documentation. Let me tell you the truth. No, there is
+    nothing more boring. It is utterly, mind-numbingly, excruciatingly boring
+    — and I wouldn't ever consider not writing it all the same. When you are
+    writing documentation you put yourself in your user's shoes. What are they
+    trying to accomplish? Try to take them by the hand and explain how that
+    feature soup they perceive in your software can be transformed by a series
+    of cohesive steps to accomplish a concrete goal. Try to imagine their
+    struggle and preemptively provide answers for the non-obvious points which
+    may create friction. Think about failure modes and document them, as well
+    as how to address them. Writing documentation you are the user's friend,
+    mentor, and guide. Writing documentation you shift your perspective from
+    that of the developer who has to hold twenty variables and half a dozen
+    methods in his head while writing code to that of a user and a teacher. It
+    never ceases to amaze me how many problems I find in my software writing
+    documentation and that's the reason I would never consider not writing it,
+    even though it's so incredibly boring.</para>
+
+    <para>I can also tell you how NOT to write documentation: the way Joomla's
+    help screens are written, i.e. just listing a bunch of options and the
+    tautological, to the point of being condescending, descriptions of such. I
+    would like to think that “Enable Thingamajig” is obvious to the user that
+    it means “Setting this option to Yes enables Thingamajig”. If the user
+    can't figure <emphasis>that</emphasis> part out there's a more fundamental
+    issue which cannot be addressed in documentation. So, please, don't write
+    tautologies like that. A far better description of that option would
+    concisely explain what Thingamajig is (and link to a previous
+    documentation page covering it if it's a foundation concept which warrants
+    further explanation!) and how it relates <emphasis>to the tasks the user
+    will likely accomplish with it</emphasis>. Remember, documentation is
+    there to help and guide the user, possibly even to do things they didn't
+    realise were possible to begin with.</para>
+
+    <para>You will receive feedback to your documentation. If the feedback
+    sounds nonsensical, always ask the user the magic question “What is your
+    use case? What were you trying to accomplish and why did you get
+    frustrated reading the documentation?”. Nine out of ten times you'll find
+    out the user has a good point, they just could not articulate it in a way
+    which resonated with you. They knew what their use case is, they knew why
+    they got frustrated, they never told you any of it but came up with and
+    communicated a suggested fix. Since the user can't see beyond their own
+    use case their suggested fix likely made no sense to you who are trying to
+    negotiate all possible use cases — many of which you don't know yourself!
+    — into a coherent documentation. That is to say, don't discount the user
+    because they can't express themselves in your terms. Try to extract a
+    small nugget of insight from their rant. It will benefit you both.</para>
+
+    <para><emphasis role="bold">Support</emphasis>. 10 out of 10 people doing
+    support will tell you that doing end user support sucks. This is by
+    definition. Nobody comes to request support because everything is going
+    swimmingly. The user tried to do something and your software stopped being
+    invisible and frictionless for them. They may or may not have tried
+    reading some of the documentation. They may or may not have tried figuring
+    out a way to fix their problem. They have definitely failed in the latter.
+    They are frustrated, and defensive for the software makes them feel
+    inadequate and helpless. They come to you for help but they are in a very
+    negative state of mind.</para>
+
+    <para>I still want to interact with these people and I want you to do too.
+    Most of the times they missed something obvious or misread something. I
+    try to spot patterns there. If people are always missing the same thing
+    over and over again does it mean that <emphasis>I, myself, have missed an
+    obvious way to proactively help them</emphasis>? Maybe there is a
+    technical way I can alleviate their pain? I would say that a good half of
+    the improvement in my software have come from my qualitative observations
+    on support requests.</para>
+
+    <para>Even more important are the interactions with users who are
+    completely and utterly lost. There are support requests which make you
+    think “how the heck did that person get themselves in that spot?!”. When
+    you are met with such a dissonance between what is the “obvious” way to
+    use the software and what the user did it's very easy to assume the user
+    is an idiot. That's where tech lore derisions like PEBKAC, ID10T, and
+    Wetware Issue come from. These are only fun when reading the Bastard
+    Operator From Hell which, if the title didn't give it immediately away, is
+    satire and satire is always exaggerated and offensive.</para>
+
+    <para>I want you to know that the user in the vast majority of cases is
+    not stupid. They were trying to accomplish something. But what? You will
+    never know unless you ask them “What is your use case? What were you
+    trying to do? Why did you think that doing X was the best approach? I
+    would like to understand your thought process so I can improve the
+    software”. In most cases they will come up with a use case which is either
+    perfectly reasonable or obviously unsuitable for your software. In the
+    former case you'll have another use case you didn't know of and you can
+    figure out how to best help the user accomplish it — even if it means
+    making some changes. In the latter case you can help the user understand
+    why they are looking at the wrong software. Either way, you will be
+    helpful. There are a few cases where the user truly is beyond reason. But
+    you know what? This is also helpful because it might give you more data
+    points on how to modify your marketing material to weed out these people
+    before they become users of your software.</para>
+
+    <bridgehead>Clarity unlocks efficiency</bridgehead>
+
+    <para>Everything I described above does not involve writing code. Oh, the
+    horror! We are developers, shouldn't we be writing code?</para>
+
+    <para>No, <emphasis>writing code is not an end in
+    itself</emphasis>.</para>
+
+    <para>We are modern day shamans, mediators between machine and people
+    instead of mediators between spirits and people. Like shamans, we serve
+    the people. That's the end. Code is the means to that end.</para>
+
+    <para>Our software is but a small part of what a user needs to accomplish.
+    When Alice wants to go to the prom, she needs a dress. She will go online,
+    find the dress she wants, and order it from a site which runs our
+    software. The shop will find her dress in their warehouse, pack it, and
+    send it via a courier company. A lot more steps are involved until Alice
+    gets her dress, tries it on, makes small alterations to fit it on her and
+    look resplendent on a night she will remember fondly for the rest of her
+    life. Our software? It was but a tiny sliver of her journey. If we did it
+    right she didn't notice using it and she won't remember it when she's
+    sharing her prom memories with her anxious granddaughter decades later. We
+    facilitated this beautiful moment but our product which did that
+    facilitating was <emphasis>invisible</emphasis>.</para>
+
+    <para>To be able to offer this kind of experience there are some
+    prerequisites. We need to understand who we are building the software for,
+    which task it will be a part of, and how they expect it to work so that
+    they don't have to stop and think about it. We need to understand the
+    technical details of how it works and address all the messy human
+    interactions with it which might make it not work according to the user's
+    mental model. We have to do that in such a way that practically anyone can
+    use it, regardless of their technical acumen or complete lack thereof. The
+    more we know about all of that, the easier it is for us to write the
+    software that becomes truly invisible and frictionless.</para>
+
+    <para>Conversely, the less time we spend thinking about the users of the
+    software and over-inflate the importance (therefore the expected
+    visibility) of our software to the user, the less enjoyable our software
+    becomes to use. The user has to stop and think. Can you conceive driving a
+    car you had to think twice before pressing the brake pedal because doing
+    so while your steering wheel is turned between 10 and 15 degrees would
+    instead result in the car accelerating? Why do the equivalent in web
+    software?! This will lead to a lot of friction with the users, a lot of
+    unhappy back and forth, a lot of changes, nobody will be happy — not the
+    users and not you the developer.</para>
+
+    <para>So, what do you reckon is most efficient? Writing the software the
+    “right” way from the very beginning, or eternally changing it without real
+    vision, purpose, or sense trying to play catchup with the users
+    complaints? The former is ostensibly faster than the latter, but is it
+    <emphasis>really</emphasis>?</para>
+
+    <para>Front-loading our time expenditure to non-code but
+    development-adjacent tasks which provide us with clarity on the purpose
+    and process of building software we end up spending less time to write
+    better software. Or, to put it more concisely, <emphasis
+    role="bold">clarity unlocks efficiency</emphasis>.</para>
+
+    <para>Print that phrase and tape it to the wall behind your monitor. Every
+    time you are about to moan about the “chores” you have to do instead of
+    writing code read it out loud.</para>
+
+    <bridgehead>Revisiting The Cathedral and The Bazaar</bridgehead>
+
+    <para>As promised, I am coming back to that paper from 1997 and its
+    follow-up book from 1999. While most of the points made in that paper and
+    subsequent book are useful and accurate, there are a few which have not
+    stood the test of time or at least have not been understood correctly. In
+    those 25 years personal computing has evolved and with it the target
+    audience of software and the way we write it. With the benefit of that
+    hindsight, let's revisit some of the points made.</para>
+
+    <blockquote>
+      <para>Every good work of software starts by scratching a developer's
+      personal itch.</para>
+    </blockquote>
+
+    <para>This is a fallacy, in that it assumes that the developer is the
+    ultimate user of the software. While the original
+    <emphasis>spark</emphasis> may come from a personal frustration, using it
+    as the compass for development is self-defeating. Find your users' itch
+    instead</para>
+
+    <blockquote>
+      <para>Plan to throw one [version] away; you will, anyhow</para>
+    </blockquote>
+
+    <para>This is nihilism. Do your homework, do your user research, write
+    specifications, test your preliminary designs. If you do things like that,
+    the right way, you will not have to throw away your first version.</para>
+
+    <blockquote>
+      <para>If you have the right attitude, interesting problems will find
+      you.</para>
+    </blockquote>
+
+    <para>The key here is the right attitude. If you sit there twiddling your
+    thumbs nothing interesting will ever happen. You need to actively solicit
+    the right feedback which will let you see the interesting problems to
+    solve.</para>
+
+    <blockquote>
+      <para>Treating your users as co-developers is your least-hassle route to
+      rapid code improvement and effective debugging.</para>
+    </blockquote>
+
+    <para>This is the one thing that has most drastically evolved in these 25
+    years. This is no longer the case. Big no!</para>
+
+    <para>Your users are NOT co-developers, or guinea pigs! Your users are
+    just that: your users. They want to <emphasis>use</emphasis> your
+    software. Do your research before writing code. It's okay to ask your
+    users for feedback before writing code as long as you're open to scrapping
+    your original idea if need be. It's not okay asking them after the fact,
+    seeking validation. And never, ever, tell a user “we are all overworked
+    volunteers here, why don't you fix it and send us a code patch” for the
+    same reason you wouldn't accept the chief mechanic of a car dealership
+    tell you “we are overworked employees here, why don't you buy some tools
+    and fix your car yourself?”</para>
+
+    <para>Don't ask your users to debug your software and submit code patches.
+    This is <emphasis>your</emphasis> job. Do ask them for access to their
+    installation if that's the only way you can realistically debug an issue
+    you cannot reproduce in any other way. You will find an unhappy path you
+    were not aware of, letting you improve your software.</para>
+
+    <blockquote>
+      <para>Given a large enough beta-tester and co-developer base, almost
+      every problem will be characterized quickly and the fix obvious to
+      someone.</para>
+    </blockquote>
+
+    <para>Yeah, um, this concept died in the late 2000s / early 2010s, after
+    the umpteenth time a user tried to report a bug in good faith and got
+    ignored, ridiculed, told to pound sand because “we are all volunteers
+    here”, or was asked to submit a PR with a code fix. As far as the user is
+    concerned, reporting bugs is counter-productive.</para>
+
+    <para>You can expect some issues to be reported, mostly by people who are
+    developers or adjacent to development, e.g. power users and site
+    integrators. Be ready for your first stable after a beta to come back with
+    a bunch of bugs people had spotted in the beta but never reported.</para>
+
+    <blockquote>
+      <para>The next best thing to having good ideas is recognizing good ideas
+      from your users. Sometimes the latter is better.</para>
+    </blockquote>
+
+    <para>Mostly right, as long as you understand what we explained earlier:
+    users will not articulate their ideas in a way which makes sense to
+    developers. Always ask them for their use case, no matter how dumb their
+    suggestions sounds. That's how you will get to their ideas and figure out
+    which ones are good.</para>
+
+    <blockquote>
+      <para>Perfection (in design) is achieved not when there is nothing more
+      to add, but rather when there is nothing more to take away.</para>
+    </blockquote>
+
+    <para>I hate aphorisms like that because they can be misinterpreted in
+    rather combative and counter-productive ways.</para>
+
+    <para>Perfection lies squarely between the barren nothingness of stripping
+    your software down to its bare essentials which makes it impossible to use
+    in any meaningful way, and the proliferation of a myriad options which
+    makes it impractical to use in any meaningful way. Knowing where
+    perfection lies requires user research.</para>
+
+    <blockquote>
+      <para>To solve an interesting problem, start by finding a problem that
+      is interesting to you.</para>
+    </blockquote>
+
+    <para>This is rooted on the false concept that the developer is the
+    ultimate user of the software being written. Do not prioritise the
+    problems which are interesting to you. Prioritise the problems which are
+    interesting <emphasis>to your users</emphasis>.</para>
+
+    <blockquote>
+      <para>Provided the development coordinator has a communications medium
+      at least as good as the Internet, and knows how to lead without
+      coercion, many heads are inevitably better than one.</para>
+    </blockquote>
+
+    <para>The Internet is the most convenient, not the most efficient, medium
+    of communication. Text-based communication lacks the nuance and social
+    cues of personal interaction. You need face–to–face time with your team
+    members, even if just over video conferencing. Ideally, you need
+    participation in in-person sprints and events. I have solved far harder
+    problems in a 30' Skype call or a 10' in-person chat than I have solved
+    with 30 hours of going back and forth over GitHub issues and instant
+    messaging.</para>
+
+    <para>“Leading without coercion” is often misinterpreted as “I can't tell
+    people what to do and not to do because they are volunteers”, i.e. not
+    leading at all. A development coordinator's job is to provide a clear
+    vision backed by UX research, guide volunteer contributors to do the work
+    necessary to realising it and telling “no” to those who are getting
+    sidetracked. This is not coercion; the social contract here is that the
+    coordinator is willing to <emphasis>lead</emphasis> and the contributors
+    are <emphasis>willing to be led</emphasis>. Those who are unwilling to
+    adhere to this social contract need to leave or made to leave. Anything
+    else leads to toxicity, disengagement, and stagnation.</para>
+  </section>
+
+  <section xml:id="advice-write-code-dont-suck">
+    <title>Write code which doesn't suck</title>
+
+    <para>Having audited several dozens of sites with hundreds of extensions I
+    have seen the same old problems appearing in the code of extension after
+    extension. Not only they are security incidents waiting to happen, they
+    also make migrating your code to newer Joomla versions harder and break
+    your extension in said Joomla versions.</para>
+
+    <section xml:id="advice-dont-suck-hardcoded-queries">
+      <title>DON'T: Hard-coded database queries</title>
+
+      <para>I have seen bad code like this:</para>
+
+      <programlisting language="php">$query = 'SELECT `something` FROM `#__whatever` WHERE `id` = ' . $db-&gt;quote($id);</programlisting>
+
+      <para>It's even worse with there is no <code>$db-&gt;quote</code> at all
+      because that ensures it's a SQL injection waiting to happen.</para>
+
+      <para>Having a hard-coded database query is really bad because you are
+      making an assumption the site runs under MySQL and that the escape
+      character is the backtick. This is not a guarantee. Moreover, are you
+      absolutely sure that you have not missed an escape in a long SQL query?
+      Would you bet your and your clients' sites' security, as well as the
+      possibility of massive fines due to GDPR if you have failed miserably,
+      on your ability to not miss anything?</para>
+
+      <para>Let's get real. Joomla has offered a database query builders since
+      version 1.6 (released in 2010) and improved it in Joomla 4.</para>
+
+      <para>Here's the simplest way to write the above code:</para>
+
+      <programlisting language="php">$query = $db-&gt;getQuery(true)
                 -&gt;select($db-&gt;quoteName('something'))
                 -&gt;from($db-&gt;quoteName('#__whatever'))
                 -&gt;where($db-&gt;quoteName('id') . ' = ' . $db-&gt;quote($id));</programlisting>
 
-            <para>This is still not a very good approach because <code>$id</code>
-                may look like a numeric string but actually be a hidden SQL Injection.
-                Therefore a better way to write this query is using prepared
-                statements which send the raw value of $id to the server and tell it
-                what data type it is (boolean, null, blob, string or integer). The
-                value is not interpolated into the query itself, making it perfectly
-                safe against SQL injection attacks.</para>
+      <para>This is still not a very good approach because <code>$id</code>
+      may look like a numeric string but actually be a hidden SQL Injection.
+      Therefore a better way to write this query is using prepared statements
+      which send the raw value of $id to the server and tell it what data type
+      it is (boolean, null, blob, string or integer). The value is not
+      interpolated into the query itself, making it perfectly safe against SQL
+      injection attacks.</para>
 
-            <programlisting language="php">$query = $db-&gt;getQuery(true)
+      <programlisting language="php">$query = $db-&gt;getQuery(true)
                 -&gt;select($db-&gt;quoteName('something'))
                 -&gt;from($db-&gt;quoteName('#__whatever'))
                 -&gt;where($db-&gt;quoteName('id') . ' = :id')
                 -&gt;bind(':id', $id, \Joomla\Database\ParameterType::INTEGER);</programlisting>
 
-            <note>
-                <para>Prepared statements are only meant to be used when you have
-                    data coming from a variable. If you have hard-coded data you can
-                    still interpolate them after passing them through
-                    <code>$db-&gt;quote()</code>.</para>
+      <note>
+        <para>Prepared statements are only meant to be used when you have data
+        coming from a variable. If you have hard-coded data you can still
+        interpolate them after passing them through
+        <code>$db-&gt;quote()</code>.</para>
 
-                <para>Also note that any data —even data coming from another query
-                    which ostensibly only includes “safe”, hard-coded data you have
-                    inserted yourself in the database— MUST go through prepared
-                    statements. Anything which is not hard-coded in the code currently
-                    executing must be assumed to be potentially dangerous. Even data you
-                    inserted in the database and the user cannot modify through the
-                    interface <emphasis>can</emphasis> be modified by a malicious actor,
-                    e.g. using a SQL injection vulnerability in another
-                    extension.</para>
+        <para>Also note that any data —even data coming from another query
+        which ostensibly only includes “safe”, hard-coded data you have
+        inserted yourself in the database— MUST go through prepared
+        statements. Anything which is not hard-coded in the code currently
+        executing must be assumed to be potentially dangerous. Even data you
+        inserted in the database and the user cannot modify through the
+        interface <emphasis>can</emphasis> be modified by a malicious actor,
+        e.g. using a SQL injection vulnerability in another extension.</para>
 
-                <para><emphasis role="bold">TRUST NO-ONE, NOT EVEN
-                    YOURSELF.</emphasis></para>
+        <para><emphasis role="bold">TRUST NO-ONE, NOT EVEN
+        YOURSELF.</emphasis></para>
 
-                <para>That's the motto of the security conscious developer.</para>
-            </note>
-        </section>
+        <para>That's the motto of the security conscious developer.</para>
+      </note>
+    </section>
 
-        <section xml:id="advice-dont-suck-superglobals">
-            <title>DON'T: Using superglobalg ($_REQUEST, $_SERVER, $_GET, $_POST
-                etc)</title>
+    <section xml:id="advice-dont-suck-superglobals">
+      <title>DON'T: Using superglobals ($_REQUEST, $_SERVER, $_GET, $_POST
+      etc)</title>
 
-            <para>Another very common problem I have seen in Joomla extensions is
-                developers doing something like this:</para>
+      <para>Another very common problem I have seen in Joomla extensions is
+      developers doing something like this:</para>
 
-            <programlisting language="php">$something = $_REQUEST['something'];
+      <programlisting language="php">$something = $_REQUEST['something'];
                 // or, worse, this
                 $whatever = $_SERVER['WHATEVER'];</programlisting>
 
-            <para><emphasis role="bold">DO NOT DO THAT. THIS IS A SECURITY
-                ISSUE.</emphasis> There are very few cases where an extension needs
-                access to the raw PHP superglobals, namely if you are writing a
-                security extension and you need to check whether there's potentially
-                malicious data in the request before Joomla sanitizes it. If you are
-                one of the five or so people in the Joomla world writing this kind of
-                software you are unlikely to be reading this. If you are about to say
-                that you have a different, legitimate use case: you do NOT; you just
-                don't know how to use Joomla's input class. Sorry.</para>
+      <para><emphasis role="bold">DO NOT DO THAT. THIS IS A SECURITY
+      ISSUE.</emphasis> There are very few cases where an extension needs
+      access to the raw PHP superglobals, namely if you are writing a security
+      extension and you need to check whether there's potentially malicious
+      data in the request before Joomla sanitizes it. If you are one of the
+      five or so people in the Joomla world writing this kind of software you
+      are unlikely to be reading this. If you are about to say that you have a
+      different, legitimate use case: you do NOT; you just don't know how to
+      use Joomla's input class. Sorry.</para>
 
-            <para>Joomla already provides an Input class which can return the
-                <emphasis>filtered and sanitised</emphasis> values of a request or
-                environment parameter. Moreover, it allows other parts of your code
-                and plugins to modify or override the input parameters.</para>
+      <para>Joomla already provides an Input class which can return the
+      <emphasis>filtered and sanitised</emphasis> values of a request or
+      environment parameter. Moreover, it allows other parts of your code and
+      plugins to modify or override the input parameters.</para>
 
-            <para>The correct way to get something would be something like
-                this:</para>
+      <para>The correct way to get something would be something like
+      this:</para>
 
-            <programlisting language="php">$something = \Joomla\CMS\Factory::getApplication()-&gt;input-&gt;request-&gt;getCmd('something', 'default');</programlisting>
+      <programlisting language="php">$something = \Joomla\CMS\Factory::getApplication()-&gt;input-&gt;request-&gt;getCmd('something', 'default');</programlisting>
 
-            <para>If the object you are working with has its own input property
-                use that instead of the global input object shown above. Dispatchers
-                and Controllers do have their own input object which can of course be
-                overridden during instantiation.</para>
+      <para>If the object you are working with has its own input property use
+      that instead of the global input object shown above. Dispatchers and
+      Controllers do have their own input object which can of course be
+      overridden during instantiation.</para>
 
-            <para>If the object you are working with has its own property which
-                gives you access to the application use that instead of going through
-                the CMS Factory. This makes your code reusable and testable across
-                applications.</para>
+      <para>If the object you are working with has its own property which
+      gives you access to the application use that instead of going through
+      the CMS Factory. This makes your code reusable and testable across
+      applications.</para>
 
-            <para>Do NOT get input variables from your Model or View classes. Your
-                Controller should be the only point where you use the input object to
-                retrieve input parameters. You can pass these values to your model by
-                setting its <emphasis>state</emphasis>. Likewise, your view should
-                only ever read the model's state, not the input directly. This makes
-                your code reusable and testable. It also lets you make changes in the
-                naming of your input parameters only making a change in your
-                controller (and possibly your dispatcher) instead of trying to hunt
-                down random uses spread throughout your code. It also makes you think
-                about the data flow in your application which makes it infinitely
-                easier to debug it.</para>
+      <para>Do NOT get input variables from your Model or View classes. Your
+      Controller should be the only point where you use the input object to
+      retrieve input parameters. You can pass these values to your model by
+      setting its <emphasis>state</emphasis>. Likewise, your view should only
+      ever read the model's state, not the input directly. This makes your
+      code reusable and testable. It also lets you make changes in the naming
+      of your input parameters only making a change in your controller (and
+      possibly your dispatcher) instead of trying to hunt down random uses
+      spread throughout your code. It also makes you think about the data flow
+      in your application which makes it infinitely easier to debug it.</para>
 
-            <para>You should not use the entire request superglobal (e.g.
-                <code>$this-&gt;input-&gt;getCmd('something')</code> or
-                <code>$this-&gt;input-&gt;request-&gt;getCmd('something')</code>) if
-                you know that a specific piece of data can only come as GET or POST
-                data. Instead, be specific, e.g.
-                <code>$this-&gt;input-&gt;get-&gt;getCmd('something')</code> for GET
-                data and <code>$this-&gt;input-&gt;post-&gt;getCmd('something')</code>
-                for POST data. This prevents <emphasis>input shading</emphasis>. If
-                the same input is present in $_GET, $_POST, $_ENV, $_COOKIE and
-                $_SERVER you will only get one value in the request. Which one? It
-                depends on the PHP configuration (<code>request_order</code> and
-                <code>variables_order</code> configuration keys). While on
-                <emphasis>most</emphasis> servers it's GP (Get and Post, i.e. POST
-                data overrides GET data) it could actually be anything with
-                unpredictable consequences for your extension. For example, some
-                servers may stupidly include cookies in request_order, thereby
-                allowing a hacker to set a cookie on a victim's browser to make your
-                extension do something other than the user's reasonable expectation,
-                e.g. delete or modify a different record than what they were trying to
-                delete / edit.</para>
+      <para>You should not use the entire request superglobal (e.g.
+      <code>$this-&gt;input-&gt;getCmd('something')</code> or
+      <code>$this-&gt;input-&gt;request-&gt;getCmd('something')</code>) if you
+      know that a specific piece of data can only come as GET or POST data.
+      Instead, be specific, e.g.
+      <code>$this-&gt;input-&gt;get-&gt;getCmd('something')</code> for GET
+      data and <code>$this-&gt;input-&gt;post-&gt;getCmd('something')</code>
+      for POST data. This prevents <emphasis>input shading</emphasis>. If the
+      same input is present in $_GET, $_POST, $_ENV, $_COOKIE and $_SERVER you
+      will only get one value in the request. Which one? It depends on the PHP
+      configuration (<code>request_order</code> and
+      <code>variables_order</code> configuration keys). While on
+      <emphasis>most</emphasis> servers it's GP (Get and Post, i.e. POST data
+      overrides GET data) it could actually be anything with unpredictable
+      consequences for your extension. For example, some servers may stupidly
+      include cookies in request_order, thereby allowing a hacker to set a
+      cookie on a victim's browser to make your extension do something other
+      than the user's reasonable expectation, e.g. delete or modify a
+      different record than what they were trying to delete / edit.</para>
 
-            <para>Do not assume that the data you get from the input object is of
-                a specific scalar type. For example,
-                <code>$this-&gt;input-&gt;getInt('something')</code> may return an
-                integer, null (the default value) or <emphasis>an array of
-                    integers</emphasis>. The latter is something that you are unlikely to
-                have come across but that's the way the <code>get()</code> method of
-                Joomla's input object works. Always check the type of the data you
-                receive, always assume that there is a hacker trying to inject invalid
-                data trying to trip your code up, always assume that any kind of
-                filtering or sanitization may fail to work the way you assume it
-                works.</para>
+      <para>Do not assume that the data you get from the input object is of a
+      specific scalar type. For example,
+      <code>$this-&gt;input-&gt;getInt('something')</code> may return an
+      integer, null (the default value) or <emphasis>an array of
+      integers</emphasis>. The latter is something that you are unlikely to
+      have come across but that's the way the <code>get()</code> method of
+      Joomla's input object works. Always check the type of the data you
+      receive, always assume that there is a hacker trying to inject invalid
+      data trying to trip your code up, always assume that any kind of
+      filtering or sanitization may fail to work the way you assume it
+      works.</para>
 
-            <para>If you want to access the $_SERVER and $_ENV superglobals;
-                don't. Instead go through <code>$this-&gt;input-&gt;server</code> and
-                <code>$this-&gt;input-&gt;env</code>. For example, if I want to get
-                the contents of the HTTP header X-Foo-Bar I should do
-                <code>$this-&gt;input-&gt;server-&gt;getString('HTTP_X_FOO_BAR');</code>.</para>
+      <para>If you want to access the $_SERVER and $_ENV superglobals; don't.
+      Instead go through <code>$this-&gt;input-&gt;server</code> and
+      <code>$this-&gt;input-&gt;env</code>. For example, if I want to get the
+      contents of the HTTP header X-Foo-Bar I should do
+      <code>$this-&gt;input-&gt;server-&gt;getString('HTTP_X_FOO_BAR');</code>.</para>
 
-            <para>Remember that Joomla can and will apply its text filters when
-                you use <code>getString</code>. If you want to get the raw data use
-                <methodname>getRaw</methodname> or <methodname>getArray</methodname> —
-                neither method applies any filtering.</para>
+      <para>Remember that Joomla can and will apply its text filters when you
+      use <code>getString</code>. If you want to get the raw data use
+      <methodname>getRaw</methodname> or <methodname>getArray</methodname> —
+      neither method applies any filtering.</para>
 
-            <para>Even though you can access the $_FILES superglobal with the
-                input object — <emphasis role="bold">DO NOT DO THAT</emphasis>! You
-                should never handle file uploads directly in your code. Always go
-                through Joomla's
-                <methodname>\Joomla\CMS\Filesystem\File::upload()</methodname> method.
-                Do remember that, by default, it will try to prevent unsafe files from
-                being uploaded. If you have a VERY good reason to allow “unsafe” files
-                (e.g. you expect that a ZIP file containing PHP files will be used
-                with your extension) and have taken responsible measures to prevent
-                security issues you can of course set its <code>$allowUnsafe</code>
-                parameter to <code>true</code>. If you need your extension to allow
-                uploading of files with extensions or MIME types which are not media
-                you can of course use custom file upload configuration in your own
-                extension. This means that the excuse you may have had for using
-                $_FILES directly is completely invalid so please don't let me see you
-                ever accessing superglobals again.</para>
-        </section>
+      <para>Even though you can access the $_FILES superglobal with the input
+      object — <emphasis role="bold">DO NOT DO THAT</emphasis>! You should
+      never handle file uploads directly in your code. Always go through
+      Joomla's <methodname>\Joomla\CMS\Filesystem\File::upload()</methodname>
+      method. Do remember that, by default, it will try to prevent unsafe
+      files from being uploaded. If you have a VERY good reason to allow
+      “unsafe” files (e.g. you expect that a ZIP file containing PHP files
+      will be used with your extension) and have taken responsible measures to
+      prevent security issues you can of course set its
+      <code>$allowUnsafe</code> parameter to <code>true</code>. If you need
+      your extension to allow uploading of files with extensions or MIME types
+      which are not media you can of course use custom file upload
+      configuration in your own extension. This means that the excuse you may
+      have had for using $_FILES directly is completely invalid so please
+      don't let me see you ever accessing superglobals again.</para>
+    </section>
 
-        <section xml:id="advice-dont-suck-remote-addr">
-            <title>DON'T: Using REMOTE_ADDR to get the user's IP</title>
+    <section xml:id="advice-dont-suck-remote-addr">
+      <title>DON'T: Using REMOTE_ADDR to get the user's IP</title>
 
-            <para>It is very common for extensions to need access to the user's IP
-                address. I see extensions doing silly things like this:</para>
+      <para>It is very common for extensions to need access to the user's IP
+      address. I see extensions doing silly things like this:</para>
 
-            <programlisting language="php">$ip = $_SERVER['REMOTE_ADDR'];
+      <programlisting language="php">$ip = $_SERVER['REMOTE_ADDR'];
                 $ip = $this-&gt;input-&gt;server-&gt;get('REMOTE_ADDR');</programlisting>
 
-            <para><emphasis role="bold">DO NOT DO THAT; THIS IS WRONG ON MANY
-                LEVELS!</emphasis></para>
+      <para><emphasis role="bold">DO NOT DO THAT; THIS IS WRONG ON MANY
+      LEVELS!</emphasis></para>
 
-            <para>The first line tries to access the $_SERVER superglobal which,
-                as mentioned in the previous section, is a security issue waiting to
-                happen.</para>
+      <para>The first line tries to access the $_SERVER superglobal which, as
+      mentioned in the previous section, is a security issue waiting to
+      happen.</para>
 
-            <para>Both of these lines make a wrong assumption: that the
-                REMOTE_ADDR key of the server superglobal array will contain the
-                user's IP address. This is not true if the server is behind a load
-                balancer, CDN, firewall or any other kind of non-transparent proxy. In
-                these cases a different HTTP header —typically X-Forwarded-For— may be
-                used to convey the forwarding chain of IP addresses. However, you
-                should NOT attempt to read this header yourself for two reasons. First
-                of all, if the site is not behind a non-transparent proxy a malicious
-                actor can send a forged X-Forwarded-For header to trick your extension
-                into believing the request came from a different IP address than the
-                one it actually originates. Second, this header may contain more than
-                one IP address in a comma-separated list. Validating, sanitizing and
-                parsing that list is tricky and may lead to some very bad times and
-                security issues.</para>
+      <para>Both of these lines make a wrong assumption: that the REMOTE_ADDR
+      key of the server superglobal array will contain the user's IP address.
+      This is not true if the server is behind a load balancer, CDN, firewall
+      or any other kind of non-transparent proxy. In these cases a different
+      HTTP header —typically X-Forwarded-For— may be used to convey the
+      forwarding chain of IP addresses. However, you should NOT attempt to
+      read this header yourself for two reasons. First of all, if the site is
+      not behind a non-transparent proxy a malicious actor can send a forged
+      X-Forwarded-For header to trick your extension into believing the
+      request came from a different IP address than the one it actually
+      originates. Second, this header may contain more than one IP address in
+      a comma-separated list. Validating, sanitizing and parsing that list is
+      tricky and may lead to some very bad times and security issues.</para>
 
-            <para>Joomla 3.10 and later (including all 4.x releases and beyond)
-                include a fork of my IPHelper class which deals with all of these
-                details automatically. They also expose user-facing options in the
-                Global Configuration so that the site owner can inform Joomla whether
-                their site is behind a non-transparent proxy server.</para>
+      <para>Joomla 3.10 and later (including all 4.x releases and beyond)
+      include a fork of my IPHelper class which deals with all of these
+      details automatically. They also expose user-facing options in the
+      Global Configuration so that the site owner can inform Joomla whether
+      their site is behind a non-transparent proxy server.</para>
 
-            <para>You can get the real IP address of the user with this:</para>
+      <para>You can get the real IP address of the user with this:</para>
 
-            <programlisting language="php">$ip = \Joomla\Utilities\IpHelper::getIp();</programlisting>
+      <programlisting language="php">$ip = \Joomla\Utilities\IpHelper::getIp();</programlisting>
 
-            <para>Even better, going through the IpHelper makes your code
-                <emphasis role="bold">testable</emphasis>. Your unit tests can simply
-                call:</para>
+      <para>Even better, going through the IpHelper makes your code <emphasis
+      role="bold">testable</emphasis>. Your unit tests can simply call:</para>
 
-            <programlisting language="php">\Joomla\Utilities\IpHelper::setIp('1.2.3.4');</programlisting>
+      <programlisting language="php">\Joomla\Utilities\IpHelper::setIp('1.2.3.4');</programlisting>
 
-            <para>to set a fake IP address of your choice (IPv4 or IPv6).</para>
+      <para>to set a fake IP address of your choice (IPv4 or IPv6).</para>
 
-            <para>Finally, IpHelper has two more handy methods:
-                <methodname>isIPv6</methodname> which tells you if you are dealing
-                with an IPv6 address and <methodname>IPinList</methodname> which lets
-                you figure out if an IP address is contained in an array which
-                consists of any combination of IPv4/IPv6 addresses, IPv4 ranges (e.g.
-                1.2.3.4-1.2.3.255), IPv4/IPv6 subnets in CIDR notation (e.g.
-                1.2.3.4/24) or IPv4 subnets in IP/Netmask notation (e.g.
-                192.168.1.0/255.255.255.0). Since many use cases for getting the
-                user's IP address ultimately come down to checking if it belongs in a
-                range of IP addresses or a list of allowed/blocked IP addresses you'll
-                find the latter method extremely handy. I went through the pain of
-                figuring out IP address maths and Joomla included my work in the core
-                so you don't have to deal with it yourself!</para>
-        </section>
+      <para>Finally, IpHelper has two more handy methods:
+      <methodname>isIPv6</methodname> which tells you if you are dealing with
+      an IPv6 address and <methodname>IPinList</methodname> which lets you
+      figure out if an IP address is contained in an array which consists of
+      any combination of IPv4/IPv6 addresses, IPv4 ranges (e.g.
+      1.2.3.4-1.2.3.255), IPv4/IPv6 subnets in CIDR notation (e.g. 1.2.3.4/24)
+      or IPv4 subnets in IP/Netmask notation (e.g. 192.168.1.0/255.255.255.0).
+      Since many use cases for getting the user's IP address ultimately come
+      down to checking if it belongs in a range of IP addresses or a list of
+      allowed/blocked IP addresses you'll find the latter method extremely
+      handy. I went through the pain of figuring out IP address maths and
+      Joomla included my work in the core so you don't have to deal with it
+      yourself!</para>
+    </section>
 
-        <section xml:id="advice-dont-suck-duplicate-libraries">
-            <title>DON'T: Include duplicate copies of libraries shipped with
-                Joomla itself</title>
+    <section xml:id="advice-dont-suck-duplicate-libraries">
+      <title>DON'T: Include duplicate copies of libraries shipped with Joomla
+      itself</title>
 
-            <para>A few weeks ago I was troubleshooting a client's Joomla 3 site
-                and I noticed that there were six extensions which in total included
-                four copies of TCPDF, six copies of SimplePie and four copies of
-                PHPMailer. All these libraries are already shipped with Joomla
-                itself.</para>
+      <para>A few weeks ago I was troubleshooting a client's Joomla 3 site and
+      I noticed that there were six extensions which in total included four
+      copies of TCPDF, six copies of SimplePie and four copies of PHPMailer.
+      All these libraries are already shipped with Joomla itself.</para>
 
-            <para>Do NOT include copies of libraries already included in Joomla
-                with your software. If you absolutely have to —because you need a
-                newer version than what Joomla provides— <emphasis role="bold">DO NOT
-                    USE THE SAME NAMESPACE AND CLASS NAMES</emphasis>. It will break
-                Joomla or third party extensions when your code is loaded.</para>
+      <para>Do NOT include copies of libraries already included in Joomla with
+      your software. If you absolutely have to —because you need a newer
+      version than what Joomla provides— <emphasis role="bold">DO NOT USE THE
+      SAME NAMESPACE AND CLASS NAMES</emphasis>. It will break Joomla or third
+      party extensions when your code is loaded.</para>
 
-            <para>In fact, even if you are including third libraries which are not
-                included in Joomla you should be doing one of the following:</para>
+      <para>In fact, even if you are including third libraries which are not
+      included in Joomla you should be doing one of the following:</para>
 
-            <itemizedlist>
-                <listitem>
-                    <para>Do NOT load third party libraries except in a component's
-                        model which is never going to be used outside of your
-                        component.</para>
-                </listitem>
+      <itemizedlist>
+        <listitem>
+          <para>Do NOT load third party libraries except in a component's
+          model which is never going to be used outside of your
+          component.</para>
+        </listitem>
 
-                <listitem>
-                    <para>Change the namespace of your third party libraries using
-                        Rector.</para>
-                </listitem>
-            </itemizedlist>
+        <listitem>
+          <para>Change the namespace of your third party libraries using
+          Rector.</para>
+        </listitem>
+      </itemizedlist>
 
-            <para>The first method is not a fool-proof way to go about it. The
-                third party library you are using may be included in Joomla or a
-                different third party extension (worst case scenario: a system plugin
-                which always loads this library) therefore causing your own code to
-                break. This happened to me when I contributed the WebAuthn code to
-                Joomla 4, thereby breaking my Login with Apple plugin which was using
-                a newer version of one of the libraries used by the WebAuthn code.
-                Oops.</para>
+      <para>The first method is not a fool-proof way to go about it. The third
+      party library you are using may be included in Joomla or a different
+      third party extension (worst case scenario: a system plugin which always
+      loads this library) therefore causing your own code to break. This
+      happened to me when I contributed the WebAuthn code to Joomla 4, thereby
+      breaking my Login with Apple plugin which was using a newer version of
+      one of the libraries used by the WebAuthn code. Oops.</para>
 
-            <para>Changing the namespace of your dependencies with Rector is
-                fairly trivial and guarantees that any third party libraries you
-                include in your code will neither interfere with core or third party
-                code, nor will they be interfered with by core or third party code.
-                It's one more (small and simple) step building your extensions but it
-                can make a massively positive difference to your clients who construct
-                their sites out of prepackaged, mass-distributed code they can't (and
-                usually don't even know how to) modify.</para>
-        </section>
+      <para>Changing the namespace of your dependencies with Rector is fairly
+      trivial and guarantees that any third party libraries you include in
+      your code will neither interfere with core or third party code, nor will
+      they be interfered with by core or third party code. It's one more
+      (small and simple) step building your extensions but it can make a
+      massively positive difference to your clients who construct their sites
+      out of prepackaged, mass-distributed code they can't (and usually don't
+      even know how to) modify.</para>
+    </section>
 
-        <section xml:id="advice-dont-suck-evil-eval">
-            <title>DON'T: Using <code>eval()</code></title>
+    <section xml:id="advice-dont-suck-evil-eval">
+      <title>DON'T: Using <code>eval()</code></title>
 
-            <para>Let me start by saying that allowing users to enter arbitrary
-                PHP code which will be executed by the site is a <emphasis
-                        role="bold">VERY BAD IDEA</emphasis>. It is very easy for anyone with
-                minimal developer experience —or someone following a how-to hacking
-                guide— to take over a site. The following took me 5' to write and it's
-                a complete takeover of a site:</para>
+      <para>Let me start by saying that allowing users to enter arbitrary PHP
+      code which will be executed by the site is a <emphasis role="bold">VERY
+      BAD IDEA</emphasis>. It is very easy for anyone with minimal developer
+      experience —or someone following a how-to hacking guide— to take over a
+      site. The following took me 5' to write and it's a complete takeover of
+      a site:</para>
 
-            <caution>
-                <para><emphasis role="bold">DO NOT TRY THIS ON YOUR
-                    SITE!</emphasis></para>
+      <caution>
+        <para><emphasis role="bold">DO NOT TRY THIS ON YOUR
+        SITE!</emphasis></para>
 
-                <para>The following code deletes all Super Users and adds a new
-                    Super User. This is detrimental to your site. It's only meant to
-                    demonstrate how easily a site can be taken over if a developer
-                    allows arbitrary PHP execution.</para>
-            </caution>
+        <para>The following code deletes all Super Users and adds a new Super
+        User. This is detrimental to your site. It's only meant to demonstrate
+        how easily a site can be taken over if a developer allows arbitrary
+        PHP execution.</para>
+      </caution>
 
-            <programlisting language="php">function hackMePlenty()
+      <programlisting language="php">function hackMePlenty()
                 {
                 $user = \Joomla\CMS\Factory::getContainer()
                 -&gt;get(\Joomla\CMS\User\UserFactoryInterface::class)
@@ -857,238 +837,232 @@ in the section entitled "GNU Free Documentation License".
 
                 try { hackMePlenty(); } catch (\Throwable $e) { }</programlisting>
 
-            <para>For this reason, whenever I see an extension which deliberately
-                allows PHP code to be inserted and executed I am worried. If I see
-                this being allowed in an editor or other text entry field without
-                checking that the data comes from a Super User I am immediately
-                labelling the extension a massive security issue and the site
-                compromised unless proven differently.</para>
+      <para>For this reason, whenever I see an extension which deliberately
+      allows PHP code to be inserted and executed I am worried. If I see this
+      being allowed in an editor or other text entry field without checking
+      that the data comes from a Super User I am immediately labelling the
+      extension a massive security issue and the site compromised unless
+      proven differently.</para>
 
-            <para>As a developer you should NEVER, EVER have a feature which
-                allows direct PHP execution. This includes this happening
-                unintentionally by using the evil <code>eval()</code>. Also note that
-                most hosts disable <code>eval()</code> so idiot developers won't
-                create backdoors the size of Alaska on the sites hosted on that
-                host.</para>
+      <para>As a developer you should NEVER, EVER have a feature which allows
+      direct PHP execution. This includes this happening unintentionally by
+      using the evil <code>eval()</code>. Also note that most hosts disable
+      <code>eval()</code> so idiot developers won't create backdoors the size
+      of Alaska on the sites hosted on that host.</para>
 
-            <para>There are very few cases where you might want to evaluate
-                <emphasis>generated</emphasis> (as opposed to <emphasis>user
-                    defined</emphasis>) PHP code. For example, when I implemented a subset
-                of the Blade template language in FOF I was converting Blade files to
-                straight up PHP. Of course, I could not run the generated code through
-                <code>eval()</code>. The solution to that is to first try to create a
-                temporary file —either in Joomla's temporary directory or a cache
-                directory— and <code>include()</code> it. If the temporary directory
-                is unwriteable you can use
-                <code>class_exists(\Joomla\Filesystem\Buffer::class, true);</code>
-                which includes Joomla's buffer class. This registers the stream
-                handler <code>buffer://</code> which creates a filesystem in memory.
-                You can write to a file in it, e.g.
-                <code>file_put_contents('buffer://foobar.php', $theContents);</code>
-                and then include it like this
-                <code>include('buffer://foobar.php');</code>. The downside with the
-                buffer method is that on some hosts with hardened PHP runtimes you
-                cannot include executable files from stream wrappers which have not
-                been explicitly allowed by the server administrator. Hence the need to
-                go through the filesystem first.</para>
+      <para>There are very few cases where you might want to evaluate
+      <emphasis>generated</emphasis> (as opposed to <emphasis>user
+      defined</emphasis>) PHP code. For example, when I implemented a subset
+      of the Blade template language in FOF I was converting Blade files to
+      straight up PHP. Of course, I could not run the generated code through
+      <code>eval()</code>. The solution to that is to first try to create a
+      temporary file —either in Joomla's temporary directory or a cache
+      directory— and <code>include()</code> it. If the temporary directory is
+      unwriteable you can use
+      <code>class_exists(\Joomla\Filesystem\Buffer::class, true);</code> which
+      includes Joomla's buffer class. This registers the stream handler
+      <code>buffer://</code> which creates a filesystem in memory. You can
+      write to a file in it, e.g.
+      <code>file_put_contents('buffer://foobar.php', $theContents);</code> and
+      then include it like this <code>include('buffer://foobar.php');</code>.
+      The downside with the buffer method is that on some hosts with hardened
+      PHP runtimes you cannot include executable files from stream wrappers
+      which have not been explicitly allowed by the server administrator.
+      Hence the need to go through the filesystem first.</para>
 
-            <para>As I said, you should only ever evaluate PHP code in your
-                extensions if you have written it or if your own code has generated
-                it. <emphasis role="bold">DO NOT TRUST THE USER —NOT EVEN SUPER USERS—
-                    TO PROVIDE EXECUTABLE PHP CODE THEMSELVES; IT IS A MASSIVE SECURITY
-                    ISSUE</emphasis>. Do you hear that, form component developers? Your
-                extensions make it trivial to hack people's sites. Fix 'em!</para>
-        </section>
+      <para>As I said, you should only ever evaluate PHP code in your
+      extensions if you have written it or if your own code has generated it.
+      <emphasis role="bold">DO NOT TRUST THE USER —NOT EVEN SUPER USERS— TO
+      PROVIDE EXECUTABLE PHP CODE THEMSELVES; IT IS A MASSIVE SECURITY
+      ISSUE</emphasis>. Do you hear that, form component developers? Your
+      extensions make it trivial to hack people's sites. Fix 'em!</para>
     </section>
+  </section>
 
-    <section xml:id="advice-error-messages">
-        <title>The fine art of writing error messages</title>
+  <section xml:id="advice-error-messages">
+    <title>The fine art of writing error messages</title>
 
-        <para>Error messages are one of the most critical aspects of our
-            software, though it receives surprisingly little attention. Error
-            messages are displayed to our software's users when something bad
-            happens. Our users will be in a negative state of mind: confused,
-            afraid, angry, or a combination of the above. Our job as software
-            developers is to provide them with reassurance, and to help them
-            identify the issue and resolve it. To do that in an efficient manner
-            requires understanding our code, the user's state of mind and abilities,
-            and the use of language.</para>
+    <para>Error messages are one of the most critical aspects of our software,
+    though it receives surprisingly little attention. Error messages are
+    displayed to our software's users when something bad happens. Our users
+    will be in a negative state of mind: confused, afraid, angry, or a
+    combination of the above. Our job as software developers is to provide
+    them with reassurance, and to help them identify the issue and resolve it.
+    To do that in an efficient manner requires understanding our code, the
+    user's state of mind and abilities, and the use of language.</para>
 
-        <bridgehead>What is the context of your error message?</bridgehead>
+    <bridgehead>What is the context of your error message?</bridgehead>
 
-        <para>Let's consider a very simple situation which warrants an error
-            message: a form validation error in an e-commerce component. This could
-            happen in different context. The site owner may have forgotten to enter
-            the information required to integrate with the payment provider. A
-            backend user with data entry-only privileges may have forgotten to enter
-            the price information for a product variation, e.g. the price of
-            <emphasis>blue</emphasis> t-shirts. A frontend user (client) may have
-            forgotten to enter their street address.</para>
+    <para>Let's consider a very simple situation which warrants an error
+    message: a form validation error in an e-commerce component. This could
+    happen in different context. The site owner may have forgotten to enter
+    the information required to integrate with the payment provider. A backend
+    user with data entry-only privileges may have forgotten to enter the price
+    information for a product variation, e.g. the price of
+    <emphasis>blue</emphasis> t-shirts. A frontend user (client) may have
+    forgotten to enter their street address.</para>
 
-        <para>On the face of it, these are all the same thing: form validation
-            error. Let's just set up a few rules in the form and some checks in our
-            Table and throw an exception when something's wrong, Joomla will convey
-            that as error messages on the user interface and all is well,
-            right?</para>
+    <para>On the face of it, these are all the same thing: form validation
+    error. Let's just set up a few rules in the form and some checks in our
+    Table and throw an exception when something's wrong, Joomla will convey
+    that as error messages on the user interface and all is well,
+    right?</para>
 
-        <para><emphasis role="bold">WRONG!</emphasis></para>
+    <para><emphasis role="bold">WRONG!</emphasis></para>
 
-        <para>Our exception results to an error message which is very technical,
-            unhelpful and lacks any empathy. For example “You need to provide the
-            Stripe API key”. This is mostly okay in the first context of the site
-            owner. It is a bit jarring for the data entry person to tell them “Price
-            is required!”. Woah, there, mister! Is this an e-commerce extension for
-            a mass-distributed CMS or Checkpoint Charlie in the height of the Cold
-            War?! It is definitely not a good experience for our prospective client
-            to tell them “The Address is required”. We are putting them off and they
-            might abandon their cart to go to the competition.</para>
+    <para>Our exception results to an error message which is very technical,
+    unhelpful and lacks any empathy. For example “You need to provide the
+    Stripe API key”. This is mostly okay in the first context of the site
+    owner. It is a bit jarring for the data entry person to tell them “Price
+    is required!”. Woah, there, mister! Is this an e-commerce extension for a
+    mass-distributed CMS or Checkpoint Charlie in the height of the Cold War?!
+    It is definitely not a good experience for our prospective client to tell
+    them “The Address is required”. We are putting them off and they might
+    abandon their cart to go to the competition.</para>
 
-        <para>Do not always assume that you can convey the same message, the
-            same way, in every context. Think about the context and adjust your
-            messages accordingly. For example, in the case of conveying messages to
-            the end user (client) we may have to catch the internal exception and
-            “reshape” the error message. We could instead tell them “Your order
-            information is saved but your order is not submitted yet. Some
-            information we need to process it is missing. Please review the fields
-            marked with a red outline below. If the problem isn't solved after
-            editing your information and clicking on Purchase please contact
-            customer support.”.</para>
+    <para>Do not always assume that you can convey the same message, the same
+    way, in every context. Think about the context and adjust your messages
+    accordingly. For example, in the case of conveying messages to the end
+    user (client) we may have to catch the internal exception and “reshape”
+    the error message. We could instead tell them “Your order information is
+    saved but your order is not submitted yet. Some information we need to
+    process it is missing. Please review the fields marked with a red outline
+    below. If the problem isn't solved after editing your information and
+    clicking on Purchase please contact customer support.”.</para>
 
-        <bridgehead>What makes an error message good?</bridgehead>
+    <bridgehead>What makes an error message good?</bridgehead>
 
-        <para>An error message needs to be <emphasis
-                role="bold">reassuring</emphasis>. Remember that you are talking to a
-            human who expected something to happen and now they are met with a scary
-            message. Keep the tone serious, but not completely dry. If you know that
-            the application is in a state which is recoverable lead by reassuring
-            the user that this is the case. If it's not in a recoverable state but
-            there is a good chance that the problem can be rectified lead with the
-            fact that there is resolution in sight. If your application is in a dire
-            situation which cannot possibly be recovered from you should try to ease
-            the user into that fact, like a doctor giving someone the bad news that
-            they have 3 months to live.</para>
+    <para>An error message needs to be <emphasis
+    role="bold">reassuring</emphasis>. Remember that you are talking to a
+    human who expected something to happen and now they are met with a scary
+    message. Keep the tone serious, but not completely dry. If you know that
+    the application is in a state which is recoverable lead by reassuring the
+    user that this is the case. If it's not in a recoverable state but there
+    is a good chance that the problem can be rectified lead with the fact that
+    there is resolution in sight. If your application is in a dire situation
+    which cannot possibly be recovered from you should try to ease the user
+    into that fact, like a doctor giving someone the bad news that they have 3
+    months to live.</para>
 
-        <para>An error message must be <emphasis role="bold">factual</emphasis>:
-            it needs to say what happened and why it happened. An error message
-            “Something went wrong” is worse than no error message at all. Tell the
-            user what went wrong. Avoid using technical jargon unless the target
-            audience is most likely to be the site integrator and the technical
-            jargon is relevant to the resolution of the problem.</para>
+    <para>An error message must be <emphasis role="bold">factual</emphasis>:
+    it needs to say what happened and why it happened. An error message
+    “Something went wrong” is worse than no error message at all. Tell the
+    user what went wrong. Avoid using technical jargon unless the target
+    audience is most likely to be the site integrator and the technical jargon
+    is relevant to the resolution of the problem.</para>
 
-        <para>For example, if the problem is that there's been a cURL error
-            fetching data from a third party API processing payments the message to
-            show an end user would be “We could not connect to the third party
-            service which processes payments on our behalf”. Conversely, the message
-            to show to the site integrator for the same problem would be something
-            like “Timeout of 30 seconds exceeded contacting PayBuddy”.</para>
+    <para>For example, if the problem is that there's been a cURL error
+    fetching data from a third party API processing payments the message to
+    show an end user would be “We could not connect to the third party service
+    which processes payments on our behalf”. Conversely, the message to show
+    to the site integrator for the same problem would be something like
+    “Timeout of 30 seconds exceeded contacting PayBuddy”.</para>
 
-        <para>When you have to present ‘dumbed down’ error messages to the end
-            user it's very helpful logging the more technical details and provide
-            the end user with a unique identifier which allows the site integrator
-            to locate this particular error message in the log file so they can
-            provide assistance.</para>
+    <para>When you have to present ‘dumbed down’ error messages to the end
+    user it's very helpful logging the more technical details and provide the
+    end user with a unique identifier which allows the site integrator to
+    locate this particular error message in the log file so they can provide
+    assistance.</para>
 
-        <para>An error message must be <emphasis role="bold">helpful</emphasis>.
-            Telling someone what went wrong and possibly why is one thing. Helping
-            the resolve it is a completely different issue altogether. Tell your
-            user what they should be doing next. If the message targets end users
-            the resolution should be fairly short and simple to follow; remember
-            that the user is not in a good mental state right now. If the message
-            targets a site integrator it is best to link them to a documentation
-            page <emphasis>relevant to the issue at hand</emphasis> so they can read
-            more about what happened and how to troubleshoot it.</para>
+    <para>An error message must be <emphasis role="bold">helpful</emphasis>.
+    Telling someone what went wrong and possibly why is one thing. Helping the
+    resolve it is a completely different issue altogether. Tell your user what
+    they should be doing next. If the message targets end users the resolution
+    should be fairly short and simple to follow; remember that the user is not
+    in a good mental state right now. If the message targets a site integrator
+    it is best to link them to a documentation page <emphasis>relevant to the
+    issue at hand</emphasis> so they can read more about what happened and how
+    to troubleshoot it.</para>
 
-        <para>If there is a reasonable amount of use cases where the target
-            audience will not be able to address this issue by themselves try to
-            include a link to further steps, be it watching a video tutorial,
-            reading a documentation page, asking help on a forum, contacting their
-            host, or contacting the site owner / extension developer — again, you
-            need to choose the appropriate action based on the target
-            audience.</para>
+    <para>If there is a reasonable amount of use cases where the target
+    audience will not be able to address this issue by themselves try to
+    include a link to further steps, be it watching a video tutorial, reading
+    a documentation page, asking help on a forum, contacting their host, or
+    contacting the site owner / extension developer — again, you need to
+    choose the appropriate action based on the target audience.</para>
 
-        <para>If you provide a further action which requires the user to contact
-            another person make sure to do it in a way which will guide the user
-            into providing all the necessary information. If at all possible,
-            collect all the necessary information and transmit it with the user's
-            consent (think about how major Operating Systems and browsers implement
-            a “crash assistant”).</para>
+    <para>If you provide a further action which requires the user to contact
+    another person make sure to do it in a way which will guide the user into
+    providing all the necessary information. If at all possible, collect all
+    the necessary information and transmit it with the user's consent (think
+    about how major Operating Systems and browsers implement a “crash
+    assistant”).</para>
 
-        <para>Finally, keep the error messages <emphasis
-                role="bold">concise</emphasis> (short and to the point). Nobody will
-            read a novel-length error message, even if it is the most informative
-            and helpful resource in the Universe.</para>
+    <para>Finally, keep the error messages <emphasis
+    role="bold">concise</emphasis> (short and to the point). Nobody will read
+    a novel-length error message, even if it is the most informative and
+    helpful resource in the Universe.</para>
 
-        <para>These requirements are oftentimes at odds with each other. Finding
-            the appropriate error message requires understanding your target
-            audience and their use cases. This is not easy. Your understanding of
-            the target audience and their use cases will improve over time, and the
-            audience itself and their use cases will also evolve over time. Do not
-            be afraid to revise your error messages, the way you present them, and
-            your documentation on how to troubleshoot them.</para>
+    <para>These requirements are oftentimes at odds with each other. Finding
+    the appropriate error message requires understanding your target audience
+    and their use cases. This is not easy. Your understanding of the target
+    audience and their use cases will improve over time, and the audience
+    itself and their use cases will also evolve over time. Do not be afraid to
+    revise your error messages, the way you present them, and your
+    documentation on how to troubleshoot them.</para>
 
-        <para>A good way to approach error messages is to make them friendly,
-            short, informative, and when the resolution is more than ten words do
-            link to a longer documentation page which takes the user by the hand and
-            helps them resolve the issue. Yes, you will have the users who can't be
-            bothered to read the documentation (like death and taxes, they are
-            unavoidable), as well as the users who got lost reading it (approach it
-            as an opportunity to understand their challenges and improve your
-            documentation). In the end of the day you have helped far more users
-            figure out what to do without contacting you, and without feeling overly
-            frustrated, angry, or stupid. We don't hear about those users but if
-            they become the <emphasis>majority</emphasis> of our users then we can
-            say we are doing the right thing as developers.</para>
+    <para>A good way to approach error messages is to make them friendly,
+    short, informative, and when the resolution is more than ten words do link
+    to a longer documentation page which takes the user by the hand and helps
+    them resolve the issue. Yes, you will have the users who can't be bothered
+    to read the documentation (like death and taxes, they are unavoidable), as
+    well as the users who got lost reading it (approach it as an opportunity
+    to understand their challenges and improve your documentation). In the end
+    of the day you have helped far more users figure out what to do without
+    contacting you, and without feeling overly frustrated, angry, or stupid.
+    We don't hear about those users but if they become the
+    <emphasis>majority</emphasis> of our users then we can say we are doing
+    the right thing as developers.</para>
 
-        <para>If you want to see what good error messages are like, take a look
-            at Joomla Update's archive extraction step since Joomla 4.0.4. When
-            something fails it will tell you what failed, why it failed, the next
-            steps to follow and links to a documentation page with troubleshooting
-            information. Unfortunately, we could not link to specific
-            troubleshooting steps as the Wiki format is rather limited but
-            <emphasis>you</emphasis> can definitely do even better!</para>
-    </section>
+    <para>If you want to see what good error messages are like, take a look at
+    Joomla Update's archive extraction step since Joomla 4.0.4. When something
+    fails it will tell you what failed, why it failed, the next steps to
+    follow and links to a documentation page with troubleshooting information.
+    Unfortunately, we could not link to specific troubleshooting steps as the
+    Wiki format is rather limited but <emphasis>you</emphasis> can definitely
+    do even better!</para>
+  </section>
 
-    <section xml:id="advice-composer">
-        <title>Adding Composer dependencies</title>
+  <section xml:id="advice-composer">
+    <title>Adding Composer dependencies</title>
 
-        <para>In many cases you will need to use third party libraries. The most
-            common way to do that is through <link
-                    xlink:href="https://getcomposer.org">Composer</link>. I will assume that
-            you already know how to use Composer. If not, use your favourite search
-            engine to look for “Composer tutorial for beginners” to get you
-            started.</para>
+    <para>In many cases you will need to use third party libraries. The most
+    common way to do that is through <link
+    xlink:href="https://getcomposer.org">Composer</link>. I will assume that
+    you already know how to use Composer. If not, use your favourite search
+    engine to look for “Composer tutorial for beginners” to get you
+    started.</para>
 
-        <bridgehead>Joomla's Composer dependencies: can't touch
-            this!</bridgehead>
+    <bridgehead>Joomla's Composer dependencies: can't touch this!</bridgehead>
 
-        <para>Joomla itself uses Composer for some third party dependencies in
-            its core libraries and core components. You will find Joomla's Composer
-            dependencies in your site's <filename>libraries/vendor</filename>
-            folder. As you can see, even the Joomla Framework is pulled in as a
-            Composer dependency along with several third party libraries.</para>
+    <para>Joomla itself uses Composer for some third party dependencies in its
+    core libraries and core components. You will find Joomla's Composer
+    dependencies in your site's <filename>libraries/vendor</filename> folder.
+    As you can see, even the Joomla Framework is pulled in as a Composer
+    dependency along with several third party libraries.</para>
 
-        <caution>
-            <para><emphasis role="bold">You MUST NEVER remove, upgrade, downgrade,
-                modify, replace or otherwise interfere with the Composer dependencies
-                provided by Joomla itself</emphasis>. Doing so is considered a
-                <emphasis role="bold">core hack</emphasis> and will disqualify you
-                from receiving support by third party developers, as well as getting
-                your extensions unlisted from the Joomla Extensions Directory (JED).
-                You will also be breaking Joomla and third party software with
-                everything that entails to your reputation as a developer.</para>
-        </caution>
+    <caution>
+      <para><emphasis role="bold">You MUST NEVER remove, upgrade, downgrade,
+      modify, replace or otherwise interfere with the Composer dependencies
+      provided by Joomla itself</emphasis>. Doing so is considered a <emphasis
+      role="bold">core hack</emphasis> and will disqualify you from receiving
+      support by third party developers, as well as getting your extensions
+      unlisted from the Joomla Extensions Directory (JED). You will also be
+      breaking Joomla and third party software with everything that entails to
+      your reputation as a developer.</para>
+    </caution>
 
-        <bridgehead>Adding a composer.json to your extension</bridgehead>
+    <bridgehead>Adding a composer.json to your extension</bridgehead>
 
-        <para>The correct way to add Composer dependencies is to simply create a
-            <filename>composer.json</filename> file in your repository's root and
-            install your vendor folder alongside your extension's
-            <filename>src</filename> folder. You can see an example of that in
-            action <link xlink:href="https://github.com/akeeba/sociallogin">in
-                Akeeba SocialLogin's repository</link>. The relevant part of the file is
-            the following:</para>
+    <para>The correct way to add Composer dependencies is to simply create a
+    <filename>composer.json</filename> file in your repository's root and
+    install your vendor folder alongside your extension's
+    <filename>src</filename> folder. You can see an example of that in action
+    <link xlink:href="https://github.com/akeeba/sociallogin">in Akeeba
+    SocialLogin's repository</link>. The relevant part of the file is the
+    following:</para>
 
-        <programlisting language="json">{
+    <programlisting language="json">{
             "config": {
             "vendor-dir": "plugins/system/sociallogin/vendor"
             "platform": {
@@ -1097,60 +1071,59 @@ in the section entitled "GNU Free Documentation License".
             }
             }</programlisting>
 
-        <para>The <parameter>vendor-dir</parameter> parameter tells Composer
-            where to place the Composer vendor folder. As you can see, in this
-            collection of plugins we chose to put it in the system plugin, next to
-            its src directory
-            (<filename>plugins/system/sociallogin/src</filename>).</para>
+    <para>The <parameter>vendor-dir</parameter> parameter tells Composer where
+    to place the Composer vendor folder. As you can see, in this collection of
+    plugins we chose to put it in the system plugin, next to its src directory
+    (<filename>plugins/system/sociallogin/src</filename>).</para>
 
-        <para>The <parameter>platform</parameter> block is optional but you
-            SHOULD include it. It tells Composer to not look into the current PHP
-            version it is executing in but instead install extensions valid for a
-            specific PHP version. In this example it's for PHP 7.4.0. Set this to
-            the minimum PHP version you are targeting in your extension.</para>
+    <para>The <parameter>platform</parameter> block is optional but you SHOULD
+    include it. It tells Composer to not look into the current PHP version it
+    is executing in but instead install extensions valid for a specific PHP
+    version. In this example it's for PHP 7.4.0. Set this to the minimum PHP
+    version you are targeting in your extension.</para>
 
-        <tip>
-            <para>It is good practice to NOT include your
-                <filename>composer.json</filename> and
-                <filename>composer.lock</filename> files in the final distribution of
-                your files to the user. You do not want them to mess around with your
-                dependencies. Moreover, these files would be web accessible which
-                would let an attacker very easily enumerate your dependencies and find
-                old, vulnerable versions they can target in an attempt to attack the
-                site.</para>
+    <tip>
+      <para>It is good practice to NOT include your
+      <filename>composer.json</filename> and
+      <filename>composer.lock</filename> files in the final distribution of
+      your files to the user. You do not want them to mess around with your
+      dependencies. Moreover, these files would be web accessible which would
+      let an attacker very easily enumerate your dependencies and find old,
+      vulnerable versions they can target in an attempt to attack the
+      site.</para>
 
-            <para>You MUST commit your <filename>composer.json</filename> and
-                <filename>composer.lock</filename> files to your repository.</para>
+      <para>You MUST commit your <filename>composer.json</filename> and
+      <filename>composer.lock</filename> files to your repository.</para>
 
-            <para>You MUST NOT commit your <filename>vendor</filename> directory
-                to your repository.</para>
-        </tip>
+      <para>You MUST NOT commit your <filename>vendor</filename> directory to
+      your repository.</para>
+    </tip>
 
-        <bridgehead>Including Composer dependencies in your runtime
-            code</bridgehead>
+    <bridgehead>Including Composer dependencies in your runtime
+    code</bridgehead>
 
-        <para>Once you install your dependencies you just have a
-            <filename>vendor</filename> folder. Your dependencies are not loaded
-            automatically as it is. You will need to somehow include your
-            <filename>vendor/autoload.php</filename> file when your code executes.
-            The best place to do that is in your service provider.</para>
+    <para>Once you install your dependencies you just have a
+    <filename>vendor</filename> folder. Your dependencies are not loaded
+    automatically as it is. You will need to somehow include your
+    <filename>vendor/autoload.php</filename> file when your code executes. The
+    best place to do that is in your service provider.</para>
 
-        <note>
-            <para>The repository I am using as an example uses the latter option
-                but that's only because I know that the Composer dependencies will not
-                be used outside the context of my event handlers. If you have a
-                component which uses the Composer dependencies in its Models and you
-                reasonable expect said Models to be used outside the component itself
-                you definitely need to load your dependencies in the service locator.
-                Remember, the <emphasis>canonical</emphasis> way to get a Model object
-                for a component is to boot the component to get its MVCFactory which
-                means that the service provider file is included.</para>
-        </note>
+    <note>
+      <para>The repository I am using as an example uses the latter option but
+      that's only because I know that the Composer dependencies will not be
+      used outside the context of my event handlers. If you have a component
+      which uses the Composer dependencies in its Models and you reasonable
+      expect said Models to be used outside the component itself you
+      definitely need to load your dependencies in the service locator.
+      Remember, the <emphasis>canonical</emphasis> way to get a Model object
+      for a component is to boot the component to get its MVCFactory which
+      means that the service provider file is included.</para>
+    </note>
 
-        <para>Let's say that you have the following
-            <filename>services/provider.php</filename> file:</para>
+    <para>Let's say that you have the following
+    <filename>services/provider.php</filename> file:</para>
 
-        <programlisting language="php">defined('_JEXEC') || die;
+    <programlisting language="php">defined('_JEXEC') || die;
 
             use Joomla\CMS\Extension\PluginInterface;
             use Joomla\CMS\Plugin\PluginHelper;
@@ -1174,10 +1147,10 @@ in the section entitled "GNU Free Documentation License".
             }
             };</programlisting>
 
-        <para>You can load your Composer autoloader before returning the
-            anonymous class (see the part in bold type):</para>
+    <para>You can load your Composer autoloader before returning the anonymous
+    class (see the part in bold type):</para>
 
-        <programlisting language="php">defined('_JEXEC') || die;
+    <programlisting language="php">defined('_JEXEC') || die;
 
             use Joomla\CMS\Extension\PluginInterface;
             use Joomla\CMS\Plugin\PluginHelper;
@@ -1203,28 +1176,27 @@ in the section entitled "GNU Free Documentation License".
             }
             };</programlisting>
 
-        <para>There is a caveat, though. If someone tries to use one of your
-            classes outside your extension <emphasis>without</emphasis> booting your
-            extension first it will fail. Well, they should never do that. That's
-            not how Joomla 4 and beyond is meant to be used.</para>
+    <para>There is a caveat, though. If someone tries to use one of your
+    classes outside your extension <emphasis>without</emphasis> booting your
+    extension first it will fail. Well, they should never do that. That's not
+    how Joomla 4 and beyond is meant to be used.</para>
 
-        <bridgehead>Dealing with namespace clashes and older dependency versions
-            included with Joomla</bridgehead>
+    <bridgehead>Dealing with namespace clashes and older dependency versions
+    included with Joomla</bridgehead>
 
-        <para>There might be times where you have to deal with namespace
-            clashes. For example, you might be pulling in a dependency which is
-            already shipped as an older version in Joomla itself, a dependency which
-            depends on something else which already exists in Joomla itself as an
-            older version, or you might be pulling in a common dependency that other
-            extensions also pull in. Namespaces are global in PHP. You cannot have a
-            “private” container where you can override namespaced classes defined
-            elsewhere.</para>
+    <para>There might be times where you have to deal with namespace clashes.
+    For example, you might be pulling in a dependency which is already shipped
+    as an older version in Joomla itself, a dependency which depends on
+    something else which already exists in Joomla itself as an older version,
+    or you might be pulling in a common dependency that other extensions also
+    pull in. Namespaces are global in PHP. You cannot have a “private”
+    container where you can override namespaced classes defined
+    elsewhere.</para>
 
-        <para>First, let's get a simple example
-            <filename>composer.json</filename> which pulls in a dependency already
-            defined in Joomla:</para>
+    <para>First, let's get a simple example <filename>composer.json</filename>
+    which pulls in a dependency already defined in Joomla:</para>
 
-        <programlisting language="json">{
+    <programlisting language="json">{
             "name": "acme/example",
             "type": "project",
             "config": {
@@ -1238,66 +1210,64 @@ in the section entitled "GNU Free Documentation License".
             }
             }</programlisting>
 
-        <para>The <parameter>lcobucci/jwt</parameter> dependency already exists
-            in Joomla 4 but it's in version 3.x of that library. We want to use
-            version 4 of the library which is incompatible with version 3 but has
-            the same namespace, <classname>Lcobucci\JWT</classname>. Here's the
-            thing. If our dependency is loaded before Joomla's then Joomla's
-            WebAuthn system plugin which depends on it will break. If Joomla loads
-            its own dependency first then our extension breaks. This is an impasse,
-            isn't it?</para>
+    <para>The <parameter>lcobucci/jwt</parameter> dependency already exists in
+    Joomla 4 but it's in version 3.x of that library. We want to use version 4
+    of the library which is incompatible with version 3 but has the same
+    namespace, <classname>Lcobucci\JWT</classname>. Here's the thing. If our
+    dependency is loaded before Joomla's then Joomla's WebAuthn system plugin
+    which depends on it will break. If Joomla loads its own dependency first
+    then our extension breaks. This is an impasse, isn't it?</para>
 
-        <para>The solution to that is <emphasis role="bold">changing the
-            namespaces of your dependencies, adding a prefix with <link
-                    xlink:href="https://github.com/humbug/php-scoper">PHP -Scoper</link>
-        </emphasis>. But first, a few things to make sure everything will
-            work.</para>
+    <para>The solution to that is <emphasis role="bold">changing the
+    namespaces of your dependencies, adding a prefix with <link
+    xlink:href="https://github.com/humbug/php-scoper">PHP -Scoper</link>
+    </emphasis>. But first, a few things to make sure everything will
+    work.</para>
 
-        <para>First, we need to install PHP-Scoper as a Composer global
-            dependency. From the command line:</para>
+    <para>First, we need to install PHP-Scoper as a Composer global
+    dependency. From the command line:</para>
 
-        <screen>$ composer global require humbug/php-scoper</screen>
+    <screen>$ composer global require humbug/php-scoper</screen>
 
-        <para>Your global <filename>vendor/bin</filename> directory is in your
-            path. In most cases you have to make sure that your shell resource file
-            (e.g. <filename>~/.bashrc</filename> or <filename>~/.zshrc</filename>)
-            has a line like this:</para>
+    <para>Your global <filename>vendor/bin</filename> directory is in your
+    path. In most cases you have to make sure that your shell resource file
+    (e.g. <filename>~/.bashrc</filename> or <filename>~/.zshrc</filename>) has
+    a line like this:</para>
 
-        <programlisting language="bash">export PATH="~/.composer/vendor/bin:$PATH"</programlisting>
+    <programlisting language="bash">export PATH="~/.composer/vendor/bin:$PATH"</programlisting>
 
-        <para>On Windows, if you have installed Composer using its installer
-            then this path is already added to your path. If not, you will have to
-            add it yourself. If you had to add it to your path, close and reopen
-            your terminal emulator or simply log out and log back in. Then we can
-            check if PHP-Scoper is globally available from the command line</para>
+    <para>On Windows, if you have installed Composer using its installer then
+    this path is already added to your path. If not, you will have to add it
+    yourself. If you had to add it to your path, close and reopen your
+    terminal emulator or simply log out and log back in. Then we can check if
+    PHP-Scoper is globally available from the command line</para>
 
-        <screen>$ php-scoper -V
+    <screen>$ php-scoper -V
             PhpScoper version 0.17.6@b528b87</screen>
 
-        <para>If you instead get an error that the command is not found please
-            make sure that you have PHP installed somewhere it can be found by your
-            shell and that you've added Composer's global
-            <filename>vendor/bin</filename> directory in your path.</para>
+    <para>If you instead get an error that the command is not found please
+    make sure that you have PHP installed somewhere it can be found by your
+    shell and that you've added Composer's global
+    <filename>vendor/bin</filename> directory in your path.</para>
 
-        <para>The next step is understanding how PHP-Scoper works. It processes
-            a source directory and adds a namespace prefix (“scope”) to
-            <emphasis>all classes</emphasis> within that directory. However, it does
-            NOT overwrite the files in-place; it outputs them to a build
-            directory.</para>
+    <para>The next step is understanding how PHP-Scoper works. It processes a
+    source directory and adds a namespace prefix (“scope”) to <emphasis>all
+    classes</emphasis> within that directory. However, it does NOT overwrite
+    the files in-place; it outputs them to a build directory.</para>
 
-        <para>We want to add a namespace prefix to everything in our
-            <filename>vendor</filename> directory which is currently next to our
-            extension's <filename>src</filename> directory. Here's what we are going
-            to do. We are going to move the unprefixed, original
-            <filename>vendor</filename> directory in our repository's root and have
-            the prefixed, <emphasis>modified</emphasis> <filename>vendor</filename>
-            directory next to our <filename>src</filename> directory.</para>
+    <para>We want to add a namespace prefix to everything in our
+    <filename>vendor</filename> directory which is currently next to our
+    extension's <filename>src</filename> directory. Here's what we are going
+    to do. We are going to move the unprefixed, original
+    <filename>vendor</filename> directory in our repository's root and have
+    the prefixed, <emphasis>modified</emphasis> <filename>vendor</filename>
+    directory next to our <filename>src</filename> directory.</para>
 
-        <para>So, the first thing to do is changing our
-            <filename>composer.json</filename> file, removing the
-            <parameter>vendor-dir</parameter> configuration key:</para>
+    <para>So, the first thing to do is changing our
+    <filename>composer.json</filename> file, removing the
+    <parameter>vendor-dir</parameter> configuration key:</para>
 
-        <programlisting language="json">{
+    <programlisting language="json">{
             "name": "acme/example",
             "type": "project",
             "config": {
@@ -1310,19 +1280,19 @@ in the section entitled "GNU Free Documentation License".
             }
             }</programlisting>
 
-        <para>Next up, delete the old <filename>vendor</filename> directory and
-            reinstall the dependencies:</para>
+    <para>Next up, delete the old <filename>vendor</filename> directory and
+    reinstall the dependencies:</para>
 
-        <screen>$ rm -rf components/com_example/vendor
+    <screen>$ rm -rf components/com_example/vendor
             $ composer install</screen>
 
-        <para>You now see a <filename>vendor</filename> folder in your
-            repository's root. That's good!</para>
+    <para>You now see a <filename>vendor</filename> folder in your
+    repository's root. That's good!</para>
 
-        <para>We can now configure PHP-Scoper. Create the file
-            <filename>scoper.inc.php</filename> in the repository's root:</para>
+    <para>We can now configure PHP-Scoper. Create the file
+    <filename>scoper.inc.php</filename> in the repository's root:</para>
 
-        <programlisting language="php">&lt;?php
+    <programlisting language="php">&lt;?php
 
             declare(strict_types=1);
 
@@ -1366,32 +1336,32 @@ in the section entitled "GNU Free Documentation License".
             'expose-constants' =&gt; [],
             ];</programlisting>
 
-        <para>It's mostly boilerplate, except for the line in bold. This line
-            defines the prefix we're adding to all classes. As configured above, our
-            dependency's namespace will change from
-            <classname>Lcobucci\JWT</classname> to our prefixed,
-            <emphasis>private</emphasis> namespace
-            <classname>Acme\Example\Dependencies\Lcobucci\JWT</classname>.</para>
+    <para>It's mostly boilerplate, except for the line in bold. This line
+    defines the prefix we're adding to all classes. As configured above, our
+    dependency's namespace will change from
+    <classname>Lcobucci\JWT</classname> to our prefixed,
+    <emphasis>private</emphasis> namespace
+    <classname>Acme\Example\Dependencies\Lcobucci\JWT</classname>.</para>
 
-        <para>Now run:</para>
+    <para>Now run:</para>
 
-        <screen>$ php-scoper add-prefix --output-dir components/com_example/dependencies</screen>
+    <screen>$ php-scoper add-prefix --output-dir components/com_example/dependencies</screen>
 
-        <para>You will see that a new <filename>dependencies</filename>
-            directory was created next to our extension's <filename>src</filename>
-            directory.</para>
+    <para>You will see that a new <filename>dependencies</filename> directory
+    was created next to our extension's <filename>src</filename>
+    directory.</para>
 
-        <para>However, we're not out of the woods just yet. The prefixed
-            autoloader does not work just yet. We need to have Composer rebuild its
-            autoloader:</para>
+    <para>However, we're not out of the woods just yet. The prefixed
+    autoloader does not work just yet. We need to have Composer rebuild its
+    autoloader:</para>
 
-        <screen>$ composer dumpautoload -d components/com_example/dependencies \
+    <screen>$ composer dumpautoload -d components/com_example/dependencies \
             --optimize --classmap-authoritative</screen>
 
-        <para>Finally, we need to change our service provider to load our
-            dependencies from our scoped vendor dir:</para>
+    <para>Finally, we need to change our service provider to load our
+    dependencies from our scoped vendor dir:</para>
 
-        <programlisting language="php">defined('_JEXEC') || die;
+    <programlisting language="php">defined('_JEXEC') || die;
 
             use Joomla\CMS\Extension\PluginInterface;
             use Joomla\CMS\Plugin\PluginHelper;
@@ -1417,42 +1387,40 @@ in the section entitled "GNU Free Documentation License".
             }
             };</programlisting>
 
-        <para>You need to remember to run PHP-Scoper and dump the prefixed
-            composer's autoloader every time you change the dependencies e.g. update
-            or install a dependency.</para>
+    <para>You need to remember to run PHP-Scoper and dump the prefixed
+    composer's autoloader every time you change the dependencies e.g. update
+    or install a dependency.</para>
 
-        <para>Also remember to change the code in your extension to use the
-            prefixed classes of the dependencies.</para>
+    <para>Also remember to change the code in your extension to use the
+    prefixed classes of the dependencies.</para>
 
-        <para>As for your repository management, you should add both
-            <filename>vendor</filename> and the (prefixed)
-            <filename>dependencies</filename> folders into your
-            <filename>.gitignore</filename> file:</para>
+    <para>As for your repository management, you should add both
+    <filename>vendor</filename> and the (prefixed)
+    <filename>dependencies</filename> folders into your
+    <filename>.gitignore</filename> file:</para>
 
-        <programlisting># Composer
+    <programlisting># Composer
             vendor/*
             # Scoped dependencies
             components/com_example/dependencies/*</programlisting>
-    </section>
+  </section>
 
-    <section xml:id="advice-libraries">
-        <title>Library packages</title>
+  <section xml:id="advice-libraries">
+    <title>Library packages</title>
 
-        <para>When you are writing a lot of software for Joomla you will find
-            yourself having a lot of common code between your extensions. When the
-            amount of common code surpasses a certain (low) threshold and / or is
-            used on more than a couple of extensions it makes sense to share it
-            among all of your extensions.</para>
+    <para>When you are writing a lot of software for Joomla you will find
+    yourself having a lot of common code between your extensions. When the
+    amount of common code surpasses a certain (low) threshold and / or is used
+    on more than a couple of extensions it makes sense to share it among all
+    of your extensions.</para>
 
-        <para>This is what a <literal>library</literal> package is designed to
-            do. It creates a subdirectory inside the site's
-            <filename>libraries</filename> directory and optionally assigns it a
-            namespace.</para>
+    <para>This is what a <literal>library</literal> package is designed to do.
+    It creates a subdirectory inside the site's <filename>libraries</filename>
+    directory and optionally assigns it a namespace.</para>
 
-        <para>The XML manifest of a files package is quite
-            straightforward:</para>
+    <para>The XML manifest of a files package is quite straightforward:</para>
 
-        <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+    <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
             &lt;extension type="library" method="upgrade"&gt;
             &lt;name&gt;LIB_ACME_MYLIBRARY_LABEL&lt;/name&gt;
             &lt;description&gt;LIB_ACME_MYLIBRARY_XML_DESCRIPTION&lt;/description&gt;
@@ -1487,134 +1455,131 @@ in the section entitled "GNU Free Documentation License".
             &lt;/updateservers&gt;
             &lt;/extension&gt;</programlisting>
 
-        <para>This is a typical <link
-                xlink:href="https://docs.joomla.org/Manifest_files">Joomla extension XML
-            manifest</link> with two tags you need to pay attention to:</para>
+    <para>This is a typical <link
+    xlink:href="https://docs.joomla.org/Manifest_files">Joomla extension XML
+    manifest</link> with two tags you need to pay attention to:</para>
 
-        <itemizedlist>
-            <listitem>
-                <para><tag>libraryname</tag> tells Joomla the name of the
-                    subdirectory under <filename>libraries</filename> where the files
-                    will be copied. In this case we have told Joomla to install our
-                    library files in the <filename>libraries/mylibrary</filename> folder
-                    of the site. This is our library root folder.</para>
-            </listitem>
+    <itemizedlist>
+      <listitem>
+        <para><tag>libraryname</tag> tells Joomla the name of the subdirectory
+        under <filename>libraries</filename> where the files will be copied.
+        In this case we have told Joomla to install our library files in the
+        <filename>libraries/mylibrary</filename> folder of the site. This is
+        our library root folder.</para>
+      </listitem>
 
-            <listitem>
-                <para><tag>namespace</tag> tells Joomla the common namespace prefix
-                    of your library files —assuming they follow the PSR-4 standard— and
-                    the subdirectory inside your library's root which is the PSR-4 root.
-                    In this case we tell Joomla that the common namespace prefix is
-                    <classname>Acme\MyLibrary</classname> and the PSR-4 root for this
-                    namespace is <filename>libraries/mylibrary/src</filename>.</para>
+      <listitem>
+        <para><tag>namespace</tag> tells Joomla the common namespace prefix of
+        your library files —assuming they follow the PSR-4 standard— and the
+        subdirectory inside your library's root which is the PSR-4 root. In
+        this case we tell Joomla that the common namespace prefix is
+        <classname>Acme\MyLibrary</classname> and the PSR-4 root for this
+        namespace is <filename>libraries/mylibrary/src</filename>.</para>
 
-                <para>This tag is <emphasis role="bold">optional</emphasis>.
-                    However, if you do not provide this tag Joomla will NOT be able to
-                    autoload your library files. You will have to provide your own
-                    autoloader or include <filename>.php</filename> files
-                    manually.</para>
-            </listitem>
-        </itemizedlist>
+        <para>This tag is <emphasis role="bold">optional</emphasis>. However,
+        if you do not provide this tag Joomla will NOT be able to autoload
+        your library files. You will have to provide your own autoloader or
+        include <filename>.php</filename> files manually.</para>
+      </listitem>
+    </itemizedlist>
 
-        <para>The <tag>files</tag> tag tells Joomla where to copy files from the
-            package. If you have a subdirectory in your package where files are
-            located remember to use the <parameter>folder</parameter> attribute. For
-            example, if your package puts everything under a
-            <filename>dist</filename> folder change the <tag>files</tag> tag to
-            read:</para>
+    <para>The <tag>files</tag> tag tells Joomla where to copy files from the
+    package. If you have a subdirectory in your package where files are
+    located remember to use the <parameter>folder</parameter> attribute. For
+    example, if your package puts everything under a <filename>dist</filename>
+    folder change the <tag>files</tag> tag to read:</para>
 
-        <programlisting>&lt;files <emphasis role="bold">folder="dist"</emphasis>&gt;</programlisting>
+    <programlisting>&lt;files <emphasis role="bold">folder="dist"</emphasis>&gt;</programlisting>
 
-        <para>It is a good idea to include a license and Read Me file with your
-            library. The former can be used to fulfil the legal requirement of most
-            Open Source licenses to distribute a copy of the license with the
-            software. The latter helps explaining to a user what exactly is in this
-            folder, what is it used by, and instructions regarding the update and
-            uninstallation of the library (users are well-known for going medieval
-            on folders on their site, renaming or deleting them without much thought
-            when they do not understand what they are for).</para>
+    <para>It is a good idea to include a license and Read Me file with your
+    library. The former can be used to fulfil the legal requirement of most
+    Open Source licenses to distribute a copy of the license with the
+    software. The latter helps explaining to a user what exactly is in this
+    folder, what is it used by, and instructions regarding the update and
+    uninstallation of the library (users are well-known for going medieval on
+    folders on their site, renaming or deleting them without much thought when
+    they do not understand what they are for).</para>
 
-        <para>While providing a language file is not mandatory, I strongly
-            recommend providing a <filename>.sys.ini</filename> language file so
-            that you can use language strings in the <tag>name</tag> and
-            <tag>description</tag> tags.</para>
+    <para>While providing a language file is not mandatory, I strongly
+    recommend providing a <filename>.sys.ini</filename> language file so that
+    you can use language strings in the <tag>name</tag> and
+    <tag>description</tag> tags.</para>
 
-        <para>If you provide a regular .ini language file, e.g. for error
-            messages and prompts, please keep in mind that <emphasis>it will not be
-                autoloaded</emphasis>. If you really need to provide translated messages
-            you need to make sure that all code paths leading to such a message will
-            first go through Joomla's Language object to load the translation
-            file:</para>
+    <para>If you provide a regular .ini language file, e.g. for error messages
+    and prompts, please keep in mind that <emphasis>it will not be
+    autoloaded</emphasis>. If you really need to provide translated messages
+    you need to make sure that all code paths leading to such a message will
+    first go through Joomla's Language object to load the translation
+    file:</para>
 
-        <programlisting>\Joomla\CMS\Factory::getApplication()
+    <programlisting>\Joomla\CMS\Factory::getApplication()
             -&gt;getLanguage()
             -&gt;load('lib_<replaceable>mylibrary</replaceable>', JPATH_SITE);</programlisting>
 
-        <para>Note that the extension you are loading is
-            <literal>lib_<replaceable>mylibrary</replaceable></literal> where
-            <replaceable>mylibrary</replaceable> is the content of your library's
-            XML manifest's <tag>libraryname</tag> tag.</para>
+    <para>Note that the extension you are loading is
+    <literal>lib_<replaceable>mylibrary</replaceable></literal> where
+    <replaceable>mylibrary</replaceable> is the content of your library's XML
+    manifest's <tag>libraryname</tag> tag.</para>
 
-        <para>Another thing you need to keep in mind when writing a library is
-            that libraries are not bootable extensions in Joomla. As a result, they
-            do not have a service provider
-            (<filename>services/provider.php</filename>) file. If you need to use
-            Joomla services you have two and a half options:</para>
+    <para>Another thing you need to keep in mind when writing a library is
+    that libraries are not bootable extensions in Joomla. As a result, they do
+    not have a service provider (<filename>services/provider.php</filename>)
+    file. If you need to use Joomla services you have two and a half
+    options:</para>
 
-        <itemizedlist>
-            <listitem>
-                <para>The library consumers (your components, plugins, or modules)
-                    need to push the services to your library objects. This is the
-                    preferable way —it makes your library code easily testable with
-                    PHPUnit— but it may lead to a very convoluted implementation in your
-                    extensions. This is the optimal way for experienced
-                    developers.</para>
-            </listitem>
+    <itemizedlist>
+      <listitem>
+        <para>The library consumers (your components, plugins, or modules)
+        need to push the services to your library objects. This is the
+        preferable way —it makes your library code easily testable with
+        PHPUnit— but it may lead to a very convoluted implementation in your
+        extensions. This is the optimal way for experienced developers.</para>
+      </listitem>
 
-            <listitem>
-                <para>Pull services directly from the
-                    <classname>Joomla\CMS\Factory</classname> using its
-                    <methodname>getApplication</methodname> and
-                    <methodname>getContainer</methodname> methods. This is the simplest
-                    way to go about it BUT it makes your code untestable. In other
-                    words, it's easy to use in your extensions but really difficult to
-                    test with.</para>
-            </listitem>
+      <listitem>
+        <para>Pull services directly from the
+        <classname>Joomla\CMS\Factory</classname> using its
+        <methodname>getApplication</methodname> and
+        <methodname>getContainer</methodname> methods. This is the simplest
+        way to go about it BUT it makes your code untestable. In other words,
+        it's easy to use in your extensions but really difficult to test
+        with.</para>
+      </listitem>
 
-            <listitem>
-                <para>Hybrid! Use your own DI container and have your library's
-                    public interface objects require it to be passed in the constructor.
-                    The library consumers can set up their own DI container… or just use
-                    a default implementation. A custom container can be used when
-                    testing or when an experienced developer is developing their own
-                    application, thus emulating the first option we described above. The
-                    default DI container implementation —which simply goes through the
-                    global CMS Factory— requires no setup so novice developers, or
-                    trivial extensions, can quickly use the library without having to
-                    worry about passing around services and setting up a DI container,
-                    thus emulating the second option described above.</para>
-            </listitem>
-        </itemizedlist>
+      <listitem>
+        <para>Hybrid! Use your own DI container and have your library's public
+        interface objects require it to be passed in the constructor. The
+        library consumers can set up their own DI container… or just use a
+        default implementation. A custom container can be used when testing or
+        when an experienced developer is developing their own application,
+        thus emulating the first option we described above. The default DI
+        container implementation —which simply goes through the global CMS
+        Factory— requires no setup so novice developers, or trivial
+        extensions, can quickly use the library without having to worry about
+        passing around services and setting up a DI container, thus emulating
+        the second option described above.</para>
+      </listitem>
+    </itemizedlist>
 
-        <para>While library extensions can have media files it is generally not
-            recommended to ship media files with your library. If you have media
-            files your library is not a library, it's more of a prototype extension.
-            Sure, you can do that —that's pretty much what we were doing with Akeeba
-            Live Update long before Joomla supported library packages— but the use
-            cases are so limited in number and so advanced in nature that if you
-            need to read this documentation you are extremely unlikely to need to
-            use this trick.</para>
+    <para>While library extensions can have media files it is generally not
+    recommended to ship media files with your library. If you have media files
+    your library is not a library, it's more of a prototype extension. Sure,
+    you can do that —that's pretty much what we were doing with Akeeba Live
+    Update long before Joomla supported library packages— but the use cases
+    are so limited in number and so advanced in nature that if you need to
+    read this documentation you are extremely unlikely to need to use this
+    trick.</para>
 
-        <para>Finally, pay attention to how you are going to go about updating
-            your library extension. Joomla has absolutely no dependency management
-            across installed extensions. If a site has Extension A which requires
-            version 1.x of your library and Extension B which requires version 2.x
-            of your library you'll inadvertently break the site if version 2.x of
-            your library is not 100% backwards compatible to version 1.x of your
-            library. This was one of the many headaches we had to deal with when we
-            shipped our own MVC framework (Akeeba FOF) with our extensions. Short of
-            checking for the installed library version in your extension and
-            refusing to execute if it's too low or too high there's no other
-            practical way to address this conundrum.</para>
-    </section>
+    <para>Finally, pay attention to how you are going to go about updating
+    your library extension. Joomla has absolutely no dependency management
+    across installed extensions. If a site has Extension A which requires
+    version 1.x of your library and Extension B which requires version 2.x of
+    your library you'll inadvertently break the site if version 2.x of your
+    library is not 100% backwards compatible to version 1.x of your library.
+    This was one of the many headaches we had to deal with when we shipped our
+    own MVC framework (Akeeba FOF) with our extensions. Short of checking for
+    the installed library version in your extension and refusing to execute if
+    it's too low or too high there's no other practical way to address this
+    conundrum.</para>
+  </section>
 </chapter>
