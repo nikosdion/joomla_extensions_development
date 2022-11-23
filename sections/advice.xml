@@ -1582,4 +1582,144 @@ in the section entitled "GNU Free Documentation License".
     it's too low or too high there's no other practical way to address this
     conundrum.</para>
   </section>
+
+  <section xml:id="advice-core-folders">
+    <title>Use the right core folder</title>
+
+    <para>Joomla has a lot of core, top-level folders, each one having a
+    different semantic meaning. There are four of them which have been
+    chronically abused by extensions, leading to many functional and security
+    issues on Joomla sites.</para>
+
+    <bridgehead>The <filename>images</filename> folder</bridgehead>
+
+    <para>This is where user-uploaded static media files reside. These static
+    files are managed through the Media Manager.</para>
+
+    <para>Your extension SHOULD NOT use this folder to store its files. If it
+    does, it should assume that these files may be moved around, renamed, or
+    deleted by the user, or that they me be overwritten as part of a regular
+    Media Manager operation by anyone with access to the site's Media
+    Manager.</para>
+
+    <para>There are a few cases where this is okay.</para>
+
+    <para>If you are creating thumbnails or different size and/or file format
+    images from a master image (e.g. create different sizes in webp format)
+    you might very well want the users to be able to use these images through
+    the Media Manager and the media selection form field in Joomla. This is
+    something that many gallery component do and it's perfectly fine and
+    desirable.</para>
+
+    <para>If you are creating banners, OpenGraph images, or other similar
+    content which may be very well be used by the user directly —for example
+    assigning it as the intro image of an article— it makes sense to put the
+    in the images folder; I have done that myself for this reason.</para>
+
+    <para>Finally, if you are writing an extension which replaces the Media
+    Manager you are meant to manage the files in this folder. That's an
+    obvious exception, included here for completeness' sake.</para>
+
+    <bridgehead>The <filename>media</filename> folder</bridgehead>
+
+    <para>Extensions are only meant to use a subdirectory in that folder which
+    matches exactly their name. Component use the convention
+    <filename>com_example</filename>, plugins use the convention
+    <filename>plg_folder_example</filename>, modules use the convention
+    <filename>mod_something</filename>. Library, file, and package extensions
+    don't normally have static files but if they do they should use the
+    convention <filename>lib_example</filename>,
+    <filename>files_example</filename>, and <filename>pkg_example</filename>
+    respectively. </para>
+
+    <para>Templates create subdirectories in the
+    <filename>media/templates/administrator</filename> or
+    <filename>media/templates/site</filename> folder using their bare name,
+    e.g. <filename>media/templates/site/cassiopeia</filename> (NOT
+    <filename>tpl_cassiopeia</filename>). Note that older templates may have
+    their media files inside their template folder (e.g.
+    <filename>templates/foobar</filename>) but this is discouraged and support
+    for this legacy storage scheme may be dropped anytime.</para>
+
+    <para>The extension's media subdirectory <emphasis>currently</emphasis>
+    serves a dual purpose. On one hand, this is where we store the static
+    resources (CSS, JavaScript, images) of our extensions. On the other hand
+    it is used to store any kind of user-generated (be it uploaded or
+    constructed) content which is not web accessible (e.g. download files
+    behind a paywall), web accessible but not meant to be managed through the
+    Media Manager (e.g. per-layout CSS files in a page builder), transformed
+    by the extension (e.g. thumbnails), or any combination thereof.</para>
+
+    <para>Extensions have the expectation that files in their media
+    subdirectory do not get replaced, renamed, or removed without the
+    extension knowing about it.</para>
+
+    <bridgehead>The <filename>cache</filename> folder</bridgehead>
+
+    <para>This is where temporary, <emphasis role="bold">NON</emphasis>-web
+    accessible content is meant to be stored. The idea here is that you are
+    storing temporarily the results of time-consuming computations you do not
+    want to happen on every page load. </para>
+
+    <para>The lifetime of the files in this folder <emphasis role="bold">IS
+    NOT</emphasis> necessarily controlled by Joomla's caching options in its
+    Global Configuration page. Each extension can choose to create its own
+    cache controller with a different caching lifetime, or even create files
+    directly. Moreover, keep in mind that Joomla's caching options <emphasis
+    role="bold">DO NOT</emphasis> guarantee that files will be created; the
+    site owner may have opted to use in-memory key-value storage, such as
+    Redis or Memcached, instead of file storage.</para>
+
+    <para>The files in this folder and its subdirectories <emphasis
+    role="bold">MUST NOT</emphasis> be accessed from the web and, in fact,
+    site owners are advised to make this folder inaccessible from the web
+    using appropriate server configuration.</para>
+
+    <para>The files and subdirectories in this folder <emphasis
+    role="bold">MAY</emphasis> go away at any time. The extension <emphasis
+    role="bold">MUST</emphasis> be able to detect that and regenerate them as
+    needed.</para>
+
+    <para>Do not use this folder to store web-accessible content, even if it's
+    only meant to be temporary and regenerated, such as the CSS for different
+    layouts in a page builder. Web-accessible content MUST go into your
+    extension's media subdirectory.</para>
+
+    <para><bridgehead>The <filename>tmp</filename> folder</bridgehead></para>
+
+    <para>This is where <emphasis>transient</emphasis> files are stored.
+    Transient files are those which will go away within a couple page loads,
+    typically remaining on the site for a minute or so. Temporary files may go
+    away at any time without warning.</para>
+
+    <para>Files in the <filename>tmp</filename> folder are <emphasis
+    role="bold">NOT</emphasis> web accessible and, in fact, site owners are
+    advised to make this folder inaccessible from the web using appropriate
+    server configuration. If you want to serve transient files over the web
+    you can use a view on your component with format=raw, com_ajax (if it's a
+    module or plugin which by definition cannot have a raw view like a
+    component), or by storing them in your extension's media
+    subdirectory.</para>
+
+    <bridgehead>The bottom line (rule of thumb)</bridgehead>
+
+    <para>If unsure about where a file should be stored, use your extension's
+    <filename>media</filename> subdirectory.</para>
+
+    <para>You must NEVER try to load files stored in
+    <filename>cache</filename> or <filename>tmp</filename> in the browser
+    directly. You must not assume these files will exist just because you
+    created them in a previous page load.</para>
+
+    <para>Do not put files in the <filename>images</filename> folder if you do
+    not want the user to be able to access and manage them through Joomla's
+    Media Manager. If you do, expect these files to be replaced, renamed, or
+    removed without your extension knowing about it.</para>
+
+    <para>Do not put any of your static assets or user files in any other
+    folder — with very few, very specialised exceptions: backups, large
+    exports, XSL stylesheets and other similarly specialised assets and
+    generated files may need to be placed inside your extension's
+    folder.</para>
+  </section>
 </chapter>
