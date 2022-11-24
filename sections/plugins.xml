@@ -118,49 +118,49 @@ in the section entitled "GNU Free Documentation License".
                 goes from this:</para>
 
             <programlisting language="xml">&lt;?xml version="1.0" encoding="utf-8"?&gt;
-                &lt;extension type="plugin" group="system" method="upgrade"&gt;
-                &lt;name&gt;plg_system_example&lt;/name&gt;
-                &lt;author&gt;Joomla! Project&lt;/author&gt;
-                &lt;creationDate&gt;2022-10&lt;/creationDate&gt;
-                &lt;copyright&gt;(C) 2022 Open Source Matters, Inc.&lt;/copyright&gt;
-                &lt;license&gt;GNU General Public License version 2 or later; see LICENSE.txt&lt;/license&gt;
-                &lt;authorEmail&gt;admin@joomla.org&lt;/authorEmail&gt;
-                &lt;authorUrl&gt;www.joomla.org&lt;/authorUrl&gt;
-                &lt;version&gt;1.0.0&lt;/version&gt;
-                &lt;description&gt;PLG_SYSTEM_EXAMPLE_XML_DESCRIPTION&lt;/description&gt;
-                &lt;files&gt;
-                <emphasis role="bold">&lt;filename plugin="example"&gt;example.php&lt;/filename&gt;</emphasis>
-                &lt;/files&gt;
-                &lt;languages&gt;
-                &lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.ini&lt;/language&gt;
-                &lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.sys.ini&lt;/language&gt;
-                &lt;/languages&gt;
-                &lt;/extension&gt;
+&lt;extension type="plugin" group="system" method="upgrade"&gt;
+    &lt;name&gt;plg_system_example&lt;/name&gt;
+    &lt;author&gt;Joomla! Project&lt;/author&gt;
+    &lt;creationDate&gt;2022-10&lt;/creationDate&gt;
+    &lt;copyright&gt;(C) 2022 Open Source Matters, Inc.&lt;/copyright&gt;
+    &lt;license&gt;GNU General Public License version 2 or later; see LICENSE.txt&lt;/license&gt;
+    &lt;authorEmail&gt;admin@joomla.org&lt;/authorEmail&gt;
+    &lt;authorUrl&gt;www.joomla.org&lt;/authorUrl&gt;
+    &lt;version&gt;1.0.0&lt;/version&gt;
+    &lt;description&gt;PLG_SYSTEM_EXAMPLE_XML_DESCRIPTION&lt;/description&gt;
+    &lt;files&gt;
+        <emphasis role="bold">&lt;filename plugin="example"&gt;example.php&lt;/filename&gt;</emphasis>
+    &lt;/files&gt;
+    &lt;languages&gt;
+        &lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.ini&lt;/language&gt;
+        &lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.sys.ini&lt;/language&gt;
+    &lt;/languages&gt;
+&lt;/extension&gt;
             </programlisting>
 
             <para>to this:</para>
 
             <programlisting language="xml">&lt;?xml version="1.0" encoding="utf-8"?&gt;
-                &lt;extension type="plugin" group="system" method="upgrade"&gt;
-                &lt;name&gt;plg_system_example&lt;/name&gt;
-                &lt;author&gt;Joomla! Project&lt;/author&gt;
-                &lt;creationDate&gt;2022-10&lt;/creationDate&gt;
-                &lt;copyright&gt;(C) 2022 Open Source Matters, Inc.&lt;/copyright&gt;
-                &lt;license&gt;GNU General Public License version 2 or later; see LICENSE.txt&lt;/license&gt;
-                &lt;authorEmail&gt;admin@joomla.org&lt;/authorEmail&gt;
-                &lt;authorUrl&gt;www.joomla.org&lt;/authorUrl&gt;
-                &lt;version&gt;1.0.0&lt;/version&gt;
-                &lt;description&gt;PLG_SYSTEM_EXAMPLE_XML_DESCRIPTION&lt;/description&gt;
-                <emphasis role="bold">&lt;namespace path="src"&gt;Joomla\Plugin\System\Example&lt;/namespace&gt;</emphasis>
-                &lt;files&gt;
-                <emphasis role="bold">&lt;folder&gt;services&lt;/folder&gt;</emphasis>
-                <emphasis role="bold">&lt;folder plugin="example"&gt;src&lt;/folder&gt;</emphasis>
-                &lt;/files&gt;
-                &lt;languages&gt;
-                &lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.ini&lt;/language&gt;
-                &lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.sys.ini&lt;/language&gt;
-                &lt;/languages&gt;
-                &lt;/extension&gt;
+&lt;extension type="plugin" group="system" method="upgrade"&gt;
+    &lt;name&gt;plg_system_example&lt;/name&gt;
+    &lt;author&gt;Joomla! Project&lt;/author&gt;
+    &lt;creationDate&gt;2022-10&lt;/creationDate&gt;
+    &lt;copyright&gt;(C) 2022 Open Source Matters, Inc.&lt;/copyright&gt;
+    &lt;license&gt;GNU General Public License version 2 or later; see LICENSE.txt&lt;/license&gt;
+    &lt;authorEmail&gt;admin@joomla.org&lt;/authorEmail&gt;
+    &lt;authorUrl&gt;www.joomla.org&lt;/authorUrl&gt;
+    &lt;version&gt;1.0.0&lt;/version&gt;
+    &lt;description&gt;PLG_SYSTEM_EXAMPLE_XML_DESCRIPTION&lt;/description&gt;
+    <emphasis role="bold">&lt;namespace path="src"&gt;Joomla\Plugin\System\Example&lt;/namespace&gt;</emphasis>
+    &lt;files&gt;
+        <emphasis role="bold">&lt;folder&gt;services&lt;/folder&gt;</emphasis>
+        <emphasis role="bold">&lt;folder plugin="example"&gt;src&lt;/folder&gt;</emphasis>
+    &lt;/files&gt;
+    &lt;languages&gt;
+        &lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.ini&lt;/language&gt;
+        &lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.sys.ini&lt;/language&gt;
+    &lt;/languages&gt;
+&lt;/extension&gt;
             </programlisting>
 
             <para>The affected lines are in bold type.</para>
@@ -183,23 +183,23 @@ in the section entitled "GNU Free Documentation License".
                     file</link>:</para>
 
             <programlisting language="php">&lt;?php
-                defined('_JEXEC') || die;
+defined('_JEXEC') || die;
 
-                use Joomla\CMS\Extension\PluginInterface;
-                use Joomla\CMS\Factory;
-                use Joomla\CMS\Plugin\PluginHelper;
-                use Joomla\DI\Container;
-                use Joomla\DI\ServiceProviderInterface;
-                use Joomla\Event\DispatcherInterface;
-                use Joomla\Plugin\System\Example\Extension\Example;
+use Joomla\CMS\Extension\PluginInterface;
+use Joomla\CMS\Factory;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\DI\Container;
+use Joomla\DI\ServiceProviderInterface;
+use Joomla\Event\DispatcherInterface;
+use Joomla\Plugin\System\Example\Extension\Example;
 
-                return new class implements ServiceProviderInterface {
-                public function register(Container $container)
-                {
-                $container-&gt;set(
-                PluginInterface::class,
-                function (Container $container)
-                {
+return new class implements ServiceProviderInterface {
+    public function register(Container $container)
+    {
+        $container-&gt;set(
+            PluginInterface::class,
+            function (Container $container)
+            {
                 $config  = (array)PluginHelper::getPlugin('system', 'example');
                 $subject = $container-&gt;get(DispatcherInterface::class);
 
@@ -210,10 +210,10 @@ in the section entitled "GNU Free Documentation License".
                 $plugin-&gt;setApplication($app);
 
                 return $plugin;
-                }
-                );
-                }
-                };</programlisting>
+            }
+        );
+    }
+};</programlisting>
 
             <para>The important thing to note here is that the service provider is
                 responsible for registering a
@@ -330,8 +330,8 @@ in the section entitled "GNU Free Documentation License".
                 modern events like so:</para>
 
             <programlisting language="php">$event = \Joomla\CMS\Event\GenericEvent::create('onSomething', [$param1, $param2]);
-                $this-&gt;getDispatcher()-&gt;dispatch($event-&gt;getName(), $event);
-                $results = $event-&gt;getArgument('result', []);</programlisting>
+$this-&gt;getDispatcher()-&gt;dispatch($event-&gt;getName(), $event);
+$results = $event-&gt;getArgument('result', []);</programlisting>
 
             <para>It follows reason that Joomla 4 offers a way to write plugins
                 which only deal with these modern events. These events are faster and
@@ -366,12 +366,12 @@ in the section entitled "GNU Free Documentation License".
                 straightforward:</para>
 
             <programlisting language="php">public static function getSubscribedEvents(): array
-                {
-                return [
-                'onSomething'     =&gt; 'doSomething',
-                'onSomethingElse' =&gt; ['doSomething', \Joomla\Event\Priority::HIGH],
-                ];
-                }</programlisting>
+{
+    return [
+        'onSomething'     =&gt; 'doSomething',
+        'onSomethingElse' =&gt; ['doSomething', \Joomla\Event\Priority::HIGH],
+    ];
+}</programlisting>
 
             <para>The keys of the array are the event names. The values are the
                 names of the methods which handle each event.</para>
@@ -582,9 +582,9 @@ in the section entitled "GNU Free Documentation License".
                 you'd do either of the following:</para>
 
             <programlisting language="php">// Named arguments without a getter method
-                $param1 = $event-&gt;getArgument('param1');
-                // Named arguments with getter methods
-                $param2 = $event-&gt;getParam1();</programlisting>
+$param1 = $event-&gt;getArgument('param1');
+// Named arguments with getter methods
+$param2 = $event-&gt;getParam1();</programlisting>
 
             <para>Any decent IDE will let you know if there is a getter in
                 <code>$event</code> based on its type-hint. That's why it makes sense
@@ -595,8 +595,8 @@ in the section entitled "GNU Free Documentation License".
                 <code>result</code> argument which is always an array:</para>
 
             <programlisting language="php">$result = $this-&gt;getArgument('result') ?? [];
-                $result[] = $theResultIAmReturning;
-                $this-&gt;setArgument('result', $result);</programlisting>
+$result[] = $theResultIAmReturning;
+$this-&gt;setArgument('result', $result);</programlisting>
 
             <para>Most concrete event classes implement the
                 <interfacename>\Joomla\CMS\Event\Result\ResultAwareInterface</interfacename>
@@ -631,16 +631,16 @@ in the section entitled "GNU Free Documentation License".
                 example, this is a valid, working event handler:</para>
 
             <programlisting language="php">	public function handleTableAfterLoad(\Joomla\CMS\Event\Table\AfterLoadEvent $event): void
-                {
-                if (!$event-&gt;getArgument('result')) return;
+{
+    if (!$event-&gt;getArgument('result')) return;
 
-                /** @var \Joomla\CMS\Table\TableInterface $table */
-                $table = $event-&gt;getArgument('subject');
+    /** @var \Joomla\CMS\Table\TableInterface $table */
+    $table = $event-&gt;getArgument('subject');
 
-                $table-&gt;modified_by = \Joomla\CMS\Factory::getApplication()
-                -&gt;getIdentity()
-                -&gt;id;
-                }</programlisting>
+    $table-&gt;modified_by = \Joomla\CMS\Factory::getApplication()
+        -&gt;getIdentity()
+        -&gt;id;
+}</programlisting>
 
             <para>The
                 <classname>\Joomla\CMS\Event\Table\AfterLoadEvent</classname> concrete
@@ -779,9 +779,9 @@ in the section entitled "GNU Free Documentation License".
             example:</para>
 
         <programlisting language="php">// The old way
-            $hasSystemExample = <methodname>\Joomla\CMS\Plugin\PluginHelper::isEnabled</methodname>('system', 'example');
-            // The new way
-            $hasSystemExample = class_exists(\Joomla\Plugin\System\Example\Extension\Example::class, true);</programlisting>
+$hasSystemExample = <methodname>\Joomla\CMS\Plugin\PluginHelper::isEnabled</methodname>('system', 'example');
+// The new way
+$hasSystemExample = class_exists(\Joomla\Plugin\System\Example\Extension\Example::class, true);</programlisting>
 
         <para>This does NOT mean that you should stop using
             <methodname>\Joomla\CMS\Plugin\PluginHelper::isEnabled</methodname>
@@ -804,40 +804,39 @@ in the section entitled "GNU Free Documentation License".
             the following:</para>
 
         <programlisting language="php">&lt;?php
+defined('_JEXEC') || die;
 
-            defined('_JEXEC') || die;
+use Joomla\CMS\Extension\PluginInterface;
+use Joomla\CMS\Plugin\PluginHelper;
+use Joomla\DI\Container;
+use Joomla\DI\ServiceProviderInterface;
+use Joomla\Event\DispatcherInterface;
+use Joomla\Plugin\System\Example\Extension\Example;
 
-            use Joomla\CMS\Extension\PluginInterface;
-            use Joomla\CMS\Plugin\PluginHelper;
-            use Joomla\DI\Container;
-            use Joomla\DI\ServiceProviderInterface;
-            use Joomla\Event\DispatcherInterface;
-            use Joomla\Plugin\System\Example\Extension\Example;
-
-            return new class implements ServiceProviderInterface
-            {
-            /**
-            * Registers the service provider with a DI container.
-            *
-            * @param   Container  $container  The DI container.
-            *
-            * @return  void
-            *
-            * @since   4.2.0
-            */
-            public function register(Container $container)
-            {
-            $container-&gt;set(
+return new class implements ServiceProviderInterface
+{
+    /**
+     * Registers the service provider with a DI container.
+     *
+     * @param   Container  $container  The DI container.
+     *
+     * @return  void
+     *
+     * @since   4.2.0
+     */
+    public function register(Container $container)
+    {
+        $container-&gt;set(
             PluginInterface::class,
             function (Container $container) {
-            $config  = (array) PluginHelper::getPlugin('system', 'example');
-            $subject = $container-&gt;get(DispatcherInterface::class);
+                $config  = (array) PluginHelper::getPlugin('system', 'example');
+                $subject = $container-&gt;get(DispatcherInterface::class);
 
-            return new Example($subject, $config);
+                return new Example($subject, $config);
             }
-            );
-            }
-            };</programlisting>
+        );
+    }
+};</programlisting>
 
         <para>As you can see the service provider returns an <link
                 xlink:href="https://www.php.net/manual/en/language.oop5.anonymous.php">anonymous
@@ -858,9 +857,9 @@ in the section entitled "GNU Free Documentation License".
             have to replace that line with something like this:</para>
 
         <programlisting language="php">$plugin = Example($subject, $config);
-            $plugin-&gt;setMyCustomService($container-&gt;get(MyCustomService::class));
+$plugin-&gt;setMyCustomService($container-&gt;get(MyCustomService::class));
 
-            return $plugin;</programlisting>
+return $plugin;</programlisting>
     </section>
 
     <section xml:id="plg-extension">
@@ -897,11 +896,11 @@ in the section entitled "GNU Free Documentation License".
             following:</para>
 
         <programlisting language="php">// Create the plugin
-            $plugin = Example($subject, $config);
-            // Push the application object
-            $plugin-&gt;setApplication(\Joomla\CMS\Factory::getApplication());
+$plugin = Example($subject, $config);
+// Push the application object
+$plugin-&gt;setApplication(\Joomla\CMS\Factory::getApplication());
 
-            return $plugin;</programlisting>
+return $plugin;</programlisting>
 
         <para>In your plugin's code you can now get the Joomla application
             object by doing</para>
@@ -920,12 +919,12 @@ in the section entitled "GNU Free Documentation License".
             example:</para>
 
         <programlisting language="php">class Example extends \Joomla\CMS\Plugin\CMSPlugin
-            implements \Joomla\Database\DatabaseAwareInterface
-            {
-            use \Joomla\Database\DatabaseAwareTrait;
+implements \Joomla\Database\DatabaseAwareInterface
+{
+    use \Joomla\Database\DatabaseAwareTrait;
 
-            // The rest of the plugin class goes here.
-            }</programlisting>
+    // The rest of the plugin class goes here.
+}</programlisting>
 
         <para>Your service provider must have the following line before the
             <code>return $plugin;</code> line:</para>
@@ -1057,11 +1056,11 @@ in the section entitled "GNU Free Documentation License".
             constructor:</para>
 
         <programlisting language="php">public function __construct(&amp;$subject, $config = array())
-            {
-            $this-&gt;autoloadLanguage = true;
+{
+    $this-&gt;autoloadLanguage = true;
 
-            parent::__construct($subject, $config);
-            }</programlisting>
+    parent::__construct($subject, $config);
+}</programlisting>
 
         <important>
             <para>The parent constructor method must be called AFTER setting the
@@ -1124,15 +1123,15 @@ in the section entitled "GNU Free Documentation License".
             tags under the <tag>&lt;extension&gt;</tag> root:</para>
 
         <programlisting language="xml">&lt;extension&gt;
-            &lt;!-- … --&gt;
-            &lt;languages folder="language"&gt;
-            &lt;language tag="en-GB"&gt;en-GB/plg_system_example.ini&lt;/language&gt;
-            &lt;language tag="en-GB"&gt;en-GB/plg_system_example.sys.ini&lt;/language&gt;
-            &lt;language tag="de-DE"&gt;de-DE/plg_system_example.ini&lt;/language&gt;
-            &lt;language tag="de-DE"&gt;de-DE/plg_system_example.sys.ini&lt;/language&gt;
-            &lt;/languages&gt;
-            &lt;!-- … --&gt;
-            &lt;/extension&gt;</programlisting>
+&lt;!-- … --&gt;
+&lt;languages folder="language"&gt;
+    &lt;language tag="en-GB"&gt;en-GB/plg_system_example.ini&lt;/language&gt;
+    &lt;language tag="en-GB"&gt;en-GB/plg_system_example.sys.ini&lt;/language&gt;
+    &lt;language tag="de-DE"&gt;de-DE/plg_system_example.ini&lt;/language&gt;
+    &lt;language tag="de-DE"&gt;de-DE/plg_system_example.sys.ini&lt;/language&gt;
+&lt;/languages&gt;
+&lt;!-- … --&gt;
+&lt;/extension&gt;</programlisting>
 
         <para>This copies the files from the <filename>language/</filename>
             folder in your package to Joomla's admin language folder, e.g. the
@@ -1220,17 +1219,17 @@ in the section entitled "GNU Free Documentation License".
                     role="bold">four</emphasis> major mistakes in six lines of code:</para>
 
         <programlisting language="php">class PlgSystemFoobar extends \Joomla\CMS\Plugin\CMSPlugin
-            {
-            public function __construct(&amp;$subject, $config)
-            {
-            parent::__construct($subject, $config);
+{
+    public function __construct(&amp;$subject, $config)
+    {
+        parent::__construct($subject, $config);
 
-            if (\Joomla\CMS\Factory::getApplication()-&gt;isClient('administrator')) return;
+        if (\Joomla\CMS\Factory::getApplication()-&gt;isClient('administrator')) return;
 
-            $document = \Joomla\CMS\Factory::getDocument();
-            $document-&gt;addScript(\Joomla\CMS\Uri\Uri::root(true) . 'plugins/system/foobar/js/foobar.js');
-            }
-            }</programlisting>
+        $document = \Joomla\CMS\Factory::getDocument();
+        $document-&gt;addScript(\Joomla\CMS\Uri\Uri::root(true) . 'plugins/system/foobar/js/foobar.js');
+    }
+}</programlisting>
 
         <para>This looks like a deceptively simple system plugin. It adds a
             JavaScript file to every page load in the frontend. Right?</para>
@@ -1365,10 +1364,10 @@ in the section entitled "GNU Free Documentation License".
 
         <programlisting language="php">$document = \Joomla\CMS\Factory::getApplication()-&gt;getDocument();
 
-            if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
-            {
-            return;
-            }</programlisting>
+if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
+{
+    return;
+}</programlisting>
 
         <para>If the document returned by our application is not an
             <classname>HTMLDocument</classname> we do not try to do anything else.
@@ -1388,8 +1387,7 @@ in the section entitled "GNU Free Documentation License".
         <para>Not to put too fine a point on this, this line is completely
             wrong:</para>
 
-        <programlisting language="php">if (\Joomla\CMS\Factory::getApplication()-&gt;isClient('administrator')) return;
-        </programlisting>
+        <programlisting language="php">if (\Joomla\CMS\Factory::getApplication()-&gt;isClient('administrator')) return;</programlisting>
 
         <para>Clearly, the developer wanted their code to mean “if this is not
             the frontend of the site don't do anything”. Instead, what they actually
@@ -1485,8 +1483,7 @@ in the section entitled "GNU Free Documentation License".
         <para>The correct way to do this is, of course, to check explicitly for
             the application you want to run under:</para>
 
-        <programlisting language="php">if (!\Joomla\CMS\Factory::getApplication()-&gt;isClient('<emphasis
-                role="bold">site</emphasis>')) return;</programlisting>
+        <programlisting language="php">if (!\Joomla\CMS\Factory::getApplication()-&gt;isClient('<emphasis role="bold">site</emphasis>')) return;</programlisting>
 
         <bridgehead>Do not load static resources directly and/or from your
             plugin's folder</bridgehead>
@@ -1516,9 +1513,9 @@ in the section entitled "GNU Free Documentation License".
             the following section in their plugin's XML manifest:</para>
 
         <programlisting language="xml">&lt;media folder="media" destination="plg_system_foobar"&gt;
-            &lt;folder&gt;js&lt;/folder&gt;
-            &lt;file&gt;joomla.asset.json&lt;/file&gt;
-            &lt;/media&gt;</programlisting>
+    &lt;folder&gt;js&lt;/folder&gt;
+    &lt;file&gt;joomla.asset.json&lt;/file&gt;
+&lt;/media&gt;</programlisting>
 
         <para>(We'll see what the joomla.asset.json file is in a moment)</para>
 
@@ -1552,32 +1549,31 @@ in the section entitled "GNU Free Documentation License".
             following contents:</para>
 
         <programlisting language="json">{
-            "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
-            "name": "plg_system_foobar",
-            "version": "1.0.0",
-            "description": "Foobar plugin",
-            "license": "GPL-3.0-or-later",
-            "assets": [
-            {
+    "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
+    "name": "plg_system_foobar",
+    "version": "1.0.0",
+    "description": "Foobar plugin",
+    "license": "GPL-3.0-or-later",
+    "assets": [
+        {
             "name": "plg_system_foobar.foobar",
             "description": "Foobar JavaScript",
             "type": "script",
             "uri": "plg_system_foobar/foobar.js",
             "dependencies": [
-            "core"
+                "core"
             ],
             "attributes": {
-            "defer": true
+                "defer": true
             }
-            }
-            ]
-            }</programlisting>
+        }
+    ]
+}</programlisting>
 
         <para>This allows the developer to tell Joomla to add their script using
             this very simple piece of code:</para>
 
-        <programlisting language="php">$document-&gt;getWebAssetManager()-&gt;useScript('plg_system_foobar.foobar');
-        </programlisting>
+        <programlisting language="php">$document-&gt;getWebAssetManager()-&gt;useScript('plg_system_foobar.foobar');</programlisting>
 
         <para>Here's the kicker. <emphasis>This is safe even if you don't check
             the Document object type</emphasis>. Yeah, if
@@ -1597,22 +1593,21 @@ in the section entitled "GNU Free Documentation License".
             installed in. The changes are in bold type:</para>
 
         <programlisting language="php">class PlgSystemFoobar extends \Joomla\CMS\Plugin\CMSPlugin
-            {
-            public function <emphasis role="bold">onAfterDispatch</emphasis>()
-            {
-            if (!\Joomla\CMS\Factory::getApplication()-&gt;isClient('<emphasis
-                    role="bold">site</emphasis>')) return;
+{
+    public function <emphasis role="bold">onAfterDispatch</emphasis>()
+    {
+        if (!\Joomla\CMS\Factory::getApplication()-&gt;isClient('<emphasis role="bold">site</emphasis>')) return;
 
-            $document = \Joomla\CMS\Factory<emphasis role="bold">::getApplication()-&gt;getDocument();</emphasis>
+        $document = \Joomla\CMS\Factory<emphasis role="bold">::getApplication()-&gt;getDocument();</emphasis>
 
-            <emphasis role="bold">if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
-                {
-                return;
-                }
+        <emphasis role="bold">if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
+        {
+            return;
+        }
 
-                $document-&gt;getWebAssetManager()-&gt;useScript('plg_system_foobar.foobar');</emphasis>
-            }
-            }</programlisting>
+        $document-&gt;getWebAssetManager()-&gt;useScript('plg_system_foobar.foobar');</emphasis>
+    }
+}</programlisting>
 
         <para>It's still short. It's still readable. It's (mostly) future-proof
             — well, it's still using the legacy plugin structure but I was trying to

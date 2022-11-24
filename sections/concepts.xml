@@ -85,10 +85,10 @@ in the section entitled "GNU Free Documentation License".
 
     <programlisting language="php">namespace \MyCompany\Example\Site\Model;
 
-            class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
-            {
-            // ...
-            }</programlisting>
+class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
+{
+  // ...
+}</programlisting>
 
     <para>By being able to extend classes across application sides you would
     finally be able to get rid of duplicate code and obliterate bugs coming
@@ -461,20 +461,20 @@ in the section entitled "GNU Free Documentation License".
 
     <programlisting language="php">use \Joomla\CMS\Factory;
 
-            // Instead of Factory::getDbo();
-            $db = Factory::getContainer()-&gt;get('DatabaseDriver');
+// Instead of Factory::getDbo();
+$db = Factory::getContainer()-&gt;get('DatabaseDriver');
 
-            // Instead of Factory::getLanguage(); WARNING! STILL DOES NOT WORK EXACTLY AS INTENDED!
-            $language = Factory::getContainer()-&gt;get(LanguageFactoryInterface::class)-&gt;createLanguage(
-            Factory::getApplication()-&gt;get('language'),
-            Factory::getApplication()-&gt;get('debug_lang'),
-            );
+// Instead of Factory::getLanguage(); WARNING! STILL DOES NOT WORK EXACTLY AS INTENDED!
+$language = Factory::getContainer()-&gt;get(LanguageFactoryInterface::class)-&gt;createLanguage(
+  Factory::getApplication()-&gt;get('language'),
+  Factory::getApplication()-&gt;get('debug_lang'),
+);
 
-            // Instead of Factory::getUser($id)
-            $user = Factory::getContainer()-&gt;get(UserFactoryInterface::class)-&gt;loadUserById($id);
+// Instead of Factory::getUser($id)
+$user = Factory::getContainer()-&gt;get(UserFactoryInterface::class)-&gt;loadUserById($id);
 
-            // Instead of Factory::getUser() with no arguments; note that this does NOT go through the DIC!
-            $currentUser = Factory::getApplication()-&gt;getIdentity();</programlisting>
+// Instead of Factory::getUser() with no arguments; note that this does NOT go through the DIC!
+$currentUser = Factory::getApplication()-&gt;getIdentity();</programlisting>
 
     <para>That said, Joomla's DIC is not a real DIC; it is in fact a <link
     xlink:href="https://en.wikipedia.org/wiki/Service_locator_pattern">Service
@@ -517,19 +517,18 @@ in the section entitled "GNU Free Documentation License".
     using HTMLHelper static methods to load dependencies. For example:</para>
 
     <programlisting language="php">$doc = \Joomla\CMS\Factory::getApplication()-&gt;getDocument();
-            Joomla\CMS\HTML\HTMLHelper::_('bootstrap.tooltip', '.hasTooltip');
-            Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
-            'version'       =&gt; 'auto',
-            'relative'      =&gt; true,
-            'detectDebug'   =&gt; false,
-            'framework'     =&gt; false,
-            'pathOnly'      =&gt; false,
-            'detectBrowser' =&gt; false,
-            ], [
-            'defer' =&gt; true,
-            'async' =&gt; false,
-            ]);
-        </programlisting>
+Joomla\CMS\HTML\HTMLHelper::_('bootstrap.tooltip', '.hasTooltip');
+Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
+  'version'       =&gt; 'auto',
+  'relative'      =&gt; true,
+  'detectDebug'   =&gt; false,
+  'framework'     =&gt; false,
+  'pathOnly'      =&gt; false,
+  'detectBrowser' =&gt; false,
+], [
+  'defer' =&gt; true,
+  'async' =&gt; false,
+]);        </programlisting>
 
     <para>This has a few shortcomings, as we have all discovered to our
     despair.</para>
@@ -620,53 +619,52 @@ in the section entitled "GNU Free Documentation License".
     like this:</para>
 
     <programlisting language="json">{
-            "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
-            "name": "com_example",
-            "version": "1.0.0",
-            "description": "This file contains details of the assets used by the Example component by Acme, Inc.",
-            "license": "GPL-2.0-or-later",
-            "assets": [
-            {
-            "name": "com_example.backend",
-            "description": "Backend styling.",
-            "type": "style",
-            "uri": "com_example/backend.min.css",
-            "dependencies": [
-            "com_example.typography"
-            ]
-            },
-            {
-            "name": "com_example.typography",
-            "description": "Fancy typography.",
-            "type": "style",
-            "uri": "com_example/typography.min.css",
-            "dependencies": [
-            "fontawesome"
-            ]
-            },
-            {
-            "name": "com_example.backend.items",
-            "description": "JavaScript for the backend Items page.",
-            "type": "script",
-            "uri": "com_example/backend_items.js",
-            "attributes" : {
-            "defer": true
-            },
-            "dependencies": [
-            "core"
-            ]
-            },
-            {
-            "name": "com_example.backend.items",
-            "type": "preset",
-            "dependencies": [
-            "com_example.backend#style",
-            "com_example.backend.items#script"
-            ]
-            }
-            ]
-            }
-        </programlisting>
+  "$schema": "https://developer.joomla.org/schemas/json-schema/web_assets.json",
+  "name": "com_example",
+  "version": "1.0.0",
+  "description": "This file contains details of the assets used by the Example component by Acme, Inc.",
+  "license": "GPL-2.0-or-later",
+  "assets": [
+    {
+      "name": "com_example.backend",
+      "description": "Backend styling.",
+      "type": "style",
+      "uri": "com_example/backend.min.css",
+      "dependencies": [
+        "com_example.typography"
+      ]
+    },
+    {
+      "name": "com_example.typography",
+      "description": "Fancy typography.",
+      "type": "style",
+      "uri": "com_example/typography.min.css",
+      "dependencies": [
+        "fontawesome"
+      ]
+    },
+    {
+      "name": "com_example.backend.items",
+      "description": "JavaScript for the backend Items page.",
+      "type": "script",
+      "uri": "com_example/backend_items.js",
+      "attributes" : {
+        "defer": true
+      },
+      "dependencies": [
+        "core"
+      ]
+    },
+    {
+      "name": "com_example.backend.items",
+      "type": "preset",
+      "dependencies": [
+        "com_example.backend#style",
+        "com_example.backend.items#script"
+      ]
+    }
+  ]
+}        </programlisting>
 
     <para>We declare various named assets. The
     <code>com_example.backend</code> style asset loads the
@@ -717,18 +715,18 @@ in the section entitled "GNU Free Documentation License".
     dependencies:</para>
 
     <programlisting language="json">    {
-            "name": "com_example.backend.items",
-            "description": "JavaScript for the backend Items page.",
-            "type": "script",
-            "uri": "backend_items.js",
-            "attributes" : {
-            "defer": true
-            },
-            "dependencies": [
-            "core",
-            "bootstrap.modal"
-            ]
-            }</programlisting>
+      "name": "com_example.backend.items",
+      "description": "JavaScript for the backend Items page.",
+      "type": "script",
+      "uri": "backend_items.js",
+      "attributes" : {
+        "defer": true
+      },
+      "dependencies": [
+        "core",
+        "bootstrap.modal"
+      ]
+    }</programlisting>
 
     <para>That's it! No more hunting down usages of this JavaScript file and
     updating our view template code.</para>
@@ -737,8 +735,8 @@ in the section entitled "GNU Free Documentation License".
     assets. The simplest way is being descriptive in our view template:</para>
 
     <programlisting language="php">$this-&gt;document-&gt;getWebAssetManager()
-            -&gt;useStyle('com_example.backend')
-            -&gt;useScript('com_example.backend.items');</programlisting>
+  -&gt;useStyle('com_example.backend')
+  -&gt;useScript('com_example.backend.items');</programlisting>
 
     <para>(note that useStyle and useScript return the WAM object which means
     they can be chain-called)</para>
@@ -753,14 +751,14 @@ in the section entitled "GNU Free Documentation License".
     <emphasis role="bold">presets</emphasis>. A preset consists entirely of
     dependencies. We declared it in our JSON file like this:</para>
 
-    <programlisting language="json">    {
-            "name": "com_example.backend.items",
-            "type": "preset",
-            "dependencies": [
-            "com_example.backend#style",
-            "com_example.backend.items#script"
-            ]
-            }
+    <programlisting language="json">  {
+    "name": "com_example.backend.items",
+    "type": "preset",
+    "dependencies": [
+      "com_example.backend#style",
+      "com_example.backend.items#script"
+    ]
+  }
         </programlisting>
 
     <para>and we can load it in our view template very easily like
@@ -781,23 +779,23 @@ in the section entitled "GNU Free Documentation License".
     JSON file and update the preset:</para>
 
     <programlisting language="json">    {
-            "name": "com_example.backend.items",
-            "description": "Backend styling just for the Items page.",
-            "type": "style",
-            "uri": "items.min.css",
-            "dependencies": [
-            "com_example.backend"
-            ]
-            },
-            {
-            "name": "com_example.backend.items",
-            "type": "preset",
-            "dependencies": [
-            "com_example.backend#style",
-            "com_example.backend.items#style",
-            "com_example.backend.items#script"
-            ]
-            }
+      "name": "com_example.backend.items",
+      "description": "Backend styling just for the Items page.",
+      "type": "style",
+      "uri": "items.min.css",
+      "dependencies": [
+        "com_example.backend"
+      ]
+    },
+    {
+      "name": "com_example.backend.items",
+      "type": "preset",
+      "dependencies": [
+        "com_example.backend#style",
+        "com_example.backend.items#style",
+        "com_example.backend.items#script"
+      ]
+    }
         </programlisting>
 
     <para>(You may notice that our <code>com_example.backend.items</code>
