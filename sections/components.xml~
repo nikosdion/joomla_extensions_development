@@ -200,52 +200,22 @@ in the section entitled "GNU Free Documentation License".
     component. The differences are a few minor, but salient, points.</para>
 
     <para><link linkend="com-namespaces"><emphasis
-    role="bold">Namespaces</emphasis></link>. All native Joomla 4 components
+    role="bold">Namespaces</emphasis></link>. All native Joomla 4 component
     use <link
     xlink:href="https://www.php.net/manual/en/language.namespaces.php">PHP
-    namespaces</link> for their PHP code. This is a simple change in naming
-    classes for models, views and controllers. For example, instead of your
+    namespaces</link> for their PHP code. This is a very simple change in
+    thinking for models, views and controllers. For example, instead of your
     frontend model being called <code>ExampleModelItem</code> it will now be
     the class <code>ItemModel</code> in the namespace
-    <classname>\<replaceable>MyComponentNamespace</replaceable>\Site\Model</classname>
-    where <code>\MyComponentNamespace</code> consists of 3 parts:</para>
-
-    <programlisting>\&lt;vendor part&gt;\Component\&lt;component name&gt;</programlisting>
-
-    <itemizedlist>
-      <listitem>
-        <para><code>\&lt;vendor part&gt;</code>: a valid PHP namespace, unique
-        to you, your company or your project. It should not start with
-        <code>\Joomla</code>, because component namespaces starting withIn
-        <code>\Joomla</code> are reserved for core components. And it should
-        not contain <code>\Component</code>, as that would interfere with the
-        literal part <code>\Component</code> in the namespace. A valid vendor
-        part can for instance be <code>\Acme</code> of
-        <code>\Acme\Support</code>.</para>
-      </listitem>
-
-      <listitem>
-        <para><code>\Component</code>: literally "\Component", with a capital
-        C. </para>
-      </listitem>
-
-      <listitem>
-        <para><code>\&lt;component name&gt;</code>: a valid component name for
-        Joomla as is used in com_componentname. In the namespace-part you can
-        use camel case; in com_componentname only lowercase is used. A valid
-        component name in the namespace would for instance be
-        <code>\Example</code> for component <code>com_example</code>.</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>The namespace of your custom component is also used for custom form
-    fields you may need to create in your component. The way to tell Joomla
-    which namespace to use for custom form fields is with the
-    <code>addfieldprefix</code> attribute in an XML form. This attribute of a
-    fieldset (and method of Joomla\CMS\Form\FormHelper) is new since Joomla
-    3.8 and can be used to add a namespace for your custom fields, so they can
-    be found with PSR4 autoloading, instead of directly providing a path as
-    was done with the <code>addfieldpath</code> attribute.</para>
+    <classname>\<replaceable>My</replaceable>\<replaceable>Prefix</replaceable>\Site\Model</classname>
+    where <code>\My\Prefix</code> is something you can define, and has no
+    restrictions other than it needs to be a valid PHP namespace, unique to
+    your component and should not start with <code>\Joomla</code> (component
+    namespaces starting withIn <code>\Joomla</code> are reserved for core
+    components). This also applies to custom form fields you may need to
+    create in your component — and there <emphasis>is</emphasis> a way to tell
+    Joomla which namespace to look custom form fields in with new attributes
+    in XML forms.</para>
 
     <para><link linkend="com-services"><emphasis role="bold">Service
     provider</emphasis></link>. All Joomla components are passed a Dependency
@@ -429,9 +399,9 @@ in the section entitled "GNU Free Documentation License".
       linkend="com-dispatcher">Dispatcher</link> object.</para>
 
       <para>Your extension can have a custom dispatcher class,
-      <code>\MyComponentNamespace\Dispatcher\Dispatcher</code>, where
-      <code>\MyComponentNamespace</code> is your component's prefix. If this
-      class exists, an object instance of it is returned.</para>
+      <code>\My\Prefix\Dispatcher\Dispatcher</code>, where
+      <code>\My\Prefix</code> is your component's prefix. If this class
+      exists, an object instance of it is returned.</para>
 
       <para>If your extension does not have a dispatcher an instance of the
       default <code>Joomla\CMS\Dispatcher\ComponentDispatcher</code> (site and
@@ -480,9 +450,9 @@ in the section entitled "GNU Free Documentation License".
 
     <para>The directory structure of a typical Joomla 4 MVC component is as
     follows, assuming it's called <code>com_example</code> and has the
-    namespace prefix <code>\Acme\Component\Example</code>. Directories are
-    suffixed with <filename>/</filename>. Please note that capitalisation
-    matters (directory and file names are case-sensitive).</para>
+    namespace prefix <code>\Acme\Example</code>. Directories are suffixed with
+    <filename>/</filename>. Please note that capitalisation matters (directory
+    and file names are case-sensitive).</para>
 
     <itemizedlist>
       <listitem>
@@ -609,9 +579,8 @@ in the section entitled "GNU Free Documentation License".
 
           <listitem>
             <para>src/ Required. The root of your extension's PHP files and
-            the root of the PSR-4
-            <code>\Acme\Component\Example\Administrator</code> namespace
-            prefix.</para>
+            the root of the PSR-4 <code>\Acme\Example\Administrator</code>
+            namespace prefix.</para>
 
             <itemizedlist>
               <listitem>
@@ -662,7 +631,7 @@ in the section entitled "GNU Free Documentation License".
               <listitem>
                 <para><filename>Field/</filename> Optional. Custom form
                 fields. Use them in your XML forms using the attribute
-                <code>addfieldprefix="Acme\Component\Example\Administrator\Field"</code>.</para>
+                <code>addfieldprefix="Acme\Example\Administrator\Field"</code>.</para>
               </listitem>
 
               <listitem>
@@ -872,8 +841,8 @@ in the section entitled "GNU Free Documentation License".
 
           <listitem>
             <para>src/ Required. The root of your extension's PHP files and
-            the root of the PSR-4 <code>\Acme\Component\Example\Site</code>
-            namespace prefix.</para>
+            the root of the PSR-4 <code>\Acme\Example\Site</code> namespace
+            prefix.</para>
 
             <itemizedlist>
               <listitem>
@@ -958,8 +927,8 @@ in the section entitled "GNU Free Documentation License".
         <itemizedlist>
           <listitem>
             <para>src/ Required. The root of your extension's PHP files and
-            the root of the PSR-4 <code>\Acme\Component\Example\Api</code>
-            namespace prefix.</para>
+            the root of the PSR-4 <code>\Acme\Example\Api</code> namespace
+            prefix.</para>
 
             <itemizedlist>
               <listitem>
@@ -1018,7 +987,7 @@ in the section entitled "GNU Free Documentation License".
     <programlisting language="php">&lt;?php
 defined('_JEXEC') || die;
 
-use Acme\Component\Example\Administrator\Extension\ExampleComponent;
+use Acme\Example\Administrator\Extension\ExampleComponent;
 use Joomla\CMS\Dispatcher\ComponentDispatcherFactoryInterface;
 use Joomla\CMS\Extension\ComponentInterface;
 use Joomla\CMS\Extension\Service\Provider\MVCFactory;
@@ -1041,7 +1010,7 @@ return new class implements ServiceProviderInterface {
          *
          * If you do not have a custom extension class use \Joomla\CMS\Extension\MVCComponent instead.
          */
-        $component = new \Acme\Component\Example\Administrator\Extension\ExampleComponent(
+        $component = new \Acme\Example\Administrator\Extension\ExampleComponent(
           $container-&gt;get(ComponentDispatcherFactoryInterface::class)
         );
 
@@ -1287,16 +1256,16 @@ return new class implements ServiceProviderInterface {
       class. That said, to help anyone reading your code — including yourself
       six or so months later — retain a modicum of their sanity it is
       advisable to use the convention
-      <code><replaceable>\MyComponentNamespace</replaceable>\Administrator\Extension\<replaceable>Name</replaceable>Component</code>
-      where \MyComponentNamespace is the namespace prefix of your component
-      and <code>Name</code> is the name of your component without the
+      <code><replaceable>\My\Prefix</replaceable>\Administrator\Extension\<replaceable>Name</replaceable>Component</code>
+      where \My\Prefix is the namespace prefix of your component and
+      <code>Name</code> is the name of your component without the
       <code>com_</code> prefix.</para>
 
       <para>For example, if you have a component named
       <code>com_example</code> with the namespace prefix
-      <code>\Acme\Component\Example</code> your extension class should be
-      <code>\Acme\Component\Example\Administrator\Extension\ExampleComponent</code>
-      and placed in the file
+      <code>\Acme\Example</code> your extension class should be
+      <code>\Acme\Example\Administrator\Extension\ExampleComponent</code> and
+      placed in the file
       <filename>administrator/components/com_example/src/Extension/ExampleComponent.php</filename>.</para>
     </section>
 
@@ -1307,7 +1276,7 @@ return new class implements ServiceProviderInterface {
       need to instantiate the extension class. These lines would look like
       this:</para>
 
-      <programlisting language="php">$component = new \Acme\Component\Example\Administrator\Extension\ExampleComponent(
+      <programlisting language="php">$component = new \Acme\Example\Administrator\Extension\ExampleComponent(
   $container-&gt;get(ComponentDispatcherFactoryInterface::class)
 );</programlisting>
 
@@ -1413,7 +1382,7 @@ public static function getContainer()
 
       <para>So now you can simply do:</para>
 
-      <programlisting language="php">$exampleDIC = \Acme\Component\Example\Administrator\Extension\ExampleComponent::getContainer();</programlisting>
+      <programlisting language="php">$exampleDIC = \Acme\Example\Administrator\Extension\ExampleComponent::getContainer();</programlisting>
 
       <para>The component's DIC gives you access to all of the application's
       services and your component's service. Using the MVCFactory to get an
@@ -1438,13 +1407,13 @@ public static function getContainer()
 
     <para>If you do decide to create a custom Dispatcher its class name
     <emphasis role="bold">MUST</emphasis> be
-    <code><replaceable>\MyComponentNamespace</replaceable>\Administrator\Dispatcher\Dispatcher</code>
+    <code><replaceable>\My\Prefix</replaceable>\Administrator\Dispatcher\Dispatcher</code>
     (backend),
-    <code><replaceable>\MyComponentNamespace</replaceable>\Site\Dispatcher\Dispatcher</code>
+    <code><replaceable>\My\Prefix</replaceable>\Site\Dispatcher\Dispatcher</code>
     (frontend) or
-    <code><replaceable>\MyComponentNamespace</replaceable>\Api\Dispatcher\Dispatcher</code>
-    (API application) where <code>\MyComponentNamespace</code> is the
-    namespace prefix for your component. This class must extend from
+    <code><replaceable>\My\Prefix</replaceable>\Api\Dispatcher\Dispatcher</code>
+    (API application) where <code>\My\Prefix</code> is the namespace prefix
+    for your component. This class must extend from
     <code>\Joomla\CMS\Dispatcher\ComponentDispatcher</code>.</para>
 
     <para>Typically, there are two methods you might need to customise. One is
@@ -1464,7 +1433,7 @@ public static function getContainer()
     Such a Dispatcher would look like the following code example.</para>
 
     <programlisting language="php">&lt;?php
-namespace Acme\Component\Example\Site\Dispatcher;
+namespace Acme\Example\Site\Dispatcher;
 
 defined('_JEXEC') or die;
 
@@ -1657,7 +1626,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
       of the component using a new XML element under the
       <code>&lt;extension&gt;</code> root element:</para>
 
-      <programlisting language="xml">&lt;namespace path="src"&gt;MyComponentNamespace&lt;/namespace&gt;</programlisting>
+      <programlisting language="xml">&lt;namespace path="src"&gt;My\Namespace\Prefix&lt;/namespace&gt;</programlisting>
 
       <para>The <code>path</code> attribute tells Joomla which subdirectory of
       your extension holds the PSR-4 of your extension's PHP files. It is best
@@ -1665,38 +1634,16 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
       have to</emphasis>. I always assume you are using
       <filename>src</filename>.</para>
 
-      <para>The text inside the XML element, <code>MyComponentNamespace</code>
+      <para>The text inside the XML element, <code>My\Namespace\Prefix</code>
       in our example, is the namespace prefix you will be using. Each
-      component has its own namespace prefix, which consists of 3
-      parts:</para>
-
-      <programlisting>\&lt;vendor part&gt;\Component\&lt;component name&gt;</programlisting>
-
-      <itemizedlist>
-        <listitem>
-          <para><code>\&lt;vendor part&gt;</code>: a valid PHP namespace,
-          unique to you, your company or your project. It should not start
-          with <code>\Joomla</code>, because component namespaces starting
-          withIn <code>\Joomla</code> are reserved for core components. And it
-          should not contain <code>\Component</code>, as that would interfere
-          with the literal part <code>\Component</code> in the namespace
-          prefix. A valid vendor part can for instance be <code>\Acme</code>
-          of <code>\Acme\Support</code>.</para>
-        </listitem>
-
-        <listitem>
-          <para><code>\Component</code>: literally "\Component", with a
-          capital C.</para>
-        </listitem>
-
-        <listitem>
-          <para><code>\&lt;component name&gt;</code>: a valid component name
-          for Joomla as is used in com_componentname. In the namespace-part
-          you can use camel case; in com_componentname only lowercase is used.
-          A valid component name in the namespace would for instance be
-          <code>\Example</code> for component <code>com_example</code>.</para>
-        </listitem>
-      </itemizedlist>
+      component can register its own namespace prefix without any
+      restrictions. It is <emphasis>recommended</emphasis> to use the
+      convention <code>\Company\Something</code> where <code>Company</code> is
+      your company name (or a shortened version thereof) and
+      <code>Something</code> corresponds to the <code>com_something</code>
+      extension name of your component. For example, the component
+      <code>com_example</code> by Acme, Inc could have a namespace prefix of
+      <code>\Acme\Example</code> set up in its XML manifest.</para>
 
       <para>Note that this is the common namespace prefix for your entire
       component. Your component has a different part for each of the three web
@@ -1704,33 +1651,33 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
       (the brand-new JSON API; this is optional).</para>
 
       <para>Here is how namespace prefixes work across different types of
-      applications, assuming a common namespace prefix
-      <code>Acme\Component\Example</code>:</para>
+      extensions, assuming a common namespace prefix
+      <code>Acme\Example</code>:</para>
 
       <itemizedlist>
         <listitem>
           <para><emphasis role="bold">Component, frontend</emphasis>. The
           frontend classes MUST be under the namespace
-          <code>\Acme\Component\Example\Site</code>. The folder
+          <code>\Acme\Example\Site</code>. The folder
           <filename>components/com_example/src</filename> is the root of the
-          <code>\Acme\Component\Example\Site</code> namespace.</para>
+          <code>\Acme\Example\Site</code> namespace.</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">Component, backend</emphasis>. The
           backend classes MUST be under the namespace
-          <code>\Acme\Component\Example\Administrator</code>. The folder
+          <code>\Acme\Example\Administrator</code>. The folder
           <filename>administrator/components/com_example/src</filename> is the
-          root of the <code>\Acme\Component\Example\Administrator</code>
+          root of the <code>\Acme\Example\Administrator</code>
           namespace.</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">Component, API application</emphasis>.
           The API application classes MUST be under the namespace
-          <code>\Acme\Component\Example\Api</code>. The folder
+          <code>\Acme\Example\Api</code>. The folder
           <filename>api/components/com_example/src</filename> is the root of
-          the <code>\Acme\Component\Example\Api</code> namespace.</para>
+          the <code>\Acme\Example\Api</code> namespace.</para>
         </listitem>
       </itemizedlist>
 
@@ -1746,7 +1693,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
       <itemizedlist>
         <listitem>
           <para><replaceable>NamespacePrefix</replaceable> is your common
-          namespace prefix, e.g. <code>\Acme\Component\Example</code>.</para>
+          namespace prefix, e.g. <code>\Acme\Example</code>.</para>
         </listitem>
 
         <listitem>
@@ -1772,9 +1719,9 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
 
       <para>Controllers, models and tables are placed under your
       <filename>src</filename> directory following PSR-4. So, a backend class
-      <code>\Acme\Component\Example\Administrator\Model\ItemModel</code> for a
-      component <code>com_example</code> whose common namespace prefix is
-      <code>\Acme\Component\Example</code> is placed in the file
+      <code>\Acme\Example\Administrator\Model\ItemModel</code> for a component
+      <code>com_example</code> whose common namespace prefix is
+      <code>\Acme\Example</code> is placed in the file
       <filename>administrator/components/com_example/src/Model/ItemModel.php</filename>.</para>
 
       <para>Views have a very slightly different convention because we also
@@ -1785,7 +1732,7 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
       <itemizedlist>
         <listitem>
           <para><replaceable>NamespacePrefix</replaceable> is your common
-          namespace prefix, e.g. <code>\Acme\Component\Example</code>.</para>
+          namespace prefix, e.g. <code>\Acme\Example</code>.</para>
         </listitem>
 
         <listitem>
@@ -1811,9 +1758,9 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
 
       <para>View classes are placed under your <filename>src</filename>
       directory following PSR-4. So, a backend class
-      <code>\Acme\Component\Example\Administrator\View\Item\HtmlView</code>
-      for a component <code>com_example</code> whose common namespace prefix
-      is <code>\Acme\Component\Example</code> is placed in the file
+      <code>\Acme\Example\Administrator\View\Item\HtmlView</code> for a
+      component <code>com_example</code> whose common namespace prefix is
+      <code>\Acme\Example</code> is placed in the file
       <filename>administrator/components/com_example/src/View/Item/HtmlView.php</filename>.</para>
 
       <para>Right away you can see how namespaces are benefiting us. A
@@ -2356,9 +2303,9 @@ class Dispatcher extends \Joomla\CMS\Dispatcher\ComponentDispatcher
       implementation:</para>
 
       <programlisting language="php">$container-&gt;set(
-  \Acme\Component\Example\Administrator\Service\FacebookPublish::class,
+  \Acme\Example\Administrator\Service\FacebookPublish::class,
   function (Container $container) {
-    return new \Acme\Component\Example\Administrator\Service\FacebookPublish();
+    return new \Acme\Example\Administrator\Service\FacebookPublish();
   }
 );</programlisting>
 
@@ -2390,10 +2337,10 @@ public static function getContainer()
       DIC in its constructor:</para>
 
       <programlisting language="php">&lt;?php
-namespace Acme\Component\Example\Administrator\Model;
+namespace Acme\Example\Administrator\Model;
 
-use Acme\Component\Example\Administrator\Extension\ExampleComponent;
-use Acme\Component\Example\Administrator\Service\FacebookPublish;
+use Acme\Example\Administrator\Extension\ExampleComponent;
+use Acme\Example\Administrator\Service\FacebookPublish;
 use Joomla\CMS\Form\FormFactoryInterface;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
 use Joomla\CMS\MVC\Model\AdminModel;
@@ -2527,7 +2474,7 @@ class ItemModel extends AdminModel
             <para>This is the controller you will be typically using for
             controllers whose name is <emphasis role="bold">plural</emphasis>
             such as
-            <code>\Acme\Component\Example\Administrator\Controller\ItemsController</code>.
+            <code>\Acme\Example\Administrator\Controller\ItemsController</code>.
             Since this is the Items controller and “items” is plural it gives
             us a hint that it will be displaying multiple items which, in the
             Joomla backend, is very likely to be a list.</para>
@@ -2562,7 +2509,7 @@ class ItemModel extends AdminModel
             <para>This is the controller you will be typically using for
             controllers whose name is <emphasis
             role="bold">singular</emphasis> such as
-            <code>\Acme\Component\Example\Administrator\Controller\ItemController</code>.
+            <code>\Acme\Example\Administrator\Controller\ItemController</code>.
             Since this is the Item controller and “item” is singular it gives
             us a hint that it will be displaying a single item which, in the
             Joomla backend, is very likely to be an add / edit record
@@ -3115,7 +3062,7 @@ $table = \Joomla\CMS\Table\Table::getInstance('Item', 'ExampleTable');</programl
 
       <programlisting language="php">/**
  * Gets a NEW table object for the Item table in the Administrator section of the component, e.g.
- * \Acme\Component\Example\Administrator\Table\ItemTable
+ * \Acme\Example\Administrator\Table\ItemTable
  */
 $table = $this-&gt;getMVCFactory()-&gt;createTable('Item', 'Administrator');</programlisting>
 
@@ -3184,7 +3131,7 @@ $table = $app-&gt;bootComponent('com_example')
       auto-completion suggestions or type hints for the database table columns
       supported by your table class.</para>
 
-      <programlisting language="php">/** @var \Acme\Component\Example\Administrator\Table\ItemTable **/
+      <programlisting language="php">/** @var \Acme\Example\Administrator\Table\ItemTable **/
 $table = $this-&gt;getMVCFactory()-&gt;createTable('Item', 'Administrator');</programlisting>
 
       <para>I find this annoying. The whole reason we're using an IDE is so we
@@ -3258,7 +3205,7 @@ $table = $this-&gt;getMVCFactory()-&gt;createTable('Item', 'Administrator');</pr
 
       <programlisting language="php">&lt;?php
 
-use Acme\Component\Example\Administrator\Table\TicketTable;
+use Acme\Example\Administrator\Table\TicketTable;
 
 class PostTable extends \Joomla\CMS\Table\Table
 {
@@ -3630,7 +3577,7 @@ class JHtmlExample {
     possible PHP class.</para>
 
     <programlisting language="php">&lt;?php
-namespace Acme\Component\Example\Administrator\Service\Html;
+namespace Acme\Example\Administrator\Service\Html;
 
 class Example {
   public function hello($who) {
@@ -3644,9 +3591,9 @@ class Example {
     method.</para>
 
     <programlisting language="php">&lt;?php
-namespace Acme\Component\Example\Administrator\Extension;
+namespace Acme\Example\Administrator\Extension;
 
-use Acme\Component\Example\Administrator\Service\Html\Example;
+use Acme\Example\Administrator\Service\Html\Example;
 
 class Example extends MVCComponent implements BootableExtensionInterface {
 
@@ -3669,7 +3616,7 @@ class Example extends MVCComponent implements BootableExtensionInterface {
     class's constructor. For example, pushing the database:</para>
 
     <para><programlisting language="php">&lt;?php
-namespace Acme\Component\Example\Administrator\Service\Html;
+namespace Acme\Example\Administrator\Service\Html;
 
 class Example {
 <emphasis role="bold">  private $db;</emphasis>
@@ -3687,9 +3634,9 @@ class Example {
     service:</para>
 
     <programlisting language="php">&lt;?php
-namespace Acme\Component\Example\Administrator\Extension;
+namespace Acme\Example\Administrator\Extension;
 
-use Acme\Component\Example\Administrator\Service\Html\Example;
+use Acme\Example\Administrator\Service\Html\Example;
 
 class Example extends MVCComponent implements BootableExtensionInterface {
   public function boot(ContainerInterface $container)
@@ -3793,14 +3740,13 @@ class Example extends MVCComponent implements BootableExtensionInterface {
       the <emphasis>frontend</emphasis> part of your site.</para>
 
       <para>Assuming our <code>com_example</code> component with the namespace
-      prefix <code>Acme\Component\Example</code>, you need to create the class
-      <classname>Acme\Component\Example\Site\Service\Category</classname> in
-      the file
+      prefix <code>Acme\Example</code>, you need to create the class
+      <classname>Acme\Example\Site\Service\Category</classname> in the file
       <filename>components/com_example/src/Service/Category.php</filename>
       like this:</para>
 
       <programlisting language="php">&lt;?php
-namespace Acme\Component\Example\Site\Service;
+namespace Acme\Example\Site\Service;
 
 defined('_JEXEC') or die;
 
@@ -3883,7 +3829,7 @@ class Category extends Categories
       <para>Unlike other services provided by your component, the category
       service is instantiated directly:</para>
 
-      <programlisting language="php">$catService = new Acme\Component\Example\Site\Service\Category([]);</programlisting>
+      <programlisting language="php">$catService = new Acme\Example\Site\Service\Category([]);</programlisting>
 
       <para>The array in the constructor arguments is not just for show. It
       can help you narrow down the list of categories to be returned with the
@@ -3952,7 +3898,7 @@ class Category extends Categories
       categories regardless of the current language in a multilingual site you
       can now do:</para>
 
-      <programlisting language="php">$catService = new Acme\Component\Example\Site\Service\Category([
+      <programlisting language="php">$catService = new Acme\Example\Site\Service\Category([
   'currentlang' =&gt; 0
 ]);</programlisting>
     </section>
@@ -4327,10 +4273,10 @@ class Category extends Categories
       <para>In Joomla 4 the router is implemented as the class
       <code>Service\Router</code> in the frontend part of our component. So,
       with a component <code>com_example</code> that has a namespace prefix
-      <code>Acme\Component\Example</code> that would be the class
-      <classname>Acme\Component\Example\Site\Service\Router</classname> in the
-      file <filename>components/com_example/src/Service/Router.php</filename>.
-      That class needs to extend from
+      <code>Acme\Example</code> that would be the class
+      <classname>Acme\Example\Site\Service\Router</classname> in the file
+      <filename>components/com_example/src/Service/Router.php</filename>. That
+      class needs to extend from
       <classname>Joomla\CMS\Component\Router\RouterBase</classname> or, more
       typically <classname>Joomla\CMS\Component\Router\RouterView</classname>,
       just like in Joomla 3.5<footnote>
@@ -4629,7 +4575,7 @@ class Category extends Categories
       database-aware).</para>
 
       <programlisting language="php">&lt;?php
-namespace Acme\Component\Example\Site\Service;
+namespace Acme\Example\Site\Service;
 
 use Joomla\CMS\Component\Router\RouterView;
 use Joomla\CMS\MVC\Factory\MVCFactoryAwareTrait;
@@ -4642,13 +4588,13 @@ class Router extends RouterView
 }</programlisting>
 
       <para>Now, let's create a Router Factory
-      (<classname>\Acme\Component\Example\Administrator\Service\RouterFactory</classname>).
+      (<classname>\Acme\Example\Administrator\Service\RouterFactory</classname>).
       The default Joomla implementation is already database-aware. I am just
       extending it to also know about the MVCFactory so we can inject it to
       our router.</para>
 
       <programlisting language="php">&lt;?php
-namespace Acme\Component\Example\Administrator\Service;
+namespace Acme\Example\Administrator\Service;
 
 use Joomla\CMS\Application\CMSApplicationInterface;
 use Joomla\CMS\Component\Router\RouterInterface;
@@ -4680,12 +4626,12 @@ class RouterFactory extends \Joomla\CMS\Component\Router\RouterFactory
       worse?</para>
 
       <para>Anyway. Let's create our router factory service provider
-      <classname>\Acme\Component\Example\Administrator\Service\Provider\RouterFactoryProvider</classname>.</para>
+      <classname>\Acme\Example\Administrator\Service\Provider\RouterFactoryProvider</classname>.</para>
 
       <programlisting language="php">&lt;?php
-namespace \Acme\Component\Example\Administrator\Service\Provider;
+namespace \Acme\Example\Administrator\Service\Provider;
 
-<emphasis role="bold">use Acme\Component\Example\Administrator\Service\RouterFactory;</emphasis>
+<emphasis role="bold">use Acme\Example\Administrator\Service\RouterFactory;</emphasis>
 use Joomla\CMS\Categories\CategoryFactoryInterface;
 use Joomla\CMS\Component\Router\RouterFactoryInterface;
 use Joomla\CMS\MVC\Factory\MVCFactoryInterface;
@@ -4758,7 +4704,7 @@ class RouterFactoryProvider implements ServiceProviderInterface
       in our component's <code>services/provider.php</code> file.</para>
 
       <programlisting language="php">$container-&gt;registerServiceProvider(
-  new \Acme\Component\Example\Administrator\Service\Provider\RouterFactoryProvider(
+  new \Acme\Example\Administrator\Service\Provider\RouterFactoryProvider(
     '\\Acme\\Example'
   )
 );</programlisting>
@@ -6792,10 +6738,9 @@ $template = new \Joomla\CMS\Mail\MailTemplate($templateId, $langTag, $mailer);</
           <para>This is the way I prefer to do things and what I will show
           you. The commands are in the <code>CliCommand</code> leaf namespace
           of my component. For example, with a component that has the
-          namespace prefix <code>Acme\Component\Example</code> I would put my
-          commands in the
-          <code>Acme\Component\Example\Administrator\CliCommand</code>
-          namespace i.e. the folder
+          namespace prefix <code>Acme\Example</code> I would put my commands
+          in the <code>Acme\Example\Administrator\CliCommand</code> namespace
+          i.e. the folder
           <code>administrator/components/com_example/src/CliCommand</code>.</para>
 
           <para>The plugin does not need to check if the component is
@@ -6812,7 +6757,7 @@ $template = new \Joomla\CMS\Mail\MailTemplate($templateId, $langTag, $mailer);</
       <bridgehead>A sample command class</bridgehead>
 
       <programlisting language="php">&lt;?php
-namespace Acme\Component\Example\Administrator\CliCommand;
+namespace Acme\Example\Administrator\CliCommand;
 
 defined('_JEXEC') or die;
 
@@ -7063,7 +7008,7 @@ use Joomla\Plugin\Console\ATS\Extension\ATS;
 return new class implements ServiceProviderInterface {
   public function register(Container $container)
   {
-    $container-&gt;registerServiceProvider(new MVCFactory('Acme\\Component\\Example'));
+    $container-&gt;registerServiceProvider(new MVCFactory('Acme\\Example'));
 
     $container-&gt;set(
       PluginInterface::class,
@@ -7102,7 +7047,7 @@ namespace Joomla\Plugin\Console\Example\Extension;
 
 defined('_JEXEC') or die;
 
-use Acme\Component\Example\Administrator\CliCommand\ItemsList;
+use Acme\Example\Administrator\CliCommand\ItemsList;
 use Joomla\Application\ApplicationEvents;
 use Joomla\Application\Event\ApplicationEvent;
 use Joomla\CMS\MVC\Factory\MVCFactoryAwareTrait;
@@ -7328,10 +7273,10 @@ class Example extends CMSPlugin implements SubscriberInterface
 
       <para>The namespace suffix for the API application is
       <classname>Api</classname>. This means that a component with the
-      namespace prefix <classname>Acme\Component\Example</classname> defined
-      in its XML manifest will have the namespace prefix
-      <classname>Acme\Component\Example\Api</classname> for all of its API
-      application classes.</para>
+      namespace prefix <classname>Acme\Example</classname> defined in its XML
+      manifest will have the namespace prefix
+      <classname>Acme\Example\Api</classname> for all of its API application
+      classes.</para>
 
       <section xml:id="com-api-component-manifest">
         <title>Adding it to your XML manifest</title>
