@@ -1,5 +1,6 @@
 ### Temporary files
 /*.xml~
+/sections/*.xml~
 
 ### Temporary DocImport output
 /output
