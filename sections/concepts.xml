@@ -79,13 +79,13 @@ in the section entitled "GNU Free Documentation License".
 
     <para>The way to solve that would be to <emphasis>namespace</emphasis> the
     extensions' code. A com_example extension could have the namespace prefix
-    \MyCompany\Example\Administrator for its backend classes and
-    \MyCompany\Example\Site for its frontend classes. This way you could have
-    something like:</para>
+    \MyCompany\Component\Example\Administrator for its backend classes and
+    \MyCompany\Company\Example\Site for its frontend classes. This way you
+    could have something like:</para>
 
-    <programlisting language="php">namespace \MyCompany\Example\Site\Model;
+    <programlisting language="php">namespace \MyCompany\Component\Example\Site\Model;
 
-class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
+class ItemModel extends \MyCompany\Component\Example\Administrator\Model\ItemModel
 {
   // ...
 }</programlisting>
@@ -109,7 +109,7 @@ class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
     extension using a new XML element under the <code>&lt;extension&gt;</code>
     root element:</para>
 
-    <programlisting language="xml">&lt;namespace path="src"&gt;My\Namespace\Prefix&lt;/namespace&gt;</programlisting>
+    <programlisting language="xml">&lt;namespace path="src"&gt;MyCompany\Component\Example&lt;/namespace&gt;</programlisting>
 
     <para>The <code>path</code> attribute tells Joomla which subdirectory of
     your extension holds the PSR-4 of your extension's PHP files. It is best
@@ -117,86 +117,138 @@ class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
     to</emphasis>. In the rest of this section I assume you are using
     <filename>src</filename>.</para>
 
-    <para>The text inside the XML element, <code>My\Namespace\Prefix</code> in
-    our example, is the namespace prefix you will be using.</para>
+    <para>The text inside the XML element,
+    <code>MyCompany\Component\Example</code> in our example, is the namespace
+    prefix you will be using.</para>
 
-    <para>Here is how namespace prefixes work across different types of
-    extensions:</para>
+    <para>Here is how namespace prefixes work for Joomla extensions:</para>
 
     <itemizedlist>
       <listitem>
-        <para><emphasis role="bold">Component, frontend</emphasis>. Each
-        component can register its own namespace prefix without any
-        restrictions. It is <emphasis>recommended</emphasis> to use the
-        convention <code>\Company\Something</code> where <code>Company</code>
-        is your company name (or a shortened version thereof) and
-        <code>Something</code> corresponds to the <code>com_something</code>
-        extension name of your component. For example, the component
-        <code>com_example</code> by Acme, Inc could have a namespace prefix of
-        <code>\Acme\Example</code> set up in its XML manifest. In this case
-        its frontend classes MUST be under the namespace
-        <code>\Acme\Example\Site</code>. The folder
-        <filename>components/com_example/src</filename> is the root of the
-        <code>\Acme\Example\Site</code> namespace.</para>
+        <para>All extensions start with a <emphasis role="bold">vendor
+        namespace prefix</emphasis>. For Joomla's core extensions that is
+        "\Joomla". For your custom extension you can use your own namespace,
+        like your company name. This vendor namespace prefix can have multiple
+        segments, for instance
+        <classname>\Acme\Development\Utilities</classname>.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Component, backend</emphasis>. Let's say
-        we have the component <code>com_example</code> by Acme, Inc which has
-        a namespace prefix of <code>\Acme\Example</code>. In this case its
+        <para>After the vendor namespace prefix there is a namespace segment
+        to indicate the <emphasis role="bold">extension type</emphasis>:
+        <code>\Component</code>, <code>\Module</code> or
+        <code>\Plugin</code>.</para>
+      </listitem>
+
+      <listitem>
+        <para>When the extension type is a component or a module it is
+        followed by:<itemizedlist>
+            <listitem>
+              <para>a namespace segment with the <emphasis
+              role="bold">extension name</emphasis> (without the
+              <code>com_</code> or <code>mod_</code> prefix)</para>
+            </listitem>
+
+            <listitem>
+              <para>and after that a segment with the <emphasis
+              role="bold">application type</emphasis>:<code>
+              \Administrator</code>, <code>\Site</code> or
+              <code>\Api</code>.</para>
+            </listitem>
+          </itemizedlist></para>
+      </listitem>
+
+      <listitem>
+        <para>When the extension type is a plugin it is followed by:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>a namespace segment with the <emphasis role="bold">plugin
+            type</emphasis>, for instance \Content, \Finder or \System</para>
+          </listitem>
+
+          <listitem>
+            <para>and after that a segment with the <emphasis
+            role="bold">extension name</emphasis> (without the
+            <code>plg_</code> prefix)</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+
+    <para>Joomla's extension namespace prefixes as a railroad diagram:</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="../assets/JoomlaExtensionNamespace.png"/>
+      </imageobject>
+    </mediaobject>
+
+    <para>Examples across different types of extensions:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">Component, frontend</emphasis>. The
+        component <code>com_example</code> by Acme, Inc could have a namespace
+        prefix of <code>\Acme\Component\Example</code> set up in its XML
+        manifest. In this case its frontend classes MUST be under the
+        namespace <code>\Acme\Component\Example\Site</code>. The folder
+        <filename>components/com_example/src</filename> is the root of the
+        <code>\Acme\Component\Example\Site</code> namespace.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Component, backend</emphasis>. The same
+        component <code>com_example</code> by Acme, Inc which has a namespace
+        prefix of <code>\Acme\Component\Example</code>. In this case its
         backend classes MUST be under the namespace
-        <code>\Acme\Example\Administrator</code>. The folder
+        <code>\Acme\Component\Example\Administrator</code>. The folder
         <filename>administrator/components/com_example/src</filename> is the
-        root of the <code>\Acme\Example\Administrator</code> namespace.</para>
+        root of the <code>\Acme\Component\Example\Administrator</code>
+        namespace.</para>
       </listitem>
 
       <listitem>
         <para><emphasis role="bold">Component, API application</emphasis>. The
-        API application is the third Joomla application (the other two being
-        Site the frontend, and Administrator the backend). We'll talk about it
-        <link linkend="com-api">later in this book</link>. Let's say we have
-        the component <code>com_example</code> by Acme, Inc which has a
-        namespace prefix of <code>\Acme\Example</code>. In this case its API
-        application classes MUST be under the namespace
-        <code>\Acme\Example\Api</code>. The folder
+        API application is the third type of Joomla application (the other two
+        being Site the frontend, and Administrator the backend). We'll talk
+        about it <link linkend="com-api">later in this book</link>. Let's say
+        we have the component <code>com_example</code> by Acme, Inc which has
+        a namespace prefix of <code>\Acme\Component\Example</code>. In this
+        case its API application classes MUST be under the namespace
+        <code>\Acme\Component\Example\Api</code>. The folder
         <filename>api/components/com_example/src</filename> is the root of the
-        <code>\Acme\Example\Api</code> namespace.</para>
+        <code>\Acme\Component\Example\Api</code> namespace.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Module, frontend</emphasis>. A frontend
-        module mod_example MUST have its classes under the namespace
-        <code>Joomla\Module\Example\Site</code>. The namespace you MUST
-        declare in the XML manifest is <code>Joomla\Module\Example</code>.
-        Even though you are severely restricted in the namespace prefix you
-        can use, you MUST provide it in your XML manifest or your module won't
-        work! The folder <filename>modules/mod_example/src</filename> is the
-        root of the <code>Joomla\Module\Example\Site</code> namespace.</para>
+        <para><emphasis role="bold">Module, frontend</emphasis>. The module
+        <code>mod_example</code> by Acme, Inc could have a namespace prefix of
+        <code>\Acme\Module\Example</code> set up in its XML manifest. If it is
+        a frontend module the namespace will then be
+        <code>\Acme\Module\Example\Site</code> and the folder
+        <filename>modules/mod_example/src</filename> is the root of that
+        namespace.</para>
       </listitem>
 
       <listitem>
-        <para><emphasis role="bold">Module, backend</emphasis>. A backend
-        module mod_example MUST have its classes under the namespace
-        <code>Joomla\Module\Example\Administrator</code>. The namespace you
-        MUST declare in the XML manifest is
-        <code>Joomla\Module\Example</code>. Even though you are severely
-        restricted in the namespace prefix you can use, you MUST provide it in
-        your XML manifest or your module won't work! The folder
+        <para><emphasis role="bold">Module, backend</emphasis>. If that module
+        <code>mod_example</code> by Acme, Inc would be a backend module, with
+        the same namespace prefix <code>\Acme\Module\Example</code> declared
+        in its XML manifest, the namespace will then be
+        <code>\Acme\Module\Example\Administrator</code>. The folder
         <filename>administrator/modules/mod_example/src</filename> is the root
-        of the <code>Joomla\Module\Example\Administrator</code>
+        of the <code>\Acme\Module\Example\Administrator</code>
         namespace.</para>
       </listitem>
 
       <listitem>
         <para><emphasis role="bold">Plugin</emphasis>. The plugin
-        <code>plg_system_example</code> MUST have its classes under the
-        namespace <code>Joomla\Plugin\System\Example</code>. The namespace you
-        MUST declare in the XML manifest is
-        <code>Joomla\Plugin\System\Example</code>. Even though you are
-        severely restricted in the namespace prefix you can use, you MUST
-        provide it in your XML manifest or your plugin won't work! The folder
-        <filename>plugins/system/example/src</filename> is the root of the
-        <code>Joomla\Plugin\System\Example</code> namespace.</para>
+        <code>plg_system_example</code> by Acme, Inc could have a namespace
+        prefix of <code>\Acme\Plugin\System\Example</code> set up in its XML
+        manifest. The folder <filename>plugins/system/example/src</filename>
+        is the root of that <code>\Acme\Plugin\System\Example</code>
+        namespace.</para>
       </listitem>
 
       <listitem>
@@ -208,12 +260,13 @@ class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
         directly with the <code>JLoader::registerPrefix</code> method. It is a
         good practice putting your namespaced PHP files in the
         <filename>src</filename> directory and use the namespace
-        <code>\Joomla\Template\Site\Something</code> for frontend templates
-        and <code>\Joomla\Template\Administrator\Something</code> for backend
-        templates. Please note that there is no real guidance for the template
-        names BUT we can infer what any future change adding namespace support
-        to templates will most likely be based on how modules are namespaced
-        and Joomla trying to have a modicum of consistency.</para>
+        <code>\MyCompany\Template\Site\Something</code> for frontend templates
+        and <code>\MyCompany\Template\Administrator\Something</code> for
+        backend templates. Please note that there is no real guidance for the
+        template names BUT we can infer what any future change adding
+        namespace support to templates will most likely be based on how
+        modules are namespaced and Joomla trying to have a modicum of
+        consistency.</para>
       </listitem>
     </itemizedlist>
 
@@ -240,23 +293,32 @@ class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
 
     <para>Let's see some <emphasis>bad</emphasis> examples first.</para>
 
-    <para>A component with the namespace prefix
-    <classname>Acme\Example</classname> and a plugin with the prefix
-    <classname>Acme\Example\System</classname>. This violates both reasons for
-    having a namespace. The namespace prefixes are not unique (the plugin's
-    prefix is a subset of the component's prefix) and it's hard to understand
-    which extension they refer to.</para>
+    <itemizedlist>
+      <listitem>
+        <para>A component with the namespace prefix
+        <classname>Acme\Component\Example</classname> and a plugin with the
+        prefix <classname>Acme\Component\Example\Plugin\System</classname>.
+        This is not correctly the rules set out above and violates both
+        reasons for having a namespace: the namespace prefixes are not unique
+        (the plugin's prefix is a subset of the component's prefix) and it's
+        hard to understand which extension they refer to.</para>
+      </listitem>
 
-    <para>A component released by Yoyodyne Corporation with the namespace
-    prefix <classname>Acme\Component\Example</classname>. This violates the
-    second rule as a casual bystander would assume that the component was
-    written by a company called Acme, not Yoyodyne.</para>
+      <listitem>
+        <para>A component released by Yoyodyne Corporation with the namespace
+        prefix <classname>Acme\Component\Example</classname>. This violates
+        the second rule as a casual bystander would assume that the component
+        was written by a company called Acme, not Yoyodyne.</para>
+      </listitem>
 
-    <para>A system plugin called foobar with the namespace
-    <classname>Joomla\Plugin\System\Foo</classname>. Again, it violates both
-    reasons as it's neither unique (<code>plg_system_foo</code> could use the
-    same namespace!) and does not help people identify the plugin in
-    question.</para>
+      <listitem>
+        <para>A system plugin called foobar with the namespace
+        <classname>Acme\Plugin\System\Foo</classname>. Again, it violates both
+        reasons as it's neither unique (<code>plg_system_foo</code> could use
+        the same namespace!) and does not help people identify the plugin in
+        question.</para>
+      </listitem>
+    </itemizedlist>
 
     <para>Based on the bad examples it's easy to understand what a
     <emphasis>good</emphasis> namespace is.</para>
@@ -272,8 +334,8 @@ class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
       </listitem>
 
       <listitem>
-        <para>(optional, but encouraged) The type of the extension the
-        namespace refers to, e.g. Component, Plugin, or Module.</para>
+        <para>The type of the extension the namespace refers to, e.g.
+        Component, Plugin, or Module.</para>
       </listitem>
 
       <listitem>
@@ -329,10 +391,10 @@ class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
     <itemizedlist>
       <listitem>
         <para>Am I using the correct class name? Writing this book I've typed
-        <classname>Acme\Examlpe</classname> instead of
-        <classname>Acme\Example</classname> more times than I care to admit.
-        Always start with the assumption that you typed the class name
-        wrong.</para>
+        <classname>Acme\Component\Examlpe</classname> instead of
+        <classname>Acme\Component\Example</classname> more times than I care
+        to admit. Always start with the assumption that you typed the class
+        name wrong.</para>
       </listitem>
 
       <listitem>
@@ -390,7 +452,7 @@ class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
         <tag>&lt;namespace&gt;</tag> tag, the namespace is spelled correctly
         and it has a <parameter>path</parameter> attribute which is also
         spelled correctly, both itself and the folder name which is your PSR-4
-        root.</para>
+        root (usually set to "src").</para>
       </listitem>
 
       <listitem>
@@ -398,10 +460,11 @@ class ItemModel extends \MyCompany\Example\Administrator\Model\ItemModel
         described above, especially the one about it not being a subset of
         another extension's namespace? If your namespace is a subset of
         another extension (e.g. my namespace is
-        <classname>Acme\Example\Foo</classname> and there's another extension
-        with the namespace <classname>Acme\Example</classname>) the PSR-4
-        autoloader will end up looking into the <emphasis>wrong
-        folder</emphasis> for your files.</para>
+        <classname>Acme\Component\Example\Foo</classname> and there's another
+        extension with the namespace
+        <classname>Acme\Component\Example</classname>) the PSR-4 autoloader
+        will end up looking into the <emphasis>wrong folder</emphasis> for
+        your files.</para>
       </listitem>
     </itemizedlist>
   </section>
