@@ -15,5 +15,5 @@ jobs:
           port: ${{ secrets.SSH_PORT }}
           username: ${{ secrets.SSH_USERNAME }}
           password: ${{ secrets.SSH_PASSWORD }}
-          source: "joomla_extensions_development.xml,sections/advice.xml,sections/components.xml,sections/concepts.xml,sections/fdl.xml,sections/gpl.xml,sections/modules.xml,sections/plugins.xml,sections/preface.xml,sections/templates.xml"
+          source: "joomla_extensions_development.xml,sections/advice.xml,sections/components.xml,sections/concepts.xml,sections/fdl.xml,sections/gpl.xml,sections/modules.xml,sections/plugins.xml,sections/preface.xml,sections/templates.xml,assets/*"
           target: ${{ secrets.SSH_PATH }}
