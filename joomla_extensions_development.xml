@@ -95,22 +95,22 @@ in the section entitled "GNU Free Documentation License".
     </legalnotice>
   </info>
 
-  <xi:include href="sections/preface.xml"/>
+  <xi:include href="preface.xml"/>
 
-  <xi:include href="sections/concepts.xml"/>
+  <xi:include href="concepts.xml"/>
 
-  <xi:include href="sections/components.xml"/>
+  <xi:include href="components.xml"/>
 
-  <xi:include href="sections/plugins.xml"/>
+  <xi:include href="plugins.xml"/>
 
-  <xi:include href="sections/modules.xml"/>
+  <xi:include href="modules.xml"/>
 
-  <xi:include href="sections/templates.xml"/>
+  <xi:include href="templates.xml"/>
 
-  <xi:include href="sections/advice.xml"/>
+  <xi:include href="advice.xml"/>
 
-  <xi:include href="sections/fdl.xml"/>
+  <xi:include href="fdl.xml"/>
 
-  <xi:include href="sections/gpl.xml"/>
+  <xi:include href="gpl.xml"/>
 
 </book>

@@ -180,7 +180,7 @@ class ItemModel extends \MyCompany\Component\Example\Administrator\Model\ItemMod
 
     <mediaobject>
       <imageobject>
-        <imagedata fileref="../assets/JoomlaExtensionNamespace.png"/>
+        <imagedata fileref="assets/JoomlaExtensionNamespace.png"/>
       </imageobject>
     </mediaobject>
 
