@@ -3972,7 +3972,7 @@ class RouterFactoryProvider implements ServiceProviderInterface
 
       <programlisting language="php">$container-&gt;registerServiceProvider(
   new \Acme\Component\Example\Administrator\Service\Provider\RouterFactoryProvider(
-    '\\Acme\\Example'
+    '\\Acme\\Component\\Example'
   )
 );</programlisting>
     </section>
