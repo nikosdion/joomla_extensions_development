@@ -895,5 +895,66 @@ Joomla\CMS\HTML\HTMLHelper::_('script', 'com_example/something.js', [
     assets cause Joomla to error out. Again, WAM is safe, the methods of
     yesteryear are not. One more reason to migrate your extensions to WAM
     today.</para>
+
+    <bridgehead>Caveat: modules don't auto-load the
+    <filename>joomla.asset.json</filename> file</bridgehead>
+
+    <para>Modules do not auto-load the <filename>joomla.asset.json</filename>
+    file. You will need to load it yourself with:</para>
+
+    <programlisting>$wa = \Joomla\CMS\Factory::getApplication()
+  -&gt;getDocument()
+  -&gt;getWebAssetManager();
+$wa
+  -&gt;getRegistry()
+  -&gt;addRegistryFile(JPATH_ROOT . '/media/mod_mymodule/joomla.asset.json');</programlisting>
+
+    <para>Alternatively, you can register and load each separate dependency in
+    your view template file, like Joomla's core modules do, even though that's
+    NOT a recommended or sustainable practice:</para>
+
+    <programlisting>$wa = \Joomla\CMS\Factory::getApplication()
+  -&gt;getDocument()
+  -&gt;getWebAssetManager();
+$wa
+  -&gt;registerAndUseScript(
+    'mod_mymodule.something', 
+    'mod_mymodule/something.min.js',
+    [],
+    ['defer' =&gt; true],
+    ['core']
+  );</programlisting>
+
+    <bridgehead>Caveat: templates have a weird location for the
+    <filename>joomla.asset.json</filename> file</bridgehead>
+
+    <para>In Joomla 3 and 4.0 you are supposed to put the template's static
+    files inside your template's subdirectory:
+    <filename>templates/<replaceable>TEMPLATE_NAME</replaceable></filename>
+    for front-end templates, or
+    <filename>administrator/templates/<replaceable>TEMPLATE_NAME</replaceable></filename>
+    for back-end templates, where <replaceable>TEMPLATE_NAME</replaceable> is
+    the name of your template without the <code>tpl_</code> prefix.</para>
+
+    <para>In Joomla 4.1 and later versions you are supposed to put the
+    template's static files inside a media subdirectory:
+    <filename>media/site/<replaceable>TEMPLATE_NAME</replaceable></filename>
+    for front-end templates, or
+    <filename>media/site/<replaceable>TEMPLATE_NAME</replaceable></filename>
+    for back-end templates, where <replaceable>TEMPLATE_NAME</replaceable> is
+    the name of your template without the <code>tpl_</code> prefix. As of
+    Joomla 6 this will be the only supported method. It is definitely the only
+    supported method since Joomla 4.1 for templates which have support for
+    <emphasis>child templates</emphasis>.</para>
+
+    <para>In <emphasis>both</emphasis> cases you have to put your
+    joomla.asset.json file inside your template's subdirectory:
+    <filename>templates/<replaceable>TEMPLATE_NAME</replaceable></filename>
+    for front-end templates, or
+    <filename>administrator/templates/<replaceable>TEMPLATE_NAME</replaceable></filename>
+    for back-end templates, where <replaceable>TEMPLATE_NAME</replaceable> is
+    the name of your template without the <code>tpl_</code> prefix. This may
+    look a bit weird, but it's there for legacy reasons. Templates with the
+    old-style static resources wouldn't work otherwise.</para>
   </section>
 </chapter>
