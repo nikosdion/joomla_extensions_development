@@ -53,7 +53,7 @@ On Windows you can use the [Chocolatey](https://chocolatey.org) package manager 
 choco install xsltproc
 ```
 
-Assuming that `xsltproc` is in your path and the DocBooc XSL stylesheets installed in `/opt/docbook-xsl` you can convert the DocBook XML sources to chunked HTML under the directory `/var/www/html/jextdev` with:
+Assuming that `xsltproc` is in your path and the [DocBooc XSL stylesheets](https://github.com/docbook/xslt10-stylesheets) installed in `/opt/docbook-xsl` you can convert the DocBook XML sources to chunked HTML under the directory `/var/www/html/jextdev` with:
 
 ```bash
 xsltproc --nonet --xinclude --novalid \
@@ -70,4 +70,6 @@ xsltproc --nonet --xinclude --novalid \
 
 Note 1: do not try to convert the book to HTML, PDF, or ePUB with the Personal Edition of XMLMind DocBook Editor. It is designed to duplicate letters in random words of the output document (the converter is just a preview of their commercial offering).
 
-Note 2: conversion to PDF involves converting the DocBook XML sources to XML:FO and using Apache FOP to convert to PDF. Apache FOP is no longer developed, therefore no effort was spent to optimise the book for PDF export. As a result there are text overflow issues in the numerous code samples in the book which will not be fixed. If you _really_ need this book in PDF format you can always export to non-chunked HTML using `html.xsl` instead of `chunkfast.xsl` in the command line above, open the HTML document with your favourite browser and “printing” to PDF from it.
+Note 2: conversion to PDF involves converting the DocBook XML sources to XML:FO and using Apache FOP to convert to PDF. Apache FOP is no longer developed, therefore no effort was spent to optimise the book for PDF export. As a result there are text overflow issues in the numerous code samples in the book which will not be fixed.
+
+Note 3: this repository is not the right place to ask for help about libxslt tools or the DocBook XSL Stylesheets. You're advised to consult [the documentation of DocBook XSL Stylesheets](http://www.sagehill.net/docbookxsl/) and [the man page of `xsltproc`](https://gnome.pages.gitlab.gnome.org/libxslt/xsltproc.html)
