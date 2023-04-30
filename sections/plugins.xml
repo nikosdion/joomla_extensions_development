@@ -148,8 +148,8 @@ in the section entitled "GNU Free Documentation License".
     &lt;description&gt;PLG_SYSTEM_EXAMPLE_XML_DESCRIPTION&lt;/description&gt;
     <emphasis role="bold">&lt;namespace path="src"&gt;Acme\Plugin\System\Example&lt;/namespace&gt;</emphasis>
     &lt;files&gt;
-        <emphasis role="bold">&lt;folder&gt;services&lt;/folder&gt;</emphasis>
-        <emphasis role="bold">&lt;folder plugin="example"&gt;src&lt;/folder&gt;</emphasis>
+        <emphasis role="bold">&lt;folder plugin="example"&gt;services&lt;/folder&gt;</emphasis>
+        <emphasis role="bold">&lt;folder&gt;src&lt;/folder&gt;</emphasis>
     &lt;/files&gt;
     &lt;languages&gt;
         &lt;language tag="en-GB"&gt;language/en-GB/plg_system_example.ini&lt;/language&gt;
