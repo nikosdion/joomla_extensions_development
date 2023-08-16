@@ -319,7 +319,7 @@ return new class implements ServiceProviderInterface {
       component's service provider</link> that you can trigger plugins using
       modern events like so:</para>
 
-      <programlisting language="php">$event = \Joomla\CMS\Event\GenericEvent::create('onSomething', [$param1, $param2]);
+      <programlisting language="php">$event = new \Joomla\Event\Event('onSomething', [$param1, $param2]);
 $this-&gt;getDispatcher()-&gt;dispatch($event-&gt;getName(), $event);
 $results = $event-&gt;getArgument('result', []);</programlisting>
 
@@ -331,25 +331,12 @@ $results = $event-&gt;getArgument('result', []);</programlisting>
       <para>Plugins of this type are just like <link
       linkend="plg-forms-j4-classic">Joomla 4 classic plugins</link> with a
       twist. The plugin class implements the
-      <interfacename>\Joomla\Event\SubscriberInterface</interfacename> and you
-      set the protected property <code>$this-&gt;allowLegacyListeners =
-      false;</code>. This changes the way Joomla registers event
-      handlers.</para>
-
-      <para>Joomla will NOT use reflection to find public methods whose name
-      starts with <code>on</code>. It will instead call the public static
-      method <methodname>getSubscribedEvents</methodname> which is defined in
-      the interface and implemented in your plugin class. This returns an
-      array mapping event names to public methods of your plugin. Not having
-      to go through reflection saves <emphasis>a lot</emphasis> of time on
-      every page load of the site. Moreover, events are self-contained objects
-      being passed around which reduces the overhead of calling each event
-      handler. These add up with the dozens to hundreds of plugins and event
-      handlers running on a typical Joomla site, saving several dozens to a
-      few hundreds of milliseconds of page load time. This is a significant
-      performance improvement for the site. <emphasis role="bold">This is why
-      I've been telling people since 2017, that modern events make Joomla 4
-      and later versions faster</emphasis>.</para>
+      <interfacename>\Joomla\Event\SubscriberInterface</interfacename>. This
+      changes the way Joomla registers event handlers. Implementing this
+      interface requires you to implement the
+      <methodname>getSubscribedEvents</methodname> method, defined in the
+      interface. This returns an array mapping event names to the names of
+      public methods of your plugin.</para>
 
       <para>The implementation of the getSubscribedEvents method is pretty
       straightforward:</para>
@@ -423,6 +410,34 @@ $results = $event-&gt;getArgument('result', []);</programlisting>
       We will talk about this in <link
       linkend="plg-forms-j4-listener-types">the next section on listener
       types</link>.</para>
+
+      <bridgehead>Why bother? Performance!</bridgehead>
+
+      <para>When you are using SubscriberInterface in your plugins you can and
+      should set the protected property <code>$this-&gt;allowLegacyListeners =
+      false;</code> to tell Joomla! that your plugin only handles plugin
+      events defined by the <methodname>getSubscribedEvents</methodname>
+      method. Joomla will NOT use the super slow PHP <link
+      xlink:href="https://www.php.net/manual/en/class.reflectionobject.php">ReflectionObject</link>
+      to find public methods whose name starts with <code>on</code>. It will
+      instead only call the public static method
+      <methodname>getSubscribedEvents</methodname> which is defined in the
+      interface and implemented in your plugin class and register the event
+      handlers it describes.</para>
+
+      <para><emphasis role="bold">This is the key to massive performance
+      improvement on your users' sites.</emphasis></para>
+
+      <para>Not having to go through reflection saves <emphasis>a
+      lot</emphasis> of time on every page load of the site. Moreover, events
+      are self-contained objects being passed around which reduces the
+      overhead of calling each event handler. These add up with the dozens to
+      hundreds of plugins and event handlers running on a typical Joomla site,
+      saving several dozens to a few hundreds of milliseconds of page load
+      time. This is a significant performance improvement for the site.
+      <emphasis role="bold">This is why I've been telling people since 2017,
+      that modern events make Joomla 4 and later versions
+      faster</emphasis>.</para>
     </section>
 
     <section xml:id="plg-forms-j4-listener-types">
@@ -1590,6 +1605,533 @@ if (!($document instanceof \Joomla\CMS\Document\HtmlDocument))
   <section xml:id="plg-concrete-events">
     <title>Generic versus Concrete events</title>
 
-    <para/>
+    <para>As noted earlier in this chapter, Joomla 4 and later versions use
+    real event objects and event handlers. However, to make things simpler, I
+    only gave you a morsel of the full power of this approach and why it
+    matters <emphasis>for you, the developer</emphasis>. OK, here's a spoiler:
+    when used properly it disambiguates the data types handled and returned by
+    each event. But how exactly does that work?</para>
+
+    <para>First, let's revisit how events are called. The simplest way to tell
+    Joomla! to call a plugin event is to directly instantiate the generic
+    <classname>Event</classname> class, throw some data into it, and tell
+    Joomla's dispatcher to dispatch the event:</para>
+
+    <programlisting language="php">$event = new \Joomla\Event\Event('onSomething', [$param1, $param2]);
+\Joomla\CMS\Factory::getApplication()
+  -&gt;getDispatcher()
+  -&gt;dispatch($event-&gt;getName(), $event);
+$results = $event-&gt;getArgument('result', []);</programlisting>
+
+    <para>This is not very helpful, and it looks tediously verbose compared
+    with the “classic” Joomla 1.x/2.x/3.x way of calling events:</para>
+
+    <programlisting>$results = \Joomla\CMS\Factory::getApplication()-&gt;triggerEvent('onSomething', [$param1, $param2]);</programlisting>
+
+    <para>Well, yes. You are right. Or, rather, you would be right if that was
+    the extent of events handling in Joomla. In fact, what we presented above
+    is “generic” or “arbitrary” events. We just gave an event name and a bunch
+    of data. We have no expectations about this data, nor do we have any
+    expectations about the results. This is an easy hack to get started with
+    events, but it leads to lots of mistakes when several people who are not
+    exactly experts in the system start calling and handling events in this
+    haphazard manner. As a matter of fact, this has been a major problem
+    throughout Joomla's first 17 years.</para>
+
+    <para>The solution to that is <emphasis role="bold">concrete
+    events</emphasis>. No, we are not talking about masonry. We are talking
+    about describing events —their names, input data, and output types— in a
+    named PHP class which extends from
+    <classname>\Joomla\Event\Event</classname> or one of its subclasses.
+    Calling these events requires creating a <emphasis>concrete
+    object</emphasis> of that event class, hence the “concrete event”
+    moniker.</para>
+
+    <para>Concrete events change the way you think about and implement events.
+    You need to create named event classes, you need to change the way you
+    call events, and you need to change the way you handle events.</para>
+
+    <bridgehead>Event classes</bridgehead>
+
+    <para>Concrete events need an <termdef>Event Class</termdef>. The only
+    hard requirement is that this event class extends from
+    <classname>\Joomla\Event\Event</classname> or one of its subclasses. You
+    can place it anywhere in your component, plugin, module, or library as
+    long as you follow PSR-4 and the class can be autoloaded by Joomla's PSR-4
+    autoloader. </para>
+
+    <tip>
+      <para>Remember that when you set up the <code>&lt;namespace&gt;</code>
+      tag in your extension's manifest you tell Joomla! to register a PSR-4
+      namespace root exactly so it can magically load your classes through its
+      PSR-4 autoloader. Assuming you follow the convention of putting your
+      code under the <filename>src</filename> folder you can create an
+      <filename>Event</filename> folder under it to hold your event
+      classes.</para>
+    </tip>
+
+    <para>For the sake of an example, let's assume you have a component with
+    the namespace prefix <classname>Acme\Component\Example</classname> and you
+    want to define event classes. It's a good idea to put your event classes
+    in the backend folder of your component, i.e.
+    <filename>administrator/components/com_example/src/Events</filename> which
+    means that your event classes will be under the namespace
+    <classname>Acme\Component\Example\Administrator\Event</classname>.</para>
+
+    <para>Let's also say that you want to create the event
+    <code>onExampleFoobar</code> which accepts two named arguments:
+    <code>article</code> of type
+    <classname>\Joomla\Component\Content\Administrator\Table\ArticleTable</classname>
+    and <code>count</code> of type <code>integer</code> which is a positive,
+    non-zero number with a default value (if none is set) of 10. It is
+    expected to return an <code>array</code>.</para>
+
+    <para>Extending directly from <classname>\Joomla\Event\Event</classname>
+    is impractical, as you'd have to reinvent the wheel. Instead, extend from
+    <classname>\Joomla\CMS\Event\AbstractEvent</classname> (if you plan on
+    your event's arguments to be modifiable — BAD IDEA!) or
+    <classname>\Joomla\CMS\Event\AbstractImmutableEvent</classname> (if you
+    want your event's arguments to be immutable, i.e. non-modifiable — that's
+    the way to do it).</para>
+
+    <para>Armed with this knowledge, we will create our new event class,
+    <classname>Acme\Component\Example\Administrator\Event\Foobar</classname>.
+    Here's our first draft:</para>
+
+    <programlisting>&lt;?php
+
+namespace Acme\Component\Example\Administrator\Event;
+
+defined('_JEXEC') || die;
+
+use Joomla\CMS\Event\AbstractImmutableEvent;
+use Joomla\Component\Content\Administrator\Table\ArticleTable;
+
+class Foobar extends AbstractImmutableEvent
+{
+    public function __construct(ArticleTable $article, int $count = 10)
+    {
+        $arguments = [
+            'article' =&gt; $article,
+            'count'   =&gt; $count,
+        ];
+
+        parent::__construct('onExampleFoobar', $arguments);
+    }
+}</programlisting>
+
+    <para>Immediately, we can see something interesting. The constructor of
+    the class accepts our arguments as typical PHP arguments instead of an
+    array. This means that constructing the concrete event object does not
+    require passing an array with data. Immediately, it becomes clear what
+    kind of data is required, what type it is, and prevents anyone using this
+    event from mucking it up. It even has a default value for the count
+    argument. Very nice!</para>
+
+    <para>Let's improve it by implementing the requirement that
+    <code>count</code> is a positive integer. Oh, yes, that's right! We can do
+    that. Whenever you try to set an argument, the parent class calls the
+    method <code>set<replaceable>ArgumentName</replaceable>($value)</code>
+    where <replaceable>ArgumentName</replaceable> is the name of the argument
+    in Uppercasefirst format. In fact, we are also going to use the same trick
+    to make sure that there is no loophole for setting the
+    <code>article</code> argument to anything other than an article object.
+    Behold:</para>
+
+    <programlisting>&lt;?php
+
+namespace Acme\Component\Example\Administrator\Event;
+
+defined('_JEXEC') || die;
+
+use Joomla\CMS\Event\AbstractImmutableEvent;
+use Joomla\Component\Content\Administrator\Table\ArticleTable;
+
+class Foobar extends AbstractImmutableEvent
+{
+    public function __construct(ArticleTable $article, int $count = 10)
+    {
+        $arguments = [
+            'article' =&gt; $article,
+            'count'   =&gt; $count,
+        ];
+
+        parent::__construct('onExampleFoobar', $arguments);
+    }
+
+	public function setArticle(ArticleTable $article): ArticleTable
+	{
+		return $article;
+	}
+
+	public function setCount(int $count): int
+	{
+		if ($count &lt;= 0) {
+			throw new \RangeException('The value of count must be a positive integer');
+		}
+		
+		return $count;
+	}
+}</programlisting>
+
+    <para>This leaves us with the final requirement: making sure the return
+    value is always an array. Luckily, I've contributed a number of PHP Traits
+    to make your life easier in that regard. You can find them in the
+    <filename>libraries/src/Event/Result</filename> folder of Joomla. The way
+    to use them is as follows. Your event class must implement the
+    <interfacename>\Joomla\CMS\Event\Result\ResultAwareInterface</interfacename>
+    and use the <classname>\Joomla\CMS\Event\Result\ResultAware</classname>
+    trait which implements most of the logic. This leaves us with one more
+    method to implement: <methodname>typeCheckResult</methodname>. There are
+    only so many variable types in PHP, so I did the boring work of creating
+    traits for each one of them when I contributed this feature to Joomla. The
+    one we need to use in our example is
+    <classname>\Joomla\CMS\Event\Result\ResultTypeArrayAware</classname>.</para>
+
+    <para>Armed with this new knowledge we can now finish up our
+    implementation:</para>
+
+    <programlisting>&lt;?php
+
+namespace Acme\Component\Example\Administrator\Event;
+
+defined('_JEXEC') || die;
+
+use Joomla\CMS\Event\AbstractImmutableEvent;
+use Joomla\CMS\Event\Result\ResultAware;
+use Joomla\CMS\Event\Result\ResultAwareInterface;
+use Joomla\CMS\Event\Result\ResultTypeArrayAware;
+use Joomla\Component\Content\Administrator\Table\ArticleTable;
+
+class Foobar extends AbstractImmutableEvent implements ResultAwareInterface
+{
+	use ResultAware;
+	use ResultTypeArrayAware;
+	
+    public function __construct(ArticleTable $article, int $count = 10)
+    {
+        $arguments = [
+            'article' =&gt; $article,
+            'count'   =&gt; $count,
+        ];
+
+        parent::__construct('onExampleFoobar', $arguments);
+    }
+
+	public function setArticle(ArticleTable $article): ArticleTable
+	{
+		return $article;
+	}
+
+	public function setCount(int $count): int
+	{
+		if ($count &lt;= 0) {
+			throw new \RangeException('The value of count must be a positive integer');
+		}
+
+		return $count;
+	}
+}</programlisting>
+
+    <tip>
+      <para>Do explore the traits. You will see that they cover a LOT of use
+      cases, including nullable and falseable types which are very commonly
+      used throughout Joomla and third party code. For objects, you can even
+      tell it which object or interface types are allowed in the
+      results.</para>
+    </tip>
+
+    <bridgehead>Handling concrete events</bridgehead>
+
+    <para>First, let's do a refresher on how generic event handling
+    works:</para>
+
+    <programlisting>&lt;?php
+namespace Acme\Plugin\System\Example;
+
+defined('_JEXEC') || die;
+
+use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\Component\Content\Administrator\Table\ArticleTable;
+use Joomla\Event\Event;
+use Joomla\Event\SubscriberInterface;
+
+class ExamplePlugin extends CMSPlugin implements SubscriberInterface
+{
+	public static function getSubscribedEvents(): array
+	{
+		return [
+			'onExampleFoobar' =&gt; 'handleFoobar',
+		];
+	}
+
+	public function handleFoobar(Event $event)
+	{
+		[$article, $count] = $event-&gt;getArguments();
+		
+		if (!$article instanceof ArticleTable) {
+			throw new \InvalidArgumentException('The article argument to the onExampleFoobar event must be an ArticleTable');
+		}
+		
+		if (!is_int($count) || $count &lt;= 0) {
+			throw new \InvalidArgumentException('The count argument to the onExampleFoobar event must be a positive integer');
+		}
+		
+		// Do something... and then return the result
+		
+		$result = $event-&gt;getArgument('result', []) ?: [];
+		$result = is_array($result) ? $result : [];
+		$result[] = [
+			'foobar' =&gt; $article-&gt;title,
+			'foobaz' =&gt; $count
+		];
+		$event-&gt;setArgument('result', $result);
+	}
+}</programlisting>
+
+    <para>This is messy. Our event handler has to assume the correct number of
+    arguments has been passed, then type-check them. Returning a result is an
+    ordeal in and of itself.</para>
+
+    <para>However, we don't need to do that generic handling. We have a
+    concrete event! Let's see how much simpler this can be using a concrete
+    event handler:</para>
+
+    <programlisting>&lt;?php
+namespace Acme\Plugin\System\Example;
+
+defined('_JEXEC') || die;
+
+use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\Component\Content\Administrator\Table\ArticleTable;
+use Joomla\Event\SubscriberInterface;
+
+class ExamplePlugin extends CMSPlugin implements SubscriberInterface
+{
+	public static function getSubscribedEvents(): array
+	{
+		return [
+			'onExampleFoobar' =&gt; 'handleFoobar',
+		];
+	}
+
+	public function handleFoobar(\Acme\Component\Example\Administrator\Event\Foobar $event)
+	{
+		/** @var ArticleTable $article */
+		$article = $event-&gt;getArgument('article');
+		/** @var integer $count */
+		$count = $event-&gt;getArgument('count', 10);
+		
+		$event-&gt;addResult([
+			'foobar' =&gt; $article-&gt;title,
+			'foobaz' =&gt; $count
+		]);
+	}
+}</programlisting>
+
+    <para>Oh, wow! That's far more readable. And much safer to handle.</para>
+
+    <para>Instead of trying to extract and type-check arguments we just ask
+    the event object to return the specific named arguments which it has
+    already type-checked for us.</para>
+
+    <para>Instead of trying to massage the <code>result</code> named argument
+    into something that remotely makes sense we just use the
+    <methodname>addResult</methodname> method to add our result into the
+    event's result set.</para>
+
+    <para>Even better, this event handler directly references the named class
+    of the event it is supposed to handle.</para>
+
+    <para>The latter point, however, can be a pain if you have the dreaded
+    bane of a developer's existence: legacy code. What we mean with that, is
+    that if someone tried to fire onExampleFoobar by instantiating Joomla's
+    Event class directly then the object we are passed is of the wrong type,
+    and our handler throws an Error exception. If you are writing a plugin
+    which only handles your own, custom events which will only be raised by
+    code under your control you can go ahead and use concrete event handling.
+    If you are going to be handling an event which may be raised by third
+    party code, or a core Joomla event, you may want to add logic to detect
+    what kind of event you have. This is what you could do, for
+    example:</para>
+
+    <programlisting>&lt;?php
+namespace Acme\Plugin\System\Example;
+
+defined('_JEXEC') || die;
+
+use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\Component\Content\Administrator\Table\ArticleTable;
+use Joomla\Event\Event;
+use Joomla\Event\SubscriberInterface;
+
+class ExamplePlugin extends CMSPlugin implements SubscriberInterface
+{
+	public static function getSubscribedEvents(): array
+	{
+		return [
+			'onExampleFoobar' =&gt; 'handleFoobar',
+		];
+	}
+
+	public function handleFoobar(Event $event)
+	{
+		// If using a concrete event, do it the simple way
+		if ($event instanceof \Acme\Component\Example\Administrator\Event\Foobar) {
+			/** @var ArticleTable $article */
+			$article = $event-&gt;getArgument('article');
+			/** @var integer $count */
+			$count = $event-&gt;getArgument('count', 10);&lt;?php
+namespace Acme\Plugin\System\Example;
+
+defined('_JEXEC') || die;
+
+use Joomla\CMS\Event\Result\ResultAwareInterface;
+use Joomla\CMS\Plugin\CMSPlugin;
+use Joomla\Component\Content\Administrator\Table\ArticleTable;
+use Joomla\Event\Event;
+use Joomla\Event\SubscriberInterface;
+
+class ExamplePlugin extends CMSPlugin implements SubscriberInterface
+{
+	public static function getSubscribedEvents(): array
+	{
+		return [
+			'onExampleFoobar' =&gt; 'handleFoobar',
+		];
+	}
+
+	public function handleFoobar(Event $event)
+	{
+		// If using a concrete event, do it the simple way
+		if ($event instanceof \Acme\Component\Example\Administrator\Event\Foobar) {
+			/** @var ArticleTable $article */
+			$article = $event-&gt;getArgument('article');
+			/** @var integer $count */
+			$count = $event-&gt;getArgument('count', 10);
+		// If using a generic event, do it the hard way
+		} else {
+			[$article, $count] = $event-&gt;getArguments();
+
+			if (!$article instanceof ArticleTable) {
+				throw new \InvalidArgumentException('The article argument to the onExampleFoobar event must be an ArticleTable');
+			}
+
+			if (!is_int($count) || $count &lt;= 0) {
+				throw new \InvalidArgumentException('The count argument to the onExampleFoobar event must be a positive integer');
+			}
+		}
+
+		// Do something...
+		$myResult      = [
+			'foobar' =&gt; $article-&gt;title,
+			'foobaz' =&gt; $count
+		];
+
+		// Return the result
+		$this-&gt;setResult($myResult);
+	}
+	
+	private function setResult(Event $event, $value): void
+	{
+		if ($event instanceof ResultAwareInterface) {
+			$event-&gt;addResult($value);
+			
+			return;
+		}
+
+		$result   = $event-&gt;getArgument('result', []) ?: [];
+		$result   = is_array($result) ? $result : [];
+		$result[] = $value;
+		$event-&gt;setArgument('result', $result);
+	}
+}</programlisting>
+
+    <para>In the example code above the setResult method can be reused by all
+    of your event handlers, at any return point. This will come in handy
+    because real code tends to have multiple branches which return results
+    instead of linear logic which ends up in a final point where you return a
+    value. Writing the same long code over and over again is a bad idea. One
+    of the programming axioms is DRY: Don't Repeat Yourself.</para>
+
+    <bridgehead>Calling concrete events</bridgehead>
+
+    <para>Now let's circle back to the beginning of this section. As you might
+    remember, the old school way of calling events was pretty darned
+    verbose:</para>
+
+    <programlisting language="php">$event = new \Joomla\Event\Event('onSomething', [$param1, $param2]);
+\Joomla\CMS\Factory::getApplication()
+  -&gt;getDispatcher()
+  -&gt;dispatch($event-&gt;getName(), $event);
+$results = $event-&gt;getArgument('result', []);</programlisting>
+
+    <para>Since we have a concrete event we can rewrite this in a much more
+    compact way, with built-in type checks:</para>
+
+    <programlisting>$results = \Joomla\CMS\Factory::getApplication()
+	-&gt;getDispatcher()
+	-&gt;dispatch('onExampleFoobar', new Foobar($param1, $param2))
+	-&gt;getArgument('result');</programlisting>
+
+    <para>Compared with the Joomla! 1.x/2.x/3.x way, we just have an object
+    constructor instead of an array, and we tuck a
+    <code>getArgument('result')</code> call at the end. Not much different,
+    but it makes a world of difference in performance and type safety. This is
+    exactly why using concrete events makes sense. It makes things faster,
+    safer, without adding too much complexity. In fact, the more you use
+    concrete events the more “invisible” bugs you will find in your
+    code.</para>
+
+    <bridgehead>Joomla core events and concrete events</bridgehead>
+
+    <para>Joomla is on a path to replace all generic events throughout its
+    code base with concrete events. You will find its concrete classes in the
+    <filename>libraries/src/Event</filename> directory of your site.</para>
+
+    <para>However, this poses two big questions. Do you need to have a
+    different version of your code calling core events and your plugins
+    handling core events depending on which concrete events are implemented in
+    each Joomla version? The answer is no, you do not. I have contributed code
+    which lets you magically use concrete core events without knowing they
+    even exist.</para>
+
+    <para>When you call
+    <code>\Joomla\CMS\Factory::getApplication()-&gt;triggerEvent(...)</code>
+    the code in the
+    <methodname>\Joomla\CMS\Application\EventAware::triggerEvent</methodname>
+    method automatically finds the correct concrete event, if available, based
+    on the event name you provided and “upgrades” your call to a concrete
+    event. This magic mapping is done in the
+    <methodname>\Joomla\CMS\Event\CoreEventAware::getEventClassByEventName</methodname>
+    method. Likewise, when you call the
+    <methodname>\Joomla\CMS\Event\GenericEvent::create</methodname> (for
+    events which accept a subject parameter) Joomla does the same magic
+    upgrade to concrete events. As long as you use these two events, you're
+    golden until at least Joomla 6.0.</para>
+
+    <para>If you are writing new code which only targets newer Joomla versions
+    with an event class for the event you are raising, please
+    <emphasis>do</emphasis> use concrete events in your code. It will make it
+    easier to update your code once Joomla 6.0 is out. The plan is that Joomla
+    5.4 and 6.0 will have concrete events for all core events, therefore
+    making it easy to migrate your extensions. Starting early doesn't
+    hurt.</para>
+
+    <para>Handling events is trickier, but not by much. Before Joomla! 6.0 you
+    <emphasis role="bold">MUST</emphasis> use the generic
+    <classname>\Joomla\Event\Event</classname> class as your event handler's
+    argument type and then check if you are passed a concrete event object in
+    your code, just like the example shown earlier in this section. I cannot
+    even promise that this won't be necessary throughout the Joomla 6.x
+    lifetime. Even if Joomla will start throwing deprecated exceptions for
+    using generic events in 5.x's lifetime, the major + 1 deprecation policy
+    means that it won't be until Joomla 7.0 in 2027 where using concrete
+    events will be required. If the deprecation notices are not thrown until
+    Joomla 6, it won't be until Joomla! 8.0 in 2029 before using concrete
+    events will be required and you can change your plugins to require it as
+    well. This is absurd, I know. Addressing this problem requires having a
+    roadmap and good communication, neither of which exist in Joomla at the
+    time of this writing (August 2023).</para>
   </section>
 </chapter>
