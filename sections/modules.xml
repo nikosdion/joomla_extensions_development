@@ -7,8 +7,7 @@ Documentation License, Version 1.3 or any later version published by the Free So
 no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included
 in the section entitled "GNU Free Documentation License".
 -->
-<chapter xml:id="mod"
-         version="5.1" xmlns="http://docbook.org/ns/docbook"
+<chapter version="5.1" xml:id="mod" xmlns="http://docbook.org/ns/docbook"
          xmlns:xlink="http://www.w3.org/1999/xlink"
          xmlns:xila="http://www.w3.org/2001/XInclude/local-attributes"
          xmlns:xi="http://www.w3.org/2001/XInclude"
@@ -16,63 +15,328 @@ in the section entitled "GNU Free Documentation License".
          xmlns:svg="http://www.w3.org/2000/svg"
          xmlns:m="http://www.w3.org/1998/Math/MathML"
          xmlns:html="http://www.w3.org/1999/xhtml"
-         xmlns:db="http://docbook.org/ns/docbook"
->
-    <title>Modules</title>
+         xmlns:db="http://docbook.org/ns/docbook">
+  <title>Modules</title>
+
+  <para>Modules allow the display of relatively small snippets of information
+  in the front– or backend of a Joomla! site.</para>
+
+  <section xml:id="mod-legacy-vs-j4">
+    <title>Legacy vs Joomla 4 modules</title>
+
+    <para>Modules are the oldest extension type in Joomla. It was the first
+    ever extension type added to Mambo, Joomla's predecessor, back in the
+    early 2000s.</para>
+
+    <para>Modules had remain largely unchanged ever since, with the exception
+    of a few additions (like support for view templates) over the course of
+    Joomla! 1.5. It should be no surprise that modules were thoroughly
+    rethought in Joomla 4. After all, a 20-year-old concept does need a big
+    kick to bring it up to speed with modern development standards.</para>
+
+    <section xml:id="mod-legacy">
+      <title>Legacy modules (Joomla 1.x to 3.x)</title>
+
+      <para>In its purest and most traditional form, a module consists of an
+      XML manifest file and a PHP file which outputs content, plus the
+      language file. Let's take a minimal site module as an example. The
+      manifest file <filename>example.xml</filename> looks like this:</para>
+
+      <programlisting>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;extension type="module" method="upgrade" client="site"&gt;
+    &lt;name&gt;MOD_EXAMPLE&lt;/name&gt;
+    &lt;author&gt;Acme Corp.&lt;/author&gt;
+    &lt;creationDate&gt;2023-08-16&lt;/creationDate&gt;
+    &lt;copyright&gt;Copyright (c)2023 Acme Cord&lt;/copyright&gt;
+    &lt;license&gt;GNU GPL v3 or later&lt;/license&gt;
+    &lt;authorEmail&gt;acme@example.com&lt;/authorEmail&gt;
+    &lt;authorUrl&gt;www.example.com&lt;/authorUrl&gt;
+    &lt;version&gt;1.0.0&lt;/version&gt;
+    &lt;description&gt;MOD_EXAMPLE_XML_DESC&lt;/description&gt;
+    &lt;files&gt;
+        &lt;file module="mod_example"&gt;mod_example.php&lt;/file&gt;
+    &lt;/files&gt;
+    &lt;languages folder="language"&gt;
+        &lt;language tag="en-GB"&gt;en-GB/en-GB.mod_example.sys.ini&lt;/language&gt;
+    &lt;/languages&gt;
+
+    &lt;config addfieldpath="/administrator/components/com_ats/fields"&gt;
+        &lt;fields name="params"&gt;
+            &lt;fieldset name="advanced"&gt;
+                &lt;field
+                        name="moduleclass_sfx"
+                        type="textarea"
+                        rows="3"
+                        label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL"
+                        description="COM_MODULES_FIELD_MODULECLASS_SFX_DESC" /&gt;
+
+                &lt;field
+                        name="cache"
+                        type="list"
+                        default="1"
+                        label="COM_MODULES_FIELD_CACHING_LABEL"
+                        description="COM_MODULES_FIELD_CACHING_DESC"
+                &gt;
+                    &lt;option value="1"&gt;JGLOBAL_USE_GLOBAL&lt;/option&gt;
+                    &lt;option value="0"&gt;COM_MODULES_FIELD_VALUE_NOCACHING&lt;/option&gt;
+                &lt;/field&gt;
+
+                &lt;field
+                        name="cache_time"
+                        type="text"
+                        default="900"
+                        label="COM_MODULES_FIELD_CACHE_TIME_LABEL"
+                        description="COM_MODULES_FIELD_CACHE_TIME_DESC" /&gt;
+
+                &lt;field
+                        name="cachemode"
+                        type="hidden"
+                        default="static"&gt;
+                    &lt;option value="static"&gt;&lt;/option&gt;
+                &lt;/field&gt;
+            &lt;/fieldset&gt;
+        &lt;/fields&gt;
+    &lt;/config&gt;
+&lt;/extension&gt;</programlisting>
+
+      <para>The module configuration you see above is pretty much boilerplate.
+      It lets com_modules (the built-in component which manages modules) to
+      display standard module controls such as the module class suffix, and
+      caching options<footnote>
+          <para>Why do you have to add this boilerplate yourself instead of
+          com_modules always showing it? Good question! My working theory
+          —since nobody seems to know for sure— is that it was the “easiest”
+          way to let developers decide if they should offer caching options,
+          what is the default caching time, and whether they want to allow
+          alternate view templates. Of course, these
+          <emphasis>could</emphasis> have been attributes under a different
+          key in the XML manifest, avoiding all the annoying boilerplate. I am
+          just annoyed by boilerplate when it can be avoided, I guess.</para>
+        </footnote>.</para>
+
+      <para>The module file, <filename>mod_example.php</filename>, is dead
+      simple in its simplest form:</para>
+
+      <programlisting>&lt;?php
+defined('_JEXEC') || die;
+?&gt;
+Hello, world!</programlisting>
+
+      <bridgehead>Adding view templates</bridgehead>
+
+      <para>Of course, modules are rarely this simple. They probably need to
+      do some kind of processing e.g. talk to a component to get some data to
+      display. While you <emphasis>could</emphasis> intermix display and logic
+      in the module file —as was the case in the olden days of Joomla 1.x/2.x—
+      this causes a pretty obvious problem for site integrators. They cannot
+      override the module's display. For this reason, the concept of view
+      templates was introduced in modules during the Joomla! 1.5 lifecycle.
+      This requires two changes.</para>
+
+      <para>First, we need to add one more option, <code>layout</code>, to the
+      advanced fieldset of the XML manifest:</para>
+
+      <programlisting>&lt;field
+	name="layout"
+	type="modulelayout"
+	label="JFIELD_ALT_LAYOUT_LABEL"
+	description="JFIELD_ALT_MODULE_LAYOUT_DESC"
+	validate="moduleLayout"
+/&gt;</programlisting>
+
+      <para>Then, we need to change our module file to use
+      <methodname>\Joomla\CMS\Helper\ModuleHelper::getLayoutPath</methodname>
+      to get the filesystem path of the view template to load:</para>
+
+      <programlisting>&lt;?php
+defined('_JEXEC') || die;
+?&gt;
+require_once \Joomla\CMS\Helper\ModuleHelper::getLayoutPath('mod_example', $params-&gt;get('layout', 'default');</programlisting>
+
+      <para>The view templates are loaded from your module's
+      <filename>tmpl</filename> directory. In the example above, the default
+      view template is <filename>default.php</filename>. </para>
+
+      <para>If you're wondering where <code>$params</code> came from: this is
+      a <classname>\Joomla\Registry\Registry</classname> object holding your
+      module's configuration data. It is automatically passed by Joomla! to
+      your module.</para>
+
+      <para>Since we added a folder, we need to add it to the XML manifest as
+      well:</para>
+
+      <programlisting>&lt;folder&gt;tmpl&lt;/folder&gt;</programlisting>
+
+      <bridgehead>Adding a Helper</bridgehead>
+
+      <para>Using a view template is an indubitably better approach than
+      mixing logic and presentation code in the module. However, it still
+      makes for a really miserable developer experience since you have raw
+      code running inside a context which is not under your control. The
+      function and variable names you use <emphasis>might</emphasis> end up
+      conflicting with those added in future versions of Joomla!, leading to
+      hilarious and hard to troubleshoot problems with your plugin.</para>
+
+      <para>This is why the concept of <emphasis>module helpers</emphasis> was
+      introduced to Joomla. In classic modules this is just an abstract class
+      with static methods you include from your module code. All your
+      executable code is put there. Look at any core module in Joomla! 3.10 to
+      see how it's done.</para>
+    </section>
+
+    <section xml:id="mod-j4">
+      <title>Joomla 4 modules</title>
+
+      <para>Even with view templates and helpers, the classic modules are
+      still a bit of a mess from a developer's point of view. You still have
+      that ugly module entry point file which executes under an arbitrary
+      context. There is still a lot of room for bugs because of function and
+      variable names conflicts. Moreover, you can't make use of any service
+      providers which, as we have discussed, are the lifeblood of Joomla's
+      architecture from Joomla 4 onwards.</para>
+
+      <para>To this end, modules were rethought in Joomla! 4.</para>
+
+      <para>There is no longer a module entry point file. Instead, you have a
+      Dispatcher class. You override the Dispatcher's
+      <methodname>getLayoutData</methodname> method to return an array with
+      data that can be displayed by your module's view templates. This is a
+      complete replacement to the module entry point file. Since it's a class
+      instantiated by Joomla, the execution is isolated in its own context,
+      therefore preventing any issues with function and variable
+      naming.</para>
+
+      <para>The Dispatcher automatically loads the correct view template file
+      and passes it the data returned from
+      <methodname>getLayoutData</methodname> as <emphasis>variables</emphasis>
+      (it runs <link xlink:href="https://www.php.net/extract">extract()</link>
+      on the array of data).</para>
+
+      <para>The presence of a Helper class is assumed. All you have to do is
+      tell Joomla what it's called in your module's service provider file. Of
+      course, all executable PHP code is namespaced — just like with all
+      Joomla 4 and later native extensions.</para>
+
+      <para>This may sound like a lot of work, but it's really not
+      <emphasis>that</emphasis> bad. In the past you'd create the XML
+      manifest, the language file, your module entry point, your helper, and
+      your view template, in this order. With Joomla 4 and alter you create
+      the XML manifest, the language file, the service locator, the
+      dispatcher, your helper, and your view template, in this order. The
+      service locator is just boilerplate. Essentially, you are replacing the
+      module entry point with a bit of boilerplace (service locator) and an
+      overridden method in your Dispatcher. Everything else is the same. It
+      only sounds hard because it's different, not because it is any
+      harder.</para>
+
+      <para>So, here's our XML manifest file:</para>
+
+      <programlisting>&lt;?xml version="1.0" encoding="utf-8"?&gt;
+&lt;extension type="module" method="upgrade" client="site"&gt;
+    &lt;name&gt;MOD_EXAMPLE&lt;/name&gt;
+    &lt;author&gt;Acme Corp.&lt;/author&gt;
+    &lt;creationDate&gt;2023-08-16&lt;/creationDate&gt;
+    &lt;copyright&gt;Copyright (c)2023 Acme Cord&lt;/copyright&gt;
+    &lt;license&gt;GNU GPL v3 or later&lt;/license&gt;
+    &lt;authorEmail&gt;acme@example.com&lt;/authorEmail&gt;
+    &lt;authorUrl&gt;www.example.com&lt;/authorUrl&gt;
+    &lt;version&gt;1.0.0&lt;/version&gt;
+    &lt;description&gt;MOD_EXAMPLE_XML_DESC&lt;/description&gt;
+    <emphasis role="bold">&lt;namespace path="src"&gt;Acme\Module\Example&lt;/namespace&gt;</emphasis>
+    &lt;files&gt;
+<emphasis role="bold">        &lt;folder module="mod_example"&gt;services&lt;/folder&gt;
+        &lt;folder&gt;src&lt;/folder&gt;
+</emphasis>        &lt;folder&gt;tmpl&lt;/folder&gt;
+    &lt;/files&gt;
+    &lt;languages folder="language"&gt;
+        &lt;language tag="en-GB"&gt;en-GB/en-GB.mod_example.sys.ini&lt;/language&gt;
+    &lt;/languages&gt;
+
+    &lt;config addfieldpath="/administrator/components/com_ats/fields"&gt;
+        &lt;fields name="params"&gt;
+            &lt;fieldset name="advanced"&gt;
+                &lt;field
+                        name="layout"
+                        type="modulelayout"
+                        label="JFIELD_ALT_LAYOUT_LABEL"
+                        class="form-select"
+                        validate="moduleLayout"
+                /&gt;
+
+                &lt;field
+                        name="moduleclass_sfx"
+                        type="textarea"
+                        rows="3"
+                        label="COM_MODULES_FIELD_MODULECLASS_SFX_LABEL"
+                        description="COM_MODULES_FIELD_MODULECLASS_SFX_DESC" /&gt;
+
+                &lt;field
+                        name="cache"
+                        type="list"
+                        default="1"
+                        label="COM_MODULES_FIELD_CACHING_LABEL"
+                        description="COM_MODULES_FIELD_CACHING_DESC"
+                &gt;
+                    &lt;option value="1"&gt;JGLOBAL_USE_GLOBAL&lt;/option&gt;
+                    &lt;option value="0"&gt;COM_MODULES_FIELD_VALUE_NOCACHING&lt;/option&gt;
+                &lt;/field&gt;
+
+                &lt;field
+                        name="cache_time"
+                        type="text"
+                        default="900"
+                        label="COM_MODULES_FIELD_CACHE_TIME_LABEL"
+                        description="COM_MODULES_FIELD_CACHE_TIME_DESC" /&gt;
+
+                &lt;field
+                        name="cachemode"
+                        type="hidden"
+                        default="static"&gt;
+                    &lt;option value="static"&gt;&lt;/option&gt;
+                &lt;/field&gt;
+            &lt;/fieldset&gt;
+        &lt;/fields&gt;
+    &lt;/config&gt;
+&lt;/extension&gt;</programlisting>
+
+      <para>The text is bold is the additions / changes for Joomla! 4 and
+      later versions.</para>
+    </section>
+  </section>
+
+  <section xml:id="mod-services">
+    <title>Service Locator</title>
 
     <para/>
+  </section>
 
-    <section xml:id="mod-legacy-vs-j4">
-        <title>Legacy vs Joomla 4 modules</title>
+  <section xml:id="mod-dispatcher">
+    <title>Dispatcher class</title>
 
-        <para/>
+    <para/>
+  </section>
 
-        <section xml:id="mod-legacy">
-            <title>Legacy modules (Joomla 1.x to 3.x)</title>
+  <section xml:id="mod-lang">
+    <title>Language files</title>
 
-            <para/>
-        </section>
+    <para/>
+  </section>
 
-        <section xml:id="mod-j4">
-            <title>Joomla 4 modules</title>
+  <section xml:id="mod-helper">
+    <title>The Helper</title>
 
-            <para/>
-        </section>
-    </section>
+    <para/>
+  </section>
 
-    <section xml:id="mod-services">
-        <title>Service Locator</title>
+  <section xml:id="mod-view-templates">
+    <title>View templates</title>
 
-        <para/>
-    </section>
+    <para/>
+  </section>
 
-    <section xml:id="mod-extension">
-        <title>Extension class</title>
+  <section xml:id="mod-interfacing-com">
+    <title>Interfacing with your component</title>
 
-        <para/>
-    </section>
-
-    <section xml:id="mod-lang">
-        <title>Language files</title>
-
-        <para/>
-    </section>
-
-    <section xml:id="mod-helper">
-        <title>The Helper</title>
-
-        <para/>
-    </section>
-
-    <section xml:id="mod-view-templates">
-        <title>View templates</title>
-
-        <para/>
-    </section>
-
-    <section xml:id="mod-interfacing-com">
-        <title>Interfacing with your component</title>
-
-        <para/>
-    </section>
+    <para/>
+  </section>
 </chapter>
