@@ -751,9 +751,10 @@ class ExampleHelper implements DatabaseAwareInterface
     <title>Modules and com_ajax</title>
 
     <para>Sometimes, you need to have your modules return data asynchronously
-    to the HTML page rendering, using client-side (JavaScript) code. The best
-    way to do that is by using Joomla's <code>com_ajax</code>
-    component.</para>
+    to the HTML page rendering, using client-side (JavaScript) code. DO NOT
+    use arbitrarily named .php files which will be accessed directly over the
+    web; this is a terrible and insecure practice. The best way to do that is
+    by using Joomla's <code>com_ajax</code> component.</para>
 
     <para>com_ajax is a special core component built into Joomla. By itself,
     it can't do much. Its job is to let non-component, first-class Joomla

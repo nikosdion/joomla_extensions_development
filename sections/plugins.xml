@@ -1190,13 +1190,231 @@ implements \Joomla\Database\DatabaseAwareInterface
   <section xml:id="plg-view-templates">
     <title>View Templates</title>
 
-    <para/>
+    <para>I know what you're thinking: “what's the fox doing in the country
+    fair?”, er, ”what are view templates doing in a plugin?”. And yet, they
+    <emphasis>do</emphasis> make sense in some use cases. Core Joomla! uses
+    them for the voting, page navigation, and page break content plugins, for
+    the WebAuthn Multi-factor Authentication plugin (which needs to render its
+    own, different interface to the regular code entry interface of most MFA
+    plugins), as well as all custom fields plugins.</para>
+
+    <para>And now you probably went “a-ha!”. Yes, plugins need to have view
+    templates when they are supposed to emit precomposed HTML, usually to be
+    injected into some content.</para>
+
+    <para>Back in the olden days (Joomla! 1.x and 2.x) there was no such
+    thing. HTML generation was taking place in the code which, as I hope you
+    understand by reading this book, is a Very Bad Thing. As to why it is such
+    a bad thing, ask any site integrator who cut their teeth on Joomla! 1.x
+    and 2.5. They will tell you that trying to coax that output to display the
+    way they needed to was a royal pain in the posterior, if at all possible.
+    Having view templates in plugins means they can be overridden, ergo you
+    have separated the business logic of your plugin from the presentation of
+    its results, making both the developer (that's you!) and the site
+    integrator happy.</para>
+
+    <para>View templates for plugins are always stored in the
+    <filename>tmpl</filename> folder of the plugin.</para>
+
+    <para>Using a view template is a two step process. First, you need to get
+    the path to the view template file (remember, it might be overridden!)
+    using Joomla's
+    <methodname>\Joomla\CMS\Plugin\PluginHelper::getLayoutPath</methodname>
+    method:</para>
+
+    <programlisting>$path = \Joomla\CMS\Plugin\PluginHelper::getLayoutPath(
+  'system', 'example', 'foobar'
+);</programlisting>
+
+    <para>The three arguments are the plugin folder, the plugin name, and the
+    view template name. In this case, we are looking for the
+    <filename>foobar.php</filename> view template file inside
+    <filename>plugins/system/example/tmpl</filename> (or its override in the
+    current template).</para>
+
+    <para>The second step is include this file and capturing its
+    output:</para>
+
+    <programlisting>ob_start();
+include $path;
+$html = ob_get_clean();</programlisting>
+
+    <note>
+      <para>If you are writing a custom field plugin you will NOT be directly
+      accessing the view template file. This is done for you by the
+      <classname>\Joomla\Component\Fields\Administrator\Plugin\FieldsPlugin</classname>
+      core class your plugin extends from.</para>
+    </note>
   </section>
 
   <section xml:id="plg-com-ajax">
     <title>Plugins and com_ajax</title>
 
-    <para/>
+    <para>Sometimes, you need to have your plugins respond to asynchronous
+    requests using client-side (JavaScript) code, or you need to provide a
+    “callback URL” (e.g. when implementing an OAuth2 authentication scheme,
+    interfacing with a payments processor service, etc). DO NOT use
+    arbitrarily named .php files which will be accessed directly over the web;
+    this is a terrible and insecure practice. The best way to do that is by
+    using Joomla's <code>com_ajax</code> component.</para>
+
+    <para>com_ajax is a special core component built into Joomla. By itself,
+    it can't do much. Its job is to let non-component, first-class Joomla
+    extension types (modules, plugins, and templates) handle requests and
+    return results either as JSON or as any arbitrary format.</para>
+
+    <para>For plugins, you would need to load a URL like this:
+    <uri>index.php?option=com_ajax&amp;group=system&amp;plugin=example&amp;method=something&amp;format=raw</uri>.
+    If you are working in the backend you obviously need to use
+    <uri>administrator/index.php</uri>.</para>
+
+    <para>As you can see, the plugin you will be using is specified by the
+    <uri>group</uri> and <uri>plugin</uri> URL parameters.</para>
+
+    <para>The way this works is that com_ajax will make sure your plugin is
+    loaded, then fire the plugin event
+    <code>onAjax<replaceable>Methodname</replaceable></code>, where
+    <replaceable>Methodname</replaceable> is the value of the
+    <uri>method</uri> URL parameter. In the example above, it would fire the
+    plugin event <code>onAjaxSomething</code>. The event must return a result.
+    </para>
+
+    <para>If you use format=raw, one of the following will happen:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>If you throw an exception or return a Throwable, it will set the
+        HTTP status to the throwable's status code and return a body similar
+        to "RuntimeException:Your throwable's message".</para>
+      </listitem>
+
+      <listitem>
+        <para>If you return a scalar (string, null, integer, float) it will
+        return its string representation.</para>
+      </listitem>
+
+      <listitem>
+        <para>If you return an object or array it will try to first cast it as
+        an array, then <function>implode()</function> it into a string. This
+        is quite useless, so please don't do that.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>If you use format=json it will try to convert your data to a JSON
+    representation using Joomla's
+    <classname>Joomla\CMS\Response\JsonResponse</classname> class. The
+    returned JSON object has the following keys:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>success</term>
+
+        <listitem>
+          <para>Boolean true if your method has neither thrown an exception,
+          nor returned a Throwable. Boolean false otherwise.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>message</term>
+
+        <listitem>
+          <para>Only when success is false. If your method threw an exception,
+          or returned a Throwable object: the message of that throwable.
+          Otherwise, this key is not set.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>messages</term>
+
+        <listitem>
+          <para>Any enqueued Joomla! application messages. The messages are
+          categorised by type, therefore they may be returned out of order.
+          For example:</para>
+
+          <programlisting>messages: {
+  "warning": [
+     "Some warning",
+     "Another warning"
+  ],
+  "error": [
+    "The code went belly up. Whoopsie!"
+  ]
+}</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>data</term>
+
+        <listitem>
+          <para>Only when success is true. The data returned by your
+          method.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <bridgehead>Practical limitations</bridgehead>
+
+    <para>The com_ajax component will not pass any data to the plugin event.
+    If you need the request data you must go through the Joomla application's
+    input object.</para>
+
+    <para>The event name is not guaranteed to be unique to your plugin, since
+    the naming scheme is very simplistic:
+    <code>onAjax<replaceable>Methodname</replaceable></code>. It is strongly
+    recommended to use two precautions to avoid mishaps with third party
+    plugins:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Use a method which is highly specific to your plugin e.g. have
+        your URL <uri>method</uri> parameter set to something like
+        <code>acmePaymentsPayPalCallback</code> instead of just
+        <code>callback</code>. The former will fire the event named
+        <code>onAjaxAcmePaymentsPayPalCallback</code> which is reasonably
+        guaranteed to be unique across plugins installed on the site, the
+        latter will fire the event named <code>onAjaxCallback</code> which is
+        reasonably NOT guaranteed to be unique. This protects your plugin from
+        getting interfered with by other people's plugins.</para>
+      </listitem>
+
+      <listitem>
+        <para>Check the <uri>option</uri>, <uri>group</uri>, and
+        <uri>plugin</uri> URL parameters. If the option is not com_ajax,
+        and/or the group and plugin don't match your plugin do not return
+        anything. This protects other people's plugins from getting
+        interference by your plugin.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Do take into consideration the context of the call to your plugin.
+    If it's a third party service calling your plugin through com_ajax
+    directly, not by redirecting the user's browser, <emphasis>you will not
+    have the same session as the user</emphasis>. Therefore, you cannot
+    retrieve any session data. There are workarounds to that. You could store
+    data in a temporary table, under a randomly generated key, and pass that
+    key to the third party service (provided that it passes that key back to
+    you). If the user's browser is redirected back to a com_ajax URL do
+    remember that you MUST redirect the user to a page of the site that makes
+    sense. Otherwise, they will reasonably assume something got broken.</para>
+
+    <para>If you are relying on GET or POST data to do something you MUST
+    assume the worst: this is invalid data, sent by a malicious user trying to
+    hack the site <emphasis role="bold">unless positively proven
+    otherwise</emphasis>. This is an integral part of the software design
+    principle called <link
+    xlink:href="https://en.wikipedia.org/wiki/Defensive_programming">defensive
+    programming</link>. It's not paranoia, it's <emphasis>a fact of
+    life</emphasis>. People <emphasis>will</emphasis> try to find exploits in
+    your code. White hats will do that to help you improve the security of
+    your software. Black hats will do that to break your software for profit
+    and/or fame. It doesn't matter if your software is a niche plugin used on
+    exactly one site that barely anyone visits. This does not mean someone
+    won't try to hack it, it only means it will most likely take longer. So,
+    as the old Russian proverb goes “<emphasis>trust, but
+    verify</emphasis>”.</para>
   </section>
 
   <section xml:id="plg-dont-break-joomla">
