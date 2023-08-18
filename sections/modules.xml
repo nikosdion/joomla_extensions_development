@@ -155,7 +155,7 @@ require_once \Joomla\CMS\Helper\ModuleHelper::getLayoutPath('mod_example', $para
 
       <para>The view templates are loaded from your module's
       <filename>tmpl</filename> directory. In the example above, the default
-      view template is <filename>default.php</filename>. </para>
+      view template is <filename>default.php</filename>.</para>
 
       <para>If you're wondering where <code>$params</code> came from: this is
       a <classname>\Joomla\Registry\Registry</classname> object holding your
@@ -212,10 +212,43 @@ require_once \Joomla\CMS\Helper\ModuleHelper::getLayoutPath('mod_example', $para
       (it runs <link xlink:href="https://www.php.net/extract">extract()</link>
       on the array of data).</para>
 
+      <important>
+        <para>This is the big change from Joomla 3.x and earlier.</para>
+
+        <para>In older versions of Joomla! you could have your module's view
+        template <emphasis>pull</emphasis> data from the module's helper by
+        calling the helper's static methods. This is no longer the
+        case.</para>
+
+        <para>In Joomla! 4 and later it is the Dispatcher which calls the
+        (non-static!) methods of the helper object. Then, it
+        <emphasis>pushes</emphasis> the data to the view template.</para>
+
+        <para>Once you understand the difference between pulling data and
+        pushing data the whole concept of modules under Joomla 4 and later
+        becomes crystal clear.</para>
+      </important>
+
       <para>The presence of a Helper class is assumed. All you have to do is
-      tell Joomla what it's called in your module's service provider file. Of
-      course, all executable PHP code is namespaced — just like with all
-      Joomla 4 and later native extensions.</para>
+      tell Joomla what it's called in your module's service provider file.
+      </para>
+
+      <important>
+        <para>Unlike Joomla 3.x and earlier, the module's helper no longer has
+        static methods. It has regular, non-static methods. When you need to
+        use the helper in your Dispatcher you will be given an instantiated
+        <emphasis>object</emphasis>.</para>
+
+        <para>This is deliberate. You cannot push services, like the database
+        object, to a class (at least not without violating several good
+        software design principles). You can trivially do so in objects which
+        implement some of the handy Interfaces and use some of the handy
+        Traits provided by Joomla. We'll see how that works a bit
+        later.</para>
+      </important>
+
+      <para>Of course, all executable PHP code is namespaced — just like with
+      all Joomla 4 and later native extensions.</para>
 
       <para>This may sound like a lot of work, but it's really not
       <emphasis>that</emphasis> bad. In the past you'd create the XML
@@ -305,37 +338,587 @@ require_once \Joomla\CMS\Helper\ModuleHelper::getLayoutPath('mod_example', $para
   </section>
 
   <section xml:id="mod-services">
-    <title>Service Locator</title>
+    <title>Service provider</title>
 
-    <para/>
+    <para>As with all native extensions since Joomla 4, modules have a service
+    provider named <filename>provider.php</filename> in their
+    <filename>services</filename> directory. The purpose of this provide is to
+    tell Joomla where to find the module's dispatcher, and register the
+    module's helper as a service.</para>
+
+    <para>It's just a bit of boilerplate code, like this:</para>
+
+    <programlisting>&lt;?php
+defined('_JEXEC') || die;
+
+use Joomla\CMS\Extension\Service\Provider\HelperFactory;
+use Joomla\CMS\Extension\Service\Provider\Module;
+use Joomla\CMS\Extension\Service\Provider\ModuleDispatcherFactory;
+use Joomla\DI\Container;
+use Joomla\DI\ServiceProviderInterface;
+
+return new class () implements ServiceProviderInterface {
+    public function register(Container $container)
+    {
+        $container-&gt;registerServiceProvider(new ModuleDispatcherFactory('<emphasis
+        role="bold">\\Acme\\Module\\Example</emphasis>'));
+        $container-&gt;registerServiceProvider(new HelperFactory('<emphasis
+        role="bold">\\Acme\\Module\\Example\\Site\\Helper</emphasis>'));
+
+        $container-&gt;registerServiceProvider(new Module());
+    }
+};
+</programlisting>
+
+    <para>There are really two things you need to take note of here.</para>
+
+    <para>The argument to the
+    <classname>Joomla\CMS\Extension\Service\Provider\ModuleDispatcherFactory</classname>'s
+    constructor is the namespace of the module without the Site or
+    Administrator part. In other words, it is exactly what you put in your XML
+    manifest. Joomla knows to add the Site (frontend modules) or Administrator
+    (backend modules) to the namespace, and look for
+    <classname>Dispatcher\Dispatcher</classname> under it. In other words, in
+    the example frontend module we have here, the Dispatcher class is
+    understood to be
+    <classname>Acme\Module\Example\Site\Dispatcher\Dispatcher</classname>.</para>
+
+    <tip>
+      <para>Remember! A module <emphasis>always</emphasis> needs a Dispatcher.
+      This is where you tell Joomla what data to send to the module's view
+      template for display. If you were to not implement a Dispatcher you
+      would have nothing useful to display.</para>
+
+      <para>This is the big change from Joomla 3.x and earlier. It is no
+      longer possible to <emphasis>pull</emphasis> data in the view template
+      from the module helper directly. It is always
+      <emphasis>pushed</emphasis> to the module.</para>
+    </tip>
+
+    <para>The argument to the
+    <classname>Joomla\CMS\Extension\Service\Provider\HelperFactory</classname>'s
+    constructor, however, is a fully qualified namespace to the module's
+    Helper classes. This means that it's the namespace you put in your XML
+    manifest, plus Site (frontend modules) or Administrator, plus Helper. In
+    other words, in the example frontend module we have here, the helper
+    classes' namespace is
+    <classname>Acme\Module\Example\Site\Helper</classname>.</para>
+
+    <para>The HelperFactory does a modicum of "magic" when instantiating your
+    helper classes. It checks which interfaces they implement and pushes the
+    respective services to them. At the time of this writing, it checks if the
+    helper class implements the
+    <interfacename>Joomla\Database\DatabaseAwareInterface</interfacename>
+    interface and pushes the database object to the instantiated helper object
+    using the interface's <methodname>setDatabase</methodname> method.</para>
+
+    <para>If you want to push custom services to your helpers you need to
+    subclass the
+    <classname>Joomla\CMS\Extension\Service\Provider\HelperFactory</classname>
+    class and use your custom helper factory instead of Joomla's in your
+    service provider. Unfortunately, merely extending the service does not
+    work as expected (there's been a long discussion we've already had in the
+    Joomla! GitHub Issues about it).</para>
   </section>
 
   <section xml:id="mod-dispatcher">
     <title>Dispatcher class</title>
 
-    <para/>
+    <para>The Dispatcher is the "brains" of the module. Its
+    <methodname>getLayoutData</methodname> method is called every time the
+    module is rendered. It returns an array with the data which will be
+    displayed by the view templates of the module.</para>
+
+    <para>A minimal implementation would look like this:</para>
+
+    <programlisting>&lt;?php
+
+namespace Acme\Module\Example\Site\Dispatcher;
+
+defined('_JEXEC') || die;
+
+use Joomla\CMS\Dispatcher\AbstractModuleDispatcher;
+use Joomla\CMS\Helper\HelperFactoryAwareInterface;
+use Joomla\CMS\Helper\HelperFactoryAwareTrait;
+
+class Dispatcher extends AbstractModuleDispatcher implements HelperFactoryAwareInterface
+{
+    use HelperFactoryAwareTrait;
+
+    protected function getLayoutData()
+    {
+        $data = parent::getLayoutData();
+
+        $data['stuff'] = $this-&gt;getHelperFactory()
+            -&gt;getHelper('ExampleHelper')
+            -&gt;getStuff($data['params'], $this-&gt;getApplication());
+
+        return $data;
+    }
+}
+</programlisting>
+
+    <para>Let's focus on the overridden <methodname>getLayoutData</methodname>
+    method.</para>
+
+    <para>We must always call the parent (overridden) method first. This gives
+    us an array with very important bits of information needed to render the
+    module:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><code>module</code>. The raw object with the module information
+        as stored in the database.</para>
+      </listitem>
+
+      <listitem>
+        <para><code>app</code>. The Joomla! application object. Do NOT assume
+        it's always an instance of <classname>SiteApplication</classname> or
+        <classname>AdministratorApplication</classname>; check!</para>
+      </listitem>
+
+      <listitem>
+        <para><code>input</code>. The Joomla! input object. Use it wisely. If
+        you are depending on request parameters for display of your module you
+        need to consider how this affects caching, and whether having a
+        component might be a better fit for your use case.</para>
+      </listitem>
+
+      <listitem>
+        <para><code>params</code>. A Registry object with the module's
+        parameters.</para>
+      </listitem>
+
+      <listitem>
+        <para><code>template</code>. The name of the Joomla! template used to
+        render the page. This is equivalent to calling
+        <code>\Joomla\CMS\Factory::getApplication()-&gt;getTemplate()</code>.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>This data must always be present for Joomla! to successfully render
+    a module. Therefore, we need to <emphasis>add</emphasis> to it. That's why
+    we add a new key to the array before returning it.</para>
+
+    <para>We see that we call
+    <code>$this-&gt;getHelperFactory()-&gt;getHelper('ExampleHelper')</code>.
+    As you might have inferred, this tells Joomla to create an object instance
+    of the ExampleHelper class in the module's helper namespace. As you may
+    recall, we registered that namespace in our service provider. In the
+    example plugin, the class we're asking Joomla to instantiate is
+    <classname>Acme\Module\Example\Site\Helper\ExampleHelper</classname>.</para>
+
+    <important>
+      <para>We have to stress out that this is a major change from Joomla! 3.x
+      and earlier. We no longer call static methods in the helper class. We
+      have Joomla! create an object instance of that class and call its
+      non-static method directly.</para>
+    </important>
+
+    <para>The method calls also shows a way to pass the module parameters to
+    your helper object: by passing <code>$data['params']</code>. As noted
+    above, the data element contains a Registry object with the module
+    parameters.</para>
+
+    <para>The other thing you see in that method call is how you can pass the
+    Joomla Application object to your helpers: by sending
+    <code>$this-&gt;app</code> (or <code>$data['app']</code>) as an argument.
+    This is preferred to going through the
+    <classname>Joomla\CMS\Factory</classname> class as it makes Unit Testing
+    of your module easier. </para>
+
+    <para>Even if you don't do any unit testing, it's always a good idea to
+    <emphasis>inject dependencies</emphasis> (e.g. sending them as arguments,
+    or otherwise setting them on the target object) instead of pulling
+    dependencies by calling static methods. In practice, you will see that
+    some core Joomla services, such as the UserFactory) are not readily
+    available for injection, breaking this golden rule. This is something
+    that's been actively worked on in Joomla!. Eventually, it will be possible
+    to do dependency injection for all core services.</para>
+
+    <para>Needless to say, you can have more than one data keys for display in
+    your module. Just remember, the <code>$data</code> array you return will
+    be extracted into variables. Therefore, you must use array key names which
+    are valid PHP variable names.</para>
   </section>
 
   <section xml:id="mod-lang">
     <title>Language files</title>
 
-    <para/>
+    <para>Language files in modules on Joomla! 4 and later versions follow the
+    same concept as all other language files, e.g. <link
+    linkend="com-lang">for components</link>: they no longer have the language
+    tag as a prefix.</para>
+
+    <para>In Joomla! 3.x and earlier versions you would have two language
+    files for English (Great Britain):</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><filename>en-GB.mod_example.ini</filename> for the language
+        strings you use when rendering the module, and the language strings in
+        your module's configuration parameters.</para>
+      </listitem>
+
+      <listitem>
+        <para><filename>en-GB.mod_example.sys.ini</filename> for the language
+        strings used in your XML manifest file for the module's name and
+        description.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>In Joomla! 4 and later versions they are now called:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><filename>mod_example.ini</filename></para>
+      </listitem>
+
+      <listitem>
+        <para><filename>mod_example.sys.ini</filename></para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Module language files are loaded automatically. You do not need to
+    load them yourself.</para>
   </section>
 
   <section xml:id="mod-helper">
     <title>The Helper</title>
 
-    <para/>
+    <para>In Joomla 3 and earlier versions the module helper was a class with
+    static methods. You would call these static methods in the module's entry
+    point file, or a module view template, directly. This is the concept of
+    <emphasis>pulling</emphasis> information.</para>
+
+    <para>The big limitation of this concept is that static method calls are
+    inflexible. If you are trying to write any kind of tests for your view
+    templates, you will quickly find that the static calls make your code
+    untestable unless you go to great lengths (create a mock class, create a
+    stream wrapper, load the PHP code, replace the calls to the helper with
+    calls to the mock class, and test the temporary file you created in the
+    stream wrapper). This is why this concept, while easy to use by novice
+    developers, is no longer considered a good practice — and that applies in
+    general in programming, not just Joomla! modules.</para>
+
+    <para>As noted earlier, Joomla 4 introduced a different concept, one where
+    you <emphasis>push</emphasis> information to the view template through the
+    Dispatcher. This isolates the business logic from the presentation. When
+    you, or a site integrator, create a view template or view template
+    override for a module you no longer need to care <emphasis>how</emphasis>
+    you will get the data you need to display. From your point of view, the
+    display data is magically there. From a developer's point of view, the
+    isolation of business logic and presentation means that both are perfectly
+    testable; the former with Unit Tests, the latter by passing a set of
+    hard-coded data and inspecting the generated output.</para>
+
+    <para>In practical terms, you no longer have static methods. You have
+    regular methods. Your class is no longer abstract; it's just a regular
+    class.</para>
+
+    <para>The simplest helper class you can have is like this:</para>
+
+    <programlisting>&lt;?php
+
+namespace Acme\Module\Example\Site\Helper;
+
+defined('_JEXEC') || die;
+
+class ExampleHelper
+{
+    public function getStuff(): string
+    {
+        return "Hello, world.";
+    }
+}</programlisting>
+
+    <para>In your Dispatcher, you'd call this as
+    <code>$this-&gt;getHelperFactory()-&gt;getHelper('ExampleHelper')-&gt;getStuff();</code>.</para>
+
+    <para>In practice, you will need access to some database date. In the past
+    you'd get Joomla's database object by doing something like <code>$db =
+    \Joomla\CMS\Factory::getDbo();</code>. This is no longer the case. You
+    will just implement Joomla's
+    <interfacename>\Joomla\Database\DatabaseAwareInterface</interfacename> in
+    your class and use Joomla's
+    <classname>\Joomla\Database\DatabaseAwareTrait</classname> trait. You then
+    get the database object with <code>$db =
+    $this-&gt;getDatabase();</code>.</para>
+
+    <programlisting>&lt;?php
+
+namespace Acme\Module\Example\Site\Helper;
+
+defined('_JEXEC') || die;
+
+use Joomla\Database\DatabaseAwareInterface;
+use Joomla\Database\DatabaseAwareTrait;
+
+class ExampleHelper <emphasis role="bold">implements DatabaseAwareInterface</emphasis>
+{
+    <emphasis role="bold">use DatabaseAwareTrait;</emphasis>
+    
+    public function getStuff(): string
+    {
+        <emphasis role="bold">$db = $this-&gt;getDatabase();</emphasis>
+        
+        // Do some database stuff here.
+        
+        return "Hello, world.";
+    }
+}</programlisting>
+
+    <note>
+      <para>“How does this sorcery work?” you wonder. When you instantiate the
+      helper object through the helper factory, it checks if your class
+      implements the DatabaseAwareInterface. If it does, it pushes the Joomla!
+      database object to the helper object. That's why you can retrieve it
+      with <code>$this-&gt;getDatabase()</code> without having written code to
+      push it yourself.</para>
+    </note>
+
+    <para>If you need to push any other object, including the module
+    parameters, you have to do it with method parameters. We showed that when
+    talking about the Dispatcher. So let's see how we can pass the module
+    parameters and the application object to the helper:</para>
+
+    <programlisting>&lt;?php
+
+namespace Acme\Module\Example\Site\Helper;
+
+defined('_JEXEC') || die;
+
+use Joomla\CMS\Application\CMSApplicationInterface;
+use Joomla\CMS\Application\SiteApplication;
+use Joomla\Database\DatabaseAwareInterface;
+use Joomla\Database\DatabaseAwareTrait;
+use Joomla\Registry\Registry;
+
+class ExampleHelper implements DatabaseAwareInterface
+{
+    use DatabaseAwareTrait;
+
+    public function getStuff(Registry $config, CMSApplicationInterface $app): string
+    {
+        if (!$app instanceof SiteApplication) {
+            return '';
+        }
+
+        $db = $this-&gt;getDatabase();
+
+        // Do some database stuff here.
+
+        return sprintf("Hello, %s.", $config-&gt;get('name', 'world'));
+    }
+}</programlisting>
+
+    <para>As a reminder, here's how this was called from the
+    Dispatcher:</para>
+
+    <programlisting>        $data['stuff'] = $this-&gt;getHelperFactory()
+            -&gt;getHelper('ExampleHelper')
+            -&gt;getStuff($data['params'], $this-&gt;getApplication());</programlisting>
+
+    <para>As you can see, it is fairly easy, as long as you remember to
+    <emphasis>push</emphasis> information to the helper instead of the old way
+    of having it <emphasis>pull</emphasis> information from static
+    methods.</para>
   </section>
 
   <section xml:id="mod-view-templates">
     <title>View templates</title>
 
-    <para/>
+    <para>Modules need to be able to display information in a human-readable
+    manner, in HTML — this is their only purpose in life. The Helper handles
+    all the business logic to produce this data, and the Dispatcher pushes it
+    to our view template which renders it as HTML. </para>
+
+    <para>The view templates are placed in the <filename>tmpl</filename>
+    folder of your module.</para>
+
+    <para>The concept is not unlike Components themselves, with a few twists.
+    The most obvious twist is that a module's view template <emphasis
+    role="bold">always</emphasis> produces HTML. The second twist is how we
+    get our display data: as “magically” appearing variables.</para>
+
+    <para>To refresh your memory, the Dispatcher's
+    <methodname>getLayoutData</methodname> method returns an array. Joomla!
+    puts that array through PHP's extract() function before loading our view
+    template.</para>
+  </section>
+
+  <section xml:id="mod-com-ajax">
+    <title>Modules and com_ajax</title>
+
+    <para>Sometimes, you need to have your modules return data asynchronously
+    to the HTML page rendering, using client-side (JavaScript) code. The best
+    way to do that is by using Joomla's <code>com_ajax</code>
+    component.</para>
+
+    <para>com_ajax is a special core component built into Joomla. By itself,
+    it can't do much. Its job is to let non-component, first-class Joomla
+    extension types (modules, plugins, and templates) handle requests and
+    return results either as JSON or as any arbitrary format.</para>
+
+    <para>For modules, you would need to load a URL like this:
+    <uri>index.php?option=com_ajax&amp;module=mod_example&amp;method=something&amp;format=raw</uri>.
+    For backend modules you obviously need to use
+    <uri>administrator/index.php</uri>.</para>
+
+    <para>The way this works is that com_ajax will create an instance of the
+    module's DIC (that is to say, use the code in our module's
+    <filename>services/provider.php</filename> file), instantiate the helper
+    that has the name
+    <classname><replaceable>Modulename</replaceable>Helper</classname>, where
+    <replaceable>Modulename</replaceable> is the name of our module without
+    the <code>mod_</code> prefix (e.g. <code>Example</code> for
+    <code>mod_example</code>), and call the method
+    <methodname><replaceable>Methodname</replaceable>Ajax</methodname> where
+    <replaceable>Methodname</replaceable> is the value of the
+    <uri>method</uri> URL parameter. In the example above, it would load the
+    <classname>ExampleHelper</classname> helper of <code>mod_example</code>
+    and call its <methodname>SomethingAjax</methodname> method.</para>
+
+    <para>If you use format=raw, one of the following will happen:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>If you throw an exception or return a Throwable, it will set the
+        HTTP status to the throwable's status code and return a body similar
+        to "RuntimeException:Your throwable's message".</para>
+      </listitem>
+
+      <listitem>
+        <para>If you return a scalar (string, null, integer, float) it will
+        return its string representation.</para>
+      </listitem>
+
+      <listitem>
+        <para>If you return an object or array it will try to first cast it as
+        an array, then <function>implode()</function> it into a string. This
+        is quite useless, so please don't do that.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>If you use format=json it will try to convert your data to a JSON
+    representation using Joomla's
+    <classname>Joomla\CMS\Response\JsonResponse</classname> class. The
+    returned JSON object has the following keys:</para>
+
+    <variablelist>
+      <varlistentry>
+        <term>success</term>
+
+        <listitem>
+          <para>Boolean true if your method has neither thrown an exception,
+          nor returned a Throwable. Boolean false otherwise.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>message</term>
+
+        <listitem>
+          <para>Only when success is false. If your method threw an exception,
+          or returned a Throwable object: the message of that throwable.
+          Otherwise, this key is not set.</para>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>messages</term>
+
+        <listitem>
+          <para>Any enqueued Joomla! application messages. The messages are
+          categorised by type, therefore they may be returned out of order.
+          For example:</para>
+
+          <programlisting>messages: {
+  "warning": [
+     "Some warning",
+     "Another warning"
+  ],
+  "error": [
+    "The code went belly up. Whoopsie!"
+  ]
+}</programlisting>
+        </listitem>
+      </varlistentry>
+
+      <varlistentry>
+        <term>data</term>
+
+        <listitem>
+          <para>Only when success is true. The data returned by your
+          method.</para>
+        </listitem>
+      </varlistentry>
+    </variablelist>
+
+    <bridgehead>Practical limitations</bridgehead>
+
+    <para>com_ajax does not go through the module's Dispatcher. As a result,
+    you do not have access to the module parameters, nor can you push any
+    Joomla! object (such the application object, the input object, etc) to the
+    Helper.</para>
+
+    <para>If you need any module parameters to be used when handling an AJAX
+    request you have to send them as part of the request (as GET or POST
+    parameters), store them in the session, or pass the module's ID as part of
+    the request (as a GET or POST parameter). Each method has limitations and
+    security considerations:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Passing configuration as GET or POST parameters is <emphasis
+        role="bold">unsafe</emphasis>. Anyone can read them. Passing secrets,
+        or filesystem paths, is detrimental to security. Moreover, any data
+        read by this method must be <emphasis role="bold">ASSUMED</emphasis>
+        to have been tampered with by a malicious actor who is trying to hack
+        your site. Do not make any assumptions about data types, ranges, or
+        that the data will even make any sense. For these reasons, using this
+        method is <emphasis>VERY STRONGLY DISCOURAGED</emphasis>.</para>
+      </listitem>
+
+      <listitem>
+        <para>Storing data in the session does not have the security
+        considerations of passing data through GET or POST, but you must keep
+        in mind that a user may try to open several pages at once, each one
+        with a different instance of your module. This means that the data
+        read from the session may be inconsistent and irrelevant to the
+        current page. Depending on what your module does this could have
+        security or privacy implications.</para>
+      </listitem>
+
+      <listitem>
+        <para>Passing the numeric module ID is much safer. You can very easily
+        try to load a module by that ID and determine if it exists, if it's
+        published, and if the current user should be able to see it (access
+        level check). You can then load its parameters into a Joomla Registry
+        object and process data in your code.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Generally speaking, having modules do AJAX is a problematic idea.
+    While there are very few good use cases where this makes sense (and they
+    all involve data <emphasis>which is always meant to be public</emphasis>),
+    the majority of the uses cases I have seen in the real world display a
+    blatant disregard for security and privacy. If you need to do complex
+    processing maybe what you are doing does not belong in a module, but a
+    component.</para>
+
+    <para>And, please, <emphasis>PLEASE</emphasis>, do test your modules with
+    use cases that involve multiple but differently configured instances of
+    your module on the same page, or what happens if you open three or four
+    pages with differently configured instances of your module in very quick
+    succession (open all pages before the first AJAX request has the chance to
+    be executed by the browser), ideally with users with different privileges
+    logged in. You will be surprised at how many problems you will catch this
+    way.</para>
   </section>
 
   <section xml:id="mod-interfacing-com">
-    <title>Interfacing with your component</title>
+    <title>Interfacing with your component (HMVC)</title>
 
     <para/>
   </section>

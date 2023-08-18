@@ -1187,6 +1187,18 @@ implements \Joomla\Database\DatabaseAwareInterface
     </caution>
   </section>
 
+  <section xml:id="plg-view-templates">
+    <title>View Templates</title>
+
+    <para/>
+  </section>
+
+  <section xml:id="plg-com-ajax">
+    <title>Plugins and com_ajax</title>
+
+    <para/>
+  </section>
+
   <section xml:id="plg-dont-break-joomla">
     <title>How NOT to break Joomla with your plugin</title>
 
@@ -1658,7 +1670,7 @@ $results = $event-&gt;getArgument('result', []);</programlisting>
     <classname>\Joomla\Event\Event</classname> or one of its subclasses. You
     can place it anywhere in your component, plugin, module, or library as
     long as you follow PSR-4 and the class can be autoloaded by Joomla's PSR-4
-    autoloader. </para>
+    autoloader.</para>
 
     <tip>
       <para>Remember that when you set up the <code>&lt;namespace&gt;</code>
