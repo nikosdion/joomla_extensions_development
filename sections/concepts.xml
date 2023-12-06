@@ -938,9 +938,9 @@ $wa
 
     <para>In Joomla 4.1 and later versions you are supposed to put the
     template's static files inside a media subdirectory:
-    <filename>media/site/<replaceable>TEMPLATE_NAME</replaceable></filename>
+    <filename>media/templates/site/<replaceable>TEMPLATE_NAME</replaceable></filename>
     for front-end templates, or
-    <filename>media/site/<replaceable>TEMPLATE_NAME</replaceable></filename>
+    <filename>media/templates/administrator/<replaceable>TEMPLATE_NAME</replaceable></filename>
     for back-end templates, where <replaceable>TEMPLATE_NAME</replaceable> is
     the name of your template without the <code>tpl_</code> prefix. As of
     Joomla 6 this will be the only supported method. It is definitely the only
