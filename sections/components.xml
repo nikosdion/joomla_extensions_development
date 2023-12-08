@@ -4476,7 +4476,7 @@ class Category extends Categories
       factory object; it is injected into it by the component service provider
       (<filename>services/provider.php</filename>). In its turn, it asks the
       component's DI Container for that Router Factory object. The DI
-      Container will only know how to get a Router Factory object is we
+      Container will only know how to get a Router Factory object if we
       register a Router Factory service provider in the service provider
       (<filename>services/provider.php</filename>).</para>
 
