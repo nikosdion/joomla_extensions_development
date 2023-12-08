@@ -5537,16 +5537,22 @@ protected $minimumJoomla = '4.2.0';</programlisting>
     structure they will not be automatically removed.</para>
 
     <para>The $deleteFiles and $deleteFolders properties allow you to specify
-    which files and folders need to be removed, if they exist, on update. For
-    example:</para>
+    which files and folders need to be removed, if they exist, on
+    update.</para>
+
+    <para>Please remember that you need to call the
+    <methodname>removeFiles</methodname> method directly from your
+    <methodname>postflight</methodname> method.</para>
+
+    <para>Example for setting these variables:</para>
 
     <programlisting language="php">protected $deleteFiles = [
-  JPATH_SITE . '/components/com_example/tmpl/welcome/default_donate.php',
-  JPATH_ADMINISTRATOR . '/components/com_example/tmpl/item/default_phpwarning.php',
+  'components/com_example/tmpl/welcome/default_donate.php',
+  'administrator/components/com_example/tmpl/item/default_phpwarning.php',
 ];
 
 protected $deleteFolders = [
-  JPATH_SITE . '/media/com_example/icons',
+  'media/com_example/icons',
 ];</programlisting>
   </section>
 
