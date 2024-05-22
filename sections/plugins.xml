@@ -1817,32 +1817,6 @@ namespace Acme\Plugin\System\Example;
 
 defined('_JEXEC') || die;
 
-use Joomla\CMS\Plugin\CMSPlugin;
-use Joomla\Component\Content\Administrator\Table\ArticleTable;
-use Joomla\Event\Event;
-use Joomla\Event\SubscriberInterface;
-
-class ExamplePlugin extends CMSPlugin implements SubscriberInterface
-{
-	public static function getSubscribedEvents(): array
-	{
-		return [
-			'onExampleFoobar' =&gt; 'handleFoobar',
-		];
-	}
-
-	public function handleFoobar(Event $event)
-	{
-		// If using a concrete event, do it the simple way
-		if ($event instanceof \Acme\Component\Example\Administrator\Event\Foobar) {
-			/** @var ArticleTable $article */
-			$article = $event-&gt;getArgument('article');
-			/** @var integer $count */
-			$count = $event-&gt;getArgument('count', 10);&lt;?php
-namespace Acme\Plugin\System\Example;
-
-defined('_JEXEC') || die;
-
 use Joomla\CMS\Event\Result\ResultAwareInterface;
 use Joomla\CMS\Plugin\CMSPlugin;
 use Joomla\Component\Content\Administrator\Table\ArticleTable;
@@ -1851,57 +1825,57 @@ use Joomla\Event\SubscriberInterface;
 
 class ExamplePlugin extends CMSPlugin implements SubscriberInterface
 {
-	public static function getSubscribedEvents(): array
-	{
-		return [
-			'onExampleFoobar' =&gt; 'handleFoobar',
-		];
-	}
+    public static function getSubscribedEvents(): array
+    {
+        return [
+            'onExampleFoobar' =&gt; 'handleFoobar',
+        ];
+    }
 
-	public function handleFoobar(Event $event)
-	{
-		// If using a concrete event, do it the simple way
-		if ($event instanceof \Acme\Component\Example\Administrator\Event\Foobar) {
-			/** @var ArticleTable $article */
-			$article = $event-&gt;getArgument('article');
-			/** @var integer $count */
-			$count = $event-&gt;getArgument('count', 10);
-		// If using a generic event, do it the hard way
-		} else {
-			[$article, $count] = $event-&gt;getArguments();
+    public function handleFoobar(Event $event)
+    {
+        // If using a concrete event, do it the simple way
+        if ($event instanceof \Acme\Component\Example\Administrator\Event\Foobar) {
+            /** @var ArticleTable $article */
+            $article = $event-&gt;getArgument('article');
+            /** @var integer $count */
+            $count = $event-&gt;getArgument('count', 10);
+            // If using a generic event, do it the hard way
+        } else {
+            [$article, $count] = $event-&gt;getArguments();
 
-			if (!$article instanceof ArticleTable) {
-				throw new \InvalidArgumentException('The article argument to the onExampleFoobar event must be an ArticleTable');
-			}
+            if (!$article instanceof ArticleTable) {
+                throw new \InvalidArgumentException('The article argument to the onExampleFoobar event must be an ArticleTable');
+            }
 
-			if (!is_int($count) || $count &lt;= 0) {
-				throw new \InvalidArgumentException('The count argument to the onExampleFoobar event must be a positive integer');
-			}
-		}
+            if (!is_int($count) || $count &lt;= 0) {
+                throw new \InvalidArgumentException('The count argument to the onExampleFoobar event must be a positive integer');
+            }
+        }
 
-		// Do something...
-		$myResult      = [
-			'foobar' =&gt; $article-&gt;title,
-			'foobaz' =&gt; $count
-		];
+        // Do something...
+        $myResult      = [
+            'foobar' =&gt; $article-&gt;title,
+            'foobaz' =&gt; $count
+        ];
 
-		// Return the result
-		$this-&gt;setResult($myResult);
-	}
-	
-	private function setResult(Event $event, $value): void
-	{
-		if ($event instanceof ResultAwareInterface) {
-			$event-&gt;addResult($value);
-			
-			return;
-		}
+        // Return the result
+        $this-&gt;setResult($myResult);
+    }
 
-		$result   = $event-&gt;getArgument('result', []) ?: [];
-		$result   = is_array($result) ? $result : [];
-		$result[] = $value;
-		$event-&gt;setArgument('result', $result);
-	}
+    private function setResult(Event $event, $value): void
+    {
+        if ($event instanceof ResultAwareInterface) {
+            $event-&gt;addResult($value);
+
+            return;
+        }
+
+        $result   = $event-&gt;getArgument('result', []) ?: [];
+        $result   = is_array($result) ? $result : [];
+        $result[] = $value;
+        $event-&gt;setArgument('result', $result);
+    }
 }</programlisting>
 
     <para>In the example code above the setResult method can be reused by all of your event handlers, at any return
