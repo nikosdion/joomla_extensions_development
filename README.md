@@ -1,3 +1,8 @@
+## NO LONGER MAINTAINED
+
+> [!WARNING]  
+> This book is no longer maintained. It **DOES NOT** cover Joomla 5 or later versions.
+
 # Joomla Extensions Development
 
 **The missing Joomla reference for extension developers**
